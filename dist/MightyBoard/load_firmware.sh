@@ -20,7 +20,9 @@ FAILUSB="USB Program PASS"
       FAIL1280="1280 Bootloader FAIL"
     fi
   
-    # Upload bootloader via isp
+   sleep 10   
+ 
+   # Upload bootloader via isp
    avrdude -p m1280 -P usb -c avrispmkii
    avrdude -F -V -p m1280 -P /dev/ttyACM0 -c stk500v1 -b 57600 -U flash:w:MightyBoard.hex
 
