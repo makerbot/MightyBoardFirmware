@@ -17,6 +17,7 @@
  
  #include "Steppers.hh"
  #include "Interface.hh"
+#include <util/delay.h>
 
 namespace testing{
 	
@@ -25,30 +26,16 @@ namespace testing{
 
 void motorSpin(void){
 	
-	int32_t interval = 1000;
+	int32_t interval = 2000;
 
 	Point position = steppers::getPosition();
 	steppers::abort();
 	
-	for (int i = 0; i < 3; i++){
 		for(int k = 0; k < STEPPER_COUNT; k++)
-			position[k] += 1000;
+			position[k] += interval*2;
 			
 		steppers::setTarget(position, interval);
-	}
-//	while(steppers::isRunning());
-	
-//	for (int i = 0; i < 10; i++){
-//		for(int k = 0; k < 5; k++)
-//			position[k] -= 1000;
-			
-//		steppers::setTarget(position, interval);
-//	}
 
-//	while(steppers::isRunning());
-
-//	for(int i = 0; i < STEPPER_COUNT; i++)
-//			steppers::enableAxis(i, false);
 }	
 
 void motorTest(void){
