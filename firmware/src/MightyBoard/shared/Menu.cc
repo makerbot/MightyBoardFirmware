@@ -86,6 +86,74 @@ void SplashScreen::reset() {
 	
 }
 
+TestMenu::TestMenu() {
+	itemCount = 4;
+	reset();
+}
+
+void TestMenu::resetState() {
+	itemIndex = 2;
+	firstItemIndex = 2;
+}
+
+void TestMenu::drawItem(uint8_t index, LiquidCrystalSerial& lcd) {
+    static PROGMEM prog_uchar yes[]  =   "Yes";
+    static PROGMEM prog_uchar no[]   =   "No";
+    
+    char* b = message;
+    
+	switch (index) {
+        case 0:
+            while (*b != '\0') {
+			b = lcd.writeLine(b);
+			}
+            break;
+        case 1:
+            break;
+        case 2:
+            lcd.writeFromPgmspace(yes);
+            break;
+        case 3:
+            lcd.writeFromPgmspace(no);
+            break;
+	}
+}
+
+void TestMenu::handleSelect(uint8_t index) {
+
+	switch (index) {
+        case 2:
+			responseOK = true;
+			responseEntered = true;
+            interface::popScreen();
+            break;
+        case 3: 
+            responseOK = false;
+            responseEntered = true;
+            interface::popScreen();
+            break;
+	}
+}
+void TestMenu::newTest(char msg[]) {
+	
+	responseEntered = false;
+	responseOK = false;
+	cursor = 0;
+
+	char* letter = msg;
+	while ((*letter != 0) && (cursor < TEST_SCREEN_MSG_SIZE)) {
+		message[cursor++] = *letter;
+		letter++;
+	}
+	
+	// ensure that message is always null-terminated
+	if (cursor == TEST_SCREEN_MSG_SIZE) {
+		message[TEST_SCREEN_MSG_SIZE-1] = '\0';
+	} else {
+		message[cursor] = '\0';
+	}
+}
+
 void HeaterTestScreen::update(LiquidCrystalSerial& lcd, bool forceRedraw) {
 	static PROGMEM prog_uchar splash1[] = "   Heater Test On   ";
 	static PROGMEM prog_uchar splash2[] = "Press Center to Quit";

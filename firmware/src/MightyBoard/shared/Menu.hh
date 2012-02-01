@@ -144,6 +144,32 @@ public:
     void notifyButtonPressed(ButtonArray::ButtonName button);
 };
 
+class TestMenu: public Menu {
+public:
+	TestMenu();
+    
+    bool userResponse(void){ return responseEntered;}
+    bool testOK(void) {return responseOK;}
+    
+	void resetState();
+	
+	void newTest(char * msg);
+	
+	uint8_t cursor;
+    
+protected:
+
+	const static int TEST_SCREEN_MSG_SIZE = LCD_SCREEN_WIDTH*2 + 1;
+	char message[TEST_SCREEN_MSG_SIZE];
+	
+	void drawItem(uint8_t index, LiquidCrystalSerial& lcd);
+    
+	void handleSelect(uint8_t index);
+	
+	bool responseOK;
+	bool responseEntered;
+};
+
 class ToolSelectMenu: public Menu {
 public:
 	ToolSelectMenu();

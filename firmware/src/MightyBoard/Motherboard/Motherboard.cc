@@ -32,7 +32,8 @@
 #include "RGB_LED.hh"
 #include "Errors.hh"
 #include <avr/eeprom.h>
-#include <util/delay.h>mo
+#include <util/delay.h>
+#include "Diagnostics.hh"
 
 
 /// Instantiate static motherboard instance
@@ -180,6 +181,13 @@ void Motherboard::reset(bool hard_reset) {
 	OCR4A = 0;
 	OCR4B = 0;
 	TIMSK4 = 0b00000000; // no interrupts needed
+	
+#ifdef MOTOR_DIAGNOSTICS
+
+testing::motorSpin();
+cutoff.init();
+return;
+#endif 
 		
 	// Check if the interface board is attached
 	hasInterfaceBoard = interface::isConnected();
