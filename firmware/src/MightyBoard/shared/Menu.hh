@@ -182,6 +182,40 @@ protected:
 	void handleSelect(uint8_t index);
 };
 
+class FanTest: public Menu {
+public:
+	FanTest();
+    
+	void resetState();
+    
+protected:
+	void drawItem(uint8_t index, LiquidCrystalSerial& lcd);
+    
+	void handleSelect(uint8_t index);
+};
+class ExtrudeTest: public Screen {
+public:
+	micros_t getUpdateRate() {return 50L * 1000L;}
+    
+    
+	void update(LiquidCrystalSerial& lcd, bool forceRedraw);
+    
+	void reset();
+    
+    void notifyButtonPressed(ButtonArray::ButtonName button);
+};
+class CutoffTest: public Screen {
+public:
+	micros_t getUpdateRate() {return 50L * 1000L;}
+    
+    
+	void update(LiquidCrystalSerial& lcd, bool forceRedraw);
+    
+	void reset();
+    
+    void notifyButtonPressed(ButtonArray::ButtonName button);
+};
+
 class ReadyMenu: public Menu {
 public:
 	ReadyMenu();
@@ -534,6 +568,29 @@ private:
     bool blinkLED;
     bool singleTool;
 };
+
+/// Diagnostics menu allows you to select
+class DiagnosticsMenu: public Menu{  
+public:
+    Diagnostics Menu();
+    
+    
+protected:
+    void drawItem(uint8_t index, LiquidCrystalSerial& lcd);
+    
+    void handleSelect(uint8_t index);
+    
+    void resetState();
+    
+private:
+    /// Static instances of our menus
+    HeaterTestScreen heaterOrient;
+    FanTest fan;
+    CutoffTest cutoff;
+    ExtrudeTest extrude;
+    
+};
+
 
 
 class MainMenu: public Menu {

@@ -215,7 +215,7 @@ void HeaterTestScreen::update(LiquidCrystalSerial& lcd, bool forceRedraw) {
 	}
 }
 
-void HeaterTestScreen::notifyButtonPressed(ButtonArray::ButtonName button) {
+void HeaterTest::notifyButtonPressed(ButtonArray::ButtonName button) {
 	
 	switch (button) {
 		case ButtonArray::CENTER:
@@ -232,12 +232,11 @@ void HeaterTestScreen::notifyButtonPressed(ButtonArray::ButtonName button) {
 	}
 }
 
-void HeaterTestScreen::reset() {
+void HeaterTest::reset() {
 	Motherboard::getBoard().getExtruderBoard(0).getExtruderHeater().set_target_temperature(60);
 	heater_failed = false;
 	heater_timeout.start(12000000); /// ten second timeout
 }
-
 
 HeaterPreheat::HeaterPreheat(){
 	itemCount = 4;
@@ -1589,7 +1588,6 @@ void CancelBuildMenu::handleSelect(uint8_t index) {
 	}
 }
 
-
 MainMenu::MainMenu() {
 	itemCount = 4;
 	reset();
@@ -1603,24 +1601,24 @@ void MainMenu::drawItem(uint8_t index, LiquidCrystalSerial& lcd) {
 	static PROGMEM prog_uchar build[] =   "Print from SD";
 	static PROGMEM prog_uchar preheat[] = "Preheat";
 	static PROGMEM prog_uchar utilities[] = "Utilities";
-
+    
 	char * name;
 	
 	switch (index) {
-	case 0:
-		name = host::getMachineName();
-		lcd.setCursor((20 - strlen(name))/2,0);
-		lcd.writeString(host::getMachineName());
-		break;
-	case 1:
-		lcd.writeFromPgmspace(build);
-		break;
-	case 2:
-		lcd.writeFromPgmspace(preheat);
-		break;
-	case 3:
-		lcd.writeFromPgmspace(utilities);
-		break;
+        case 0:
+            name = host::getMachineName();
+            lcd.setCursor((20 - strlen(name))/2,0);
+            lcd.writeString(host::getMachineName());
+            break;
+        case 1:
+            lcd.writeFromPgmspace(build);
+            break;
+        case 2:
+            lcd.writeFromPgmspace(preheat);
+            break;
+        case 3:
+            lcd.writeFromPgmspace(utilities);
+            break;
 	}
 }
 
@@ -1637,6 +1635,60 @@ void MainMenu::handleSelect(uint8_t index) {
 		case 3:
 			// home axes script
             interface::pushScreen(&utils);
+			break;
+    }
+}
+
+
+
+
+DiagnosticsMenu::Diagnostics() {
+	itemCount = 4;
+	reset();
+}
+void DiagnosticsMenu::resetState() {
+	itemIndex = 0;
+	firstItemIndex = 0;
+}
+
+void DiagnosticsMenu::drawItem(uint8_t index, LiquidCrystalSerial& lcd) {
+	static PROGMEM prog_uchar labels[] =   "Heater Labels Test";
+	static PROGMEM prog_uchar fans[] = "Fan Test";
+	static PROGMEM prog_uchar cutoffs[] = "Cutoff Test";
+    static PROGMEM prog_uchar extrudes[] = "Extrude Test"
+	
+	switch (index) {
+	case 0:
+		lcd.writeFromPgmspace(labels);
+		break;
+	case 1:
+		lcd.writeFromPgmspace(fans);
+		break;
+	case 2:
+		lcd.writeFromPgmspace(cutoffs);
+		break;
+	case 3:
+		lcd.writeFromPgmspace(extrudes);
+		break;
+	}
+}
+
+void DiagnosticsMenu::handleSelect(uint8_t index) {
+	switch (index) {            
+        case 0:
+            interface::pushScreen(&heaterOrient);
+            break;
+		case 1:
+			// Show build from SD screen
+            interface::pushScreen(&fan);
+			break;
+		case 2:
+			// Show preheat screen
+            interface::pushScreen(&cutoff);
+			break;
+		case 3:
+			// home axes script
+            interface::pushScreen(&extrude);
 			break;
 		}
 }

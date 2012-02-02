@@ -19,10 +19,23 @@
  #include "Interface.hh"
 #include <util/delay.h>
 
+#define FAN_TEST_TEMP  70
+
+
+
 namespace testing{
 	
 	uint8_t motor_test[5] = {0,0,0,0,0};
 	TestMenu scr;
+    
+enum {
+    HEAT_TEST_BEGIN,
+    HEAT_TEST_BUTTON_WAIT,
+    HEAT_TEST_CONNECTION_WAIT,
+    FAN_TEST,
+    HEAT_TEST_FAIL
+} testMode = HEAT_TEST_BEGIN;
+
 
 void motorSpin(void){
 	
@@ -36,7 +49,117 @@ void motorSpin(void){
 			
 		steppers::setTarget(position, interval);
 
-}	
+}
+	
+void messageWait(char [] msg){
+    msgScreen.clearMessage();
+    msgScreen.addMessage(msg, true);
+    interfaceBlink(25,15);
+    interfaceBoard.waitForButton(0xFF);
+}
+    
+void HeaterTestsDual(void){
+        
+    if(testMode == HEAT_TEST_BEGIN)   {
+        messageWait("Push M to Begin     Extruder Tests");
+        interface::pushScreen(&msgScreen);
+
+        testMode = HEAT_TEST_BUTTON_WAIT;
+    }
+    if (testMode == HEAT_TEST_BUTTON_WAIT){
+        if (interfaceBoard.buttonPushed()) {
+            interfaceBlink(0,0);
+            buttonWait = false;
+            msgScreen.clearMessage();
+            msgScreen.addMessage("Testing Connections", true);
+            
+            exOneTemp = Motherboard::getBoard().getExtruderBoard(0).getExtruderHeater().get_current_temperature();
+            exTwoTemp = Motherboard::getBoard().getExtruderBoard(1).getExtruderHeater().get_current_temperature();
+            
+            Motherboard::getBoard().getExtruderBoard(1).getExtruderHeater().set_target_temperature(exTwoTemp + 20);
+            Motherboard::getBoard().getExtruderBoard(0).getExtruderHeater().set_target_temperature(0);
+            heatTimer.start(30000000); // 30 second timeout
+            
+            testMode = HEAT_TEST_CONNECTION_WAIT; 
+        }
+    }
+    if (testMode == HEAT_TEST_CONNECTION_WAIT){
+        
+        // wrong heater is heating up
+        if(Motherboard::getBoard().getExtruderBoard(0).getExtruderHeater().get_current_temperature() > exOneTemp + 10){
+            messageWait("FAIL: TEST ONE      Extruders are not   plugged in correctlyPlease Try Again."); 
+            
+            testMode = HEAT_TEST_FAIL;
+        }
+        else if(Motherboard::getBoard().getExtruderBoard(1).getExtruderHeater().get_current_temperature() > exTwoTemp + 10){
+            msgScreen.clearMessage();
+            msgScreen.addMessage("PASS: TEST ONE      Testing Fan", true);           
+            
+            Motherboard::getBoard().getExtruderBoard(0).getExtruderHeater().set_target_temperature(0);
+            Motherboard::getBoard().getExtruderBoard(1).getExtruderHeater().set_target_temperature(FAN_TEST_TEMP);
+            
+            testMode = FAN_TEST;
+        }
+        else if(heatTimer.hasElapsed()){
+            messageWait("FAIL: TEST ONE      Extruders are not   heating up          Please Try Again."); 
+            
+            testMode = HEAT_TEST_FAIL;
+        }
+    }
+    if(testMode == FAN_TEST){
+        if(Motherboard::getBoard().getExtruderBoard(1).getExtruderHeater().has_reached_target_temperature() &&
+           (Motherboard::getBoard().getExtruderBoard(1).getExtruderHeater().get_current_temperature() < 40)){
+            
+            testScreen.newTest("Is the Left Fan On?");
+            interface::pushScreen(testScreen);
+            
+            testMode = FAN_TEST_WAIT;
+        }
+    }
+ ****   if(testMode == FAN_TEST_WAIT){
+        if(testScreen.userResponse()){
+            if(testScreen.testOK()){
+                msgScreen.clearMessage();
+                msgScreen.addMessage("PASS: TEST Two      Testing Fan", true);           
+                
+                Motherboard::getBoard().getExtruderBoard(0).getExtruderHeater().set_target_temperature(0);
+                Motherboard::getBoard().getExtruderBoard(1).getExtruderHeater().set_target_temperature(FAN_TEST_TEMP);
+                
+                testMode = FAN_TEST;
+            }
+            else{
+                
+            }
+                
+        }
+    }
+    if(testMode == HEAT_TEST_FAIL){
+        
+        Motherboard::getBoard().getExtruderBoard(0).getExtruderHeater().set_target_temperature(0);
+        Motherboard::getBoard().getExtruderBoard(1).getExtruderHeater().set_target_temperature(0);
+        
+        if (interfaceBoard.buttonPushed())
+            interface::popScreen();
+        
+    }
+    
+// part one plugged in correctly test
+    /// record initial temperature
+    
+    /// initialize heater
+    
+    /// set timeout
+    
+    
+// part two fans plugged correctly test
+    
+// part three heating up test
+    
+// part four extrude test
+    
+// part five cutoff test
+    
+}
 
 void motorTest(void){
 
