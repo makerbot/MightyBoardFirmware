@@ -18,7 +18,6 @@
 #include "Main.hh"
 #include "DebugPacketProcessor.hh"
 #include "Host.hh"
-//#include "Tool.hh"
 #include "Command.hh"
 #include <avr/interrupt.h>
 #include <util/atomic.h>
@@ -29,10 +28,8 @@
 #include "SDCard.hh"
 #include "Eeprom.hh"
 #include "EepromMap.hh"
-//#include "ExtruderMotor.hh"
 #include "ThermistorTable.hh"
-//#include "ExtruderBoard.hh"
-//#include "MotorController.hh"
+#include "Diagnostics.hh"
 #include <util/delay.h>
 #include "UtilityScripts.hh"
 
@@ -61,6 +58,7 @@ void reset(bool hard_reset) {
 		eeprom::init();
 		initThermistorTables();
 		board.reset(hard_reset);
+        testing::reset();
 		
 	// brown out occurs on normal power shutdown, so this is not a good message		
 	//	if(brown_out)
@@ -84,6 +82,10 @@ int main() {
 		command::runCommandSlice();
 		// Motherboard slice
 		board.runMotherboardSlice();
+#ifdef HEAT_DIAGNOSTICS
+        // testing slice
+        testing::runHeatTestSlice();
+#endif
 		
 	}
 	return 0;

@@ -184,9 +184,9 @@ void Motherboard::reset(bool hard_reset) {
 	
 #ifdef MOTOR_DIAGNOSTICS
 
-testing::motorSpin();
-cutoff.init();
-return;
+    testing::motorSpin();
+    cutoff.init();
+    return;
 #endif 
 		
 	// Check if the interface board is attached
@@ -195,12 +195,17 @@ return;
 	if (hasInterfaceBoard && (heatFailMode != HEATER_FAIL_HARDWARE_CUTOFF)) {
 		// Make sure our interface board is initialized
         interfaceBoard.init();
+        
+#ifdef HEAT_DIAGNOSTICS
 
+        interfaceBoard.pushScreen(&diagnostics);
+#else
         if(eeprom::getEeprom8(eeprom_offsets::FIRST_BOOT_FLAG, 0) == 0)
             interfaceBoard.pushScreen(&welcomeScreen);
         else
             // Then add the splash screen to it.
             interfaceBoard.pushScreen(&splashScreen);
+#endif
         
         
         if(hard_reset)

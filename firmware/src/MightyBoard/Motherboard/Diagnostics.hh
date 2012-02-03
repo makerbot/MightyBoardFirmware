@@ -21,9 +21,31 @@
  #define MOTOR_DIAGNOSTICS
  
 namespace testing{
+    
+    enum heatMode_t{
+        HEAT_TEST_BEGIN,
+        HEAT_TEST_BUTTON_WAIT,
+        HEAT_TEST_CONNECTION_WAIT,
+        FAN_TEST,
+        FAN_TEST_WAIT,
+        HEAT_TEST_TEMP,
+        EXTRUDE_TEST,
+        EXTRUDE_RUN,
+        EXTRUDE_REVERSE,
+        HEAT_TEST_DONE,
+        HEAT_TEST_QUIT,
+        HEAT_TEST_FAIL,
+        HEAT_TEST_OFF
+    };
 
-void motorSpin(void);
-void motorTest(void);
+
+    void motorSpin(void);
+    void motorTest(void);
+
+    void runHeaterTestsSlice(void);
+    void setHeatTestMode(heatMode_t mode, bool single);
+    void messageWait(char msg[]);
+    void reset(void);
 
 }
 

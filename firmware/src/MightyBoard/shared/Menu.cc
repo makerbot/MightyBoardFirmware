@@ -23,6 +23,7 @@
 #include "Eeprom.hh"
 #include <avr/eeprom.h>
 #include "RGB_LED.hh"
+#include "Diagnostics.hh"
 
 
 #define HOST_PACKET_TIMEOUT_MS 20
@@ -215,7 +216,7 @@ void HeaterTestScreen::update(LiquidCrystalSerial& lcd, bool forceRedraw) {
 	}
 }
 
-void HeaterTest::notifyButtonPressed(ButtonArray::ButtonName button) {
+void HeaterTestScreen::notifyButtonPressed(ButtonArray::ButtonName button) {
 	
 	switch (button) {
 		case ButtonArray::CENTER:
@@ -232,7 +233,7 @@ void HeaterTest::notifyButtonPressed(ButtonArray::ButtonName button) {
 	}
 }
 
-void HeaterTest::reset() {
+void HeaterTestScreen::reset() {
 	Motherboard::getBoard().getExtruderBoard(0).getExtruderHeater().set_target_temperature(60);
 	heater_failed = false;
 	heater_timeout.start(12000000); /// ten second timeout
@@ -1642,8 +1643,8 @@ void MainMenu::handleSelect(uint8_t index) {
 
 
 
-DiagnosticsMenu::Diagnostics() {
-	itemCount = 4;
+DiagnosticsMenu::DiagnosticsMenu() {
+	itemCount = 6;
 	reset();
 }
 void DiagnosticsMenu::resetState() {
@@ -1652,44 +1653,57 @@ void DiagnosticsMenu::resetState() {
 }
 
 void DiagnosticsMenu::drawItem(uint8_t index, LiquidCrystalSerial& lcd) {
-	static PROGMEM prog_uchar labels[] =   "Heater Labels Test";
+	static PROGMEM prog_uchar dual[] =   "Extruder Tests DUAL";
+    static PROGMEM prog_uchar single[] =   "Extruder Tests SINGLE";
 	static PROGMEM prog_uchar fans[] = "Fan Test";
+    static PROGMEM prog_uchar heat_extrude[] =   "Heat and Extrude";
+    static PROGMEM prog_uchar reverse[] =   "Reverse Filament";
+    static PROGMEM prog_uchar connect[] =   "Connection Test";
 	static PROGMEM prog_uchar cutoffs[] = "Cutoff Test";
-    static PROGMEM prog_uchar extrudes[] = "Extrude Test"
+
 	
 	switch (index) {
 	case 0:
-		lcd.writeFromPgmspace(labels);
+		lcd.writeFromPgmspace(dual);
 		break;
 	case 1:
-		lcd.writeFromPgmspace(fans);
+		lcd.writeFromPgmspace(single);
 		break;
 	case 2:
-		lcd.writeFromPgmspace(cutoffs);
+		lcd.writeFromPgmspace(connect);
 		break;
 	case 3:
-		lcd.writeFromPgmspace(extrudes);
+		lcd.writeFromPgmspace(fans);
 		break;
+    case 4:
+        lcd.writeFromPgmspace(heat_extrude);
+        break;
+    case 5:
+        lcd.writeFromPgmspace(reverse);
+        break;
 	}
 }
 
 void DiagnosticsMenu::handleSelect(uint8_t index) {
 	switch (index) {            
         case 0:
-            interface::pushScreen(&heaterOrient);
+            testing::setHeatTestMode(testing::HEAT_TEST_BEGIN, false);
             break;
 		case 1:
-			// Show build from SD screen
-            interface::pushScreen(&fan);
+            testing::setHeatTestMode(testing::HEAT_TEST_TEMP, false);
 			break;
 		case 2:
-			// Show preheat screen
-            interface::pushScreen(&cutoff);
+            testing::setHeatTestMode(testing::HEAT_TEST_BEGIN, true);
 			break;
 		case 3:
-			// home axes script
-            interface::pushScreen(&extrude);
+			testing::setHeatTestMode(testing::FAN_TEST, true);
 			break;
+        case 4:
+            testing::setHeatTestMode(testing::HEAT_TEST_TEMP, false);
+            break;
+        case 5:
+            testing::setHeatTestMode(testing::EXTRUDE_REVERSE, false);
+            break;
 		}
 }
 

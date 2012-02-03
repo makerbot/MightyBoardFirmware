@@ -87,6 +87,7 @@ private:
 	MonitorMode monitorMode;        ///< Displayed during build
 	WelcomeScreen welcomeScreen;	///< Displayed on Startup for the first time
 	MessageScreen messageScreen;    ///< Displayed by user-specified messages
+    DiagnosticsMenu diagnostics;    ///< Diagnostics menu
     
 	Thermistor platform_thermistor;
 	BuildPlatformHeatingElement platform_element;
