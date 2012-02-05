@@ -26,8 +26,8 @@
 
 #define FAN_TEST_TEMP  70
 #define HEAT_TEMP 225
-#define FAN_TIMEOUT 15000000
-#define HEAT_TIMEOUT 120000000
+#define FAN_TIMEOUT 240000000
+#define HEAT_TIMEOUT 240000000
 
 
 namespace testing{
@@ -35,7 +35,7 @@ namespace testing{
 	uint8_t motor_test[5] = {0,0,0,0,0};
     uint16_t exOneTemp, exTwoTemp;
 	TestMenu testScreen;
-    MessageScreen msgScreen ;
+    MessageScreen msgScreen;
     Timeout heatTimer;
     bool fanFail = false;
     bool singleTest = false;
@@ -94,8 +94,7 @@ void setHeatTestMode(heatMode_t mode, bool single){
         case HEAT_TEST_TEMP:
             Motherboard::getBoard().getExtruderBoard(0).getExtruderHeater().set_target_temperature(HEAT_TEMP);
             Motherboard::getBoard().getExtruderBoard(1).getExtruderHeater().set_target_temperature(HEAT_TEMP);
-            if(singleTest == true)
-                Motherboard::getBoard().interfaceBlink(10,10);
+            
             heatTimer.clear();
             heatTimer.start(HEAT_TIMEOUT);
             msgScreen.clearMessage();
@@ -133,7 +132,7 @@ void runHeaterTestsSlice(void){
         }
         else if(Motherboard::getBoard().getExtruderBoard(1).getExtruderHeater().get_current_temperature() > exTwoTemp + 10){
             if(singleTest){
-                messageWait("PASS!              Connections OK!");
+                messageWait("PASS!               Connections OK!");
                 testMode = HEAT_TEST_FAIL;
             }else{
                 msgScreen.clearMessage();
@@ -189,7 +188,7 @@ void runHeaterTestsSlice(void){
             }
             else{
            
-                msgScreen.addMessage("                    Testing Heat Level", true);  
+                msgScreen.addMessage("                        Testing Heat Level", true);  
                     
                 Motherboard::getBoard().getExtruderBoard(0).getExtruderHeater().set_target_temperature(HEAT_TEMP);
                 Motherboard::getBoard().getExtruderBoard(1).getExtruderHeater().set_target_temperature(HEAT_TEMP);
@@ -203,8 +202,8 @@ void runHeaterTestsSlice(void){
         }
     }
     if(testMode == HEAT_TEST_TEMP){
-        if(Motherboard::getBoard().getExtruderBoard(0).getExtruderHeater().has_reached_target_temperature() && singleTest){
-        //  (Motherboard::getBoard().getExtruderBoard(1).getExtruderHeater().has_reached_target_temperature() || singleTest)){
+        if(Motherboard::getBoard().getExtruderBoard(0).getExtruderHeater().has_reached_target_temperature() &&
+          (Motherboard::getBoard().getExtruderBoard(1).getExtruderHeater().has_reached_target_temperature() || singleTest)){
             if(extrudeReverseSingle)
                 testMode = EXTRUDE_RUN;
             else{
@@ -275,9 +274,9 @@ void runHeaterTestsSlice(void){
         Motherboard::getBoard().getExtruderBoard(1).getExtruderHeater().set_target_temperature(0);
         
         if(fanFail)
-            messageWait("Heat Tests Complete Press M to exit.     Remember to re-labelfan leads");
+            messageWait("Heat Tests Complete!Press M to exit.     Remember to re-labelfan leads");
         else
-            messageWait("Heat Tests Complete Press M to exit.");
+            messageWait("Heat Tests Complete!Press M to exit.");
         
        testMode = HEAT_TEST_QUIT;
         

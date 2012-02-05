@@ -39,7 +39,6 @@ namespace testing{
         HEAT_TEST_OFF
     };
 
-
     void motorSpin(void);
     void motorTest(void);
 
