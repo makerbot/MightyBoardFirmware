@@ -26,6 +26,8 @@
 
 #define FAN_TEST_TEMP  70
 #define HEAT_TEMP 225
+#define FAN_TIMEOUT 15000000
+#define HEAT_TIMEOUT 120000000
 
 
 namespace testing{
@@ -38,7 +40,6 @@ namespace testing{
     bool fanFail = false;
     bool singleTest = false;
     bool extrudeReverseSingle = false;
-    InterfaceBoard ib = Motherboard::getBoard().getInterfaceBoard();
     
     heatMode_t testMode;
     
@@ -70,7 +71,7 @@ void messageWait(char msg[]){
     msgScreen.clearMessage();
     msgScreen.addMessage(msg, true);
     Motherboard::getBoard().interfaceBlink(25,15);
-    ib.waitForButton(0xFF);
+    Motherboard::getBoard().getInterfaceBoard().waitForButton(0x01);
 }
 
 void setHeatTestMode(heatMode_t mode, bool single){
@@ -78,21 +79,25 @@ void setHeatTestMode(heatMode_t mode, bool single){
     reset();
     testMode = mode;
     singleTest = single;
-    interface::pushScreen (&msgScreen );
+    interface::pushScreen(&msgScreen);
     switch(testMode){
         case FAN_TEST:
             Motherboard::getBoard().getExtruderBoard(0).getExtruderHeater().set_target_temperature(0);
             Motherboard::getBoard().getExtruderBoard(1).getExtruderHeater().set_target_temperature(FAN_TEST_TEMP);
+            msgScreen.clearMessage();
+            msgScreen.addMessage("Heating up for Fan  test", true);
+            heatTimer.start(FAN_TIMEOUT);
             break;
         case EXTRUDE_REVERSE:
             testMode = HEAT_TEST_TEMP;
             extrudeReverseSingle = true;
         case HEAT_TEST_TEMP:
-            Motherboard::getBoard().getExtruderBoard(0).getExtruderHeater().set_target_temperature(HEAT_TEST_TEMP);
-            Motherboard::getBoard().getExtruderBoard(1).getExtruderHeater().set_target_temperature(HEAT_TEST_TEMP);
-            
+            Motherboard::getBoard().getExtruderBoard(0).getExtruderHeater().set_target_temperature(HEAT_TEMP);
+            Motherboard::getBoard().getExtruderBoard(1).getExtruderHeater().set_target_temperature(HEAT_TEMP);
+            if(singleTest == true)
+                Motherboard::getBoard().interfaceBlink(10,10);
             heatTimer.clear();
-            heatTimer.start(120000000);
+            heatTimer.start(HEAT_TIMEOUT);
             msgScreen.clearMessage();
             msgScreen.addMessage("Heating up", true);
             break;
@@ -138,6 +143,8 @@ void runHeaterTestsSlice(void){
                 Motherboard::getBoard().getExtruderBoard(1).getExtruderHeater().set_target_temperature(FAN_TEST_TEMP);
             
                 testMode = FAN_TEST;
+                heatTimer.clear();
+                heatTimer.start(FAN_TIMEOUT);
             }
         }
         else if(heatTimer.hasElapsed()){
@@ -155,6 +162,11 @@ void runHeaterTestsSlice(void){
             
             testMode = FAN_TEST_WAIT;
         }
+        else if(heatTimer.hasElapsed()){
+            messageWait("FAIL: FAN TEST      Extruders are not   heating up          Please Try Again."); 
+            
+            testMode = HEAT_TEST_FAIL;
+        }
     }
    if(testMode == FAN_TEST_WAIT){
         if(testScreen.userResponse()){
@@ -171,7 +183,7 @@ void runHeaterTestsSlice(void){
             if(singleTest){
                 msgScreen.addMessage(" ", true); 
                 Motherboard::getBoard().interfaceBlink(25,15);
-                ib.waitForButton(0xFF);
+                Motherboard::getBoard().getInterfaceBoard().waitForButton(0x01);
 
                 testMode = HEAT_TEST_FAIL;
             }
@@ -183,7 +195,7 @@ void runHeaterTestsSlice(void){
                 Motherboard::getBoard().getExtruderBoard(1).getExtruderHeater().set_target_temperature(HEAT_TEMP);
                 
                 heatTimer.clear();
-                heatTimer.start(120000000);
+                heatTimer.start(HEAT_TIMEOUT);
                 
                 
                 testMode = HEAT_TEST_TEMP;
@@ -191,19 +203,23 @@ void runHeaterTestsSlice(void){
         }
     }
     if(testMode == HEAT_TEST_TEMP){
-        if(Motherboard::getBoard().getExtruderBoard(0).getExtruderHeater().has_reached_target_temperature() &&
-           Motherboard::getBoard().getExtruderBoard(1).getExtruderHeater().has_reached_target_temperature()){
+        if(Motherboard::getBoard().getExtruderBoard(0).getExtruderHeater().has_reached_target_temperature() && singleTest){
+        //  (Motherboard::getBoard().getExtruderBoard(1).getExtruderHeater().has_reached_target_temperature() || singleTest)){
             if(extrudeReverseSingle)
                 testMode = EXTRUDE_RUN;
             else{
-                messageWait("PASS: TEMP TEST       Press M to start    extrude test"); 
+                messageWait("PASS: HEAT TEST       Press M to start    extrude test"); 
                 testMode = EXTRUDE_TEST;
             }
         }
-        
+        else if(heatTimer.hasElapsed()){
+            messageWait("FAIL: HEAT TEST     Extruders are not   heating up          Please Try Again."); 
+            
+            testMode = HEAT_TEST_FAIL;   
+        }
     }
     if(testMode == EXTRUDE_TEST){
-        if (ib.buttonPushed()) {
+        if (Motherboard::getBoard().getInterfaceBoard().buttonPushed()) {
             Motherboard::getBoard().interfaceBlink(0,0);            
                 
             // set relative point, extruder steppers to run for 5 minutes
@@ -220,7 +236,7 @@ void runHeaterTestsSlice(void){
         
     }
     if(testMode == EXTRUDE_RUN){
-        if (ib.buttonPushed() || extrudeReverseSingle) {
+        if (Motherboard::getBoard().getInterfaceBoard().buttonPushed() || extrudeReverseSingle) {
             Motherboard::getBoard().interfaceBlink(0,0);
             
             steppers::abort();
@@ -242,7 +258,7 @@ void runHeaterTestsSlice(void){
         }
     }
     if(testMode == EXTRUDE_REVERSE){
-        if (ib.buttonPushed() || heatTimer.hasElapsed()) {
+        if (Motherboard::getBoard().getInterfaceBoard().buttonPushed() || heatTimer.hasElapsed()) {
             Motherboard::getBoard().interfaceBlink(0,0);
             
             steppers::abort();
@@ -276,8 +292,9 @@ void runHeaterTestsSlice(void){
     }
     if(testMode == HEAT_TEST_QUIT){
         
-        if (ib.buttonPushed()){
-            interface::popScreen ();
+        if (Motherboard::getBoard().getInterfaceBoard().buttonPushed()){
+            Motherboard::getBoard().interfaceBlink(0,0);
+            interface::popScreen();
             testMode = HEAT_TEST_OFF;
         }
     }        

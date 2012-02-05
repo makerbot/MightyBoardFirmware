@@ -767,11 +767,11 @@ void MessageScreen::update(LiquidCrystalSerial& lcd, bool forceRedraw) {
 	}
 	if (forceRedraw || needsRedraw) {
 		needsRedraw = false;
-		if(lcdClear)
-		{
+		//if(lcdClear)
+		//{
 			lcd.clear();
-			lcdClear = false;
-		}
+		//	lcdClear = false;
+		//}
 		while (*b != '\0') {
 			lcd.setCursor(x, ycursor);
 			b = lcd.writeLine(b);
@@ -784,6 +784,8 @@ void MessageScreen::update(LiquidCrystalSerial& lcd, bool forceRedraw) {
 }
 
 void MessageScreen::reset() {
+    needsRedraw = true;
+	lcdClear = true;
 	//clearMessage();
 }
 
@@ -793,8 +795,7 @@ void MessageScreen::notifyButtonPressed(ButtonArray::ButtonName button) {
 		case ButtonArray::CENTER:
 			break;
         case ButtonArray::LEFT:
-			timeout= Timeout();
-            interface::popScreen();
+            interface::pushScreen(&cancelBuildMenu);
         case ButtonArray::RIGHT:
         case ButtonArray::DOWN:
         case ButtonArray::UP:
@@ -1556,8 +1557,8 @@ void CancelBuildMenu::resetState() {
 
 void CancelBuildMenu::drawItem(uint8_t index, LiquidCrystalSerial& lcd) {
 	static PROGMEM prog_uchar cancel[] = "Cancel ?";
-        static PROGMEM prog_uchar no[]   =   "No";
-        static PROGMEM prog_uchar yes[]  =   "Yes";
+    static PROGMEM prog_uchar no[]   =   "No";
+    static PROGMEM prog_uchar yes[]  =   "Yes";
 
 	switch (index) {
 	case 0:
@@ -1584,7 +1585,7 @@ void CancelBuildMenu::handleSelect(uint8_t index) {
 		// Cancel build, returning to whatever menu came before monitor mode.
 		// TODO: Cancel build.
 			host::stopBuild();
-			interface::popScreen();
+		//	interface::popScreen();
 		break;
 	}
 }
@@ -1653,8 +1654,8 @@ void DiagnosticsMenu::resetState() {
 }
 
 void DiagnosticsMenu::drawItem(uint8_t index, LiquidCrystalSerial& lcd) {
-	static PROGMEM prog_uchar dual[] =   "Extruder Tests DUAL";
-    static PROGMEM prog_uchar single[] =   "Extruder Tests SINGLE";
+	static PROGMEM prog_uchar dual[] =   "Full Test DUAL";
+    static PROGMEM prog_uchar single[] =   "Full Test SINGLE";
 	static PROGMEM prog_uchar fans[] = "Fan Test";
     static PROGMEM prog_uchar heat_extrude[] =   "Heat and Extrude";
     static PROGMEM prog_uchar reverse[] =   "Reverse Filament";
@@ -1690,7 +1691,7 @@ void DiagnosticsMenu::handleSelect(uint8_t index) {
             testing::setHeatTestMode(testing::HEAT_TEST_BEGIN, false);
             break;
 		case 1:
-            testing::setHeatTestMode(testing::HEAT_TEST_TEMP, false);
+            testing::setHeatTestMode(testing::HEAT_TEST_TEMP, true);
 			break;
 		case 2:
             testing::setHeatTestMode(testing::HEAT_TEST_BEGIN, true);

@@ -43,6 +43,9 @@ private:
 
         // TODO: Drop this?
         Screen* mainScreen;            ///< Root menu screen
+    
+        // Diagnostics
+        DiagnosticsMenu diagnostics;    ///< Diagnostics menu
         
         MessageScreen* messageScreen;		 ///< Screen to display messages
         

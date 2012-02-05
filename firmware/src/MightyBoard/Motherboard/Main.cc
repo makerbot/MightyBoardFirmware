@@ -57,8 +57,9 @@ void reset(bool hard_reset) {
 		command::reset();
 		eeprom::init();
 		initThermistorTables();
-		board.reset(hard_reset);
         testing::reset();
+		board.reset(hard_reset);
+        
 		
 	// brown out occurs on normal power shutdown, so this is not a good message		
 	//	if(brown_out)
@@ -84,7 +85,7 @@ int main() {
 		board.runMotherboardSlice();
 #ifdef HEAT_DIAGNOSTICS
         // testing slice
-        testing::runHeatTestSlice();
+        testing::runHeaterTestsSlice();
 #endif
 		
 	}

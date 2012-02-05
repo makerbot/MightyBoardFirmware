@@ -18,7 +18,8 @@
  #ifndef DIAGNOSTICS_H
  #define DIAGNOSTICS_H
  
- #define MOTOR_DIAGNOSTICS
+ //#define MOTOR_DIAGNOSTICS
+#define HEAT_DIAGNOSTICS
  
 namespace testing{
     

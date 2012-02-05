@@ -221,7 +221,17 @@ private:
 	bool heater_failed;
 };
 
-
+class CancelBuildMenu: public Menu {
+public:
+	CancelBuildMenu();
+    
+	void resetState();
+    
+protected:
+	void drawItem(uint8_t index, LiquidCrystalSerial& lcd);
+    
+	void handleSelect(uint8_t index);
+};
 
 /// Display a message for the user, and provide support for
 /// user-specified pauses.
@@ -236,6 +246,7 @@ private:
 	bool lcdClear;
 	bool popScreenOn;
 	Timeout timeout;
+    CancelBuildMenu cancelBuildMenu;
 public:
 	MessageScreen() : needsRedraw(false) { message[0] = '\0'; }
 
@@ -426,19 +437,6 @@ public:
 protected:
 	void drawItem(uint8_t index, LiquidCrystalSerial& lcd);
     
-	void handleSelect(uint8_t index);
-};
-
-
-class CancelBuildMenu: public Menu {
-public:
-	CancelBuildMenu();
-
-	void resetState();
-
-protected:
-	void drawItem(uint8_t index, LiquidCrystalSerial& lcd);
-
 	void handleSelect(uint8_t index);
 };
 

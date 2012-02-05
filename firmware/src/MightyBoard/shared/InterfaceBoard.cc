@@ -4,6 +4,7 @@
 #include "Host.hh"
 #include "Timeout.hh"
 #include "Command.hh"
+#include "Diagnostics.hh"
 
 #if defined HAS_INTERFACE_BOARD
 
@@ -43,7 +44,12 @@ void InterfaceBoard::init() {
 
     screenIndex = -1;
 	waitingMask = 0;
+#ifdef HEAT_DIAGNOSTICS
+    pushScreen(&diagnostics);
+#else
     pushScreen(mainScreen);
+#endif
+    
 }
 
 void InterfaceBoard::doInterrupt() {

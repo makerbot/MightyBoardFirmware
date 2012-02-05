@@ -188,25 +188,20 @@ void Motherboard::reset(bool hard_reset) {
     cutoff.init();
     return;
 #endif 
+
 		
 	// Check if the interface board is attached
 	hasInterfaceBoard = interface::isConnected();
 
-	if (hasInterfaceBoard && (heatFailMode != HEATER_FAIL_HARDWARE_CUTOFF)) {
+	if (hasInterfaceBoard){// && (heatFailMode != HEATER_FAIL_HARDWARE_CUTOFF)) {
 		// Make sure our interface board is initialized
         interfaceBoard.init();
         
-#ifdef HEAT_DIAGNOSTICS
-
-        interfaceBoard.pushScreen(&diagnostics);
-#else
         if(eeprom::getEeprom8(eeprom_offsets::FIRST_BOOT_FLAG, 0) == 0)
             interfaceBoard.pushScreen(&welcomeScreen);
         else
             // Then add the splash screen to it.
-            interfaceBoard.pushScreen(&splashScreen);
-#endif
-        
+            interfaceBoard.pushScreen(&splashScreen);  
         
         if(hard_reset)
 			_delay_us(3000000);
@@ -214,6 +209,8 @@ void Motherboard::reset(bool hard_reset) {
 
         // Finally, set up the *** interface
         interface::init(&interfaceBoard, &lcd);
+        
+        
 
         interface_update_timeout.start(interfaceBoard.getUpdateRate());
     }
@@ -227,15 +224,17 @@ void Motherboard::reset(bool hard_reset) {
 		DEBUG_PIN1.setDirection(true);
 		DEBUG_PIN2.setDirection(true);
 		DEBUG_PIN3.setDirection(true);	
-		
+#ifndef HEAT_DIAGNOSTICS		
 		RGB_LED::init();
 		
 		Piezo::startUpTone();
 		RGB_LED::setDefaultColor(); 
-		
+#endif
+
 		heatShutdown = false;
 		heatFailMode = HEATER_FAIL_NONE;
 		cutoff.init();
+
     } 		
 	
 	HBP_HEAT.setDirection(true);
@@ -339,7 +338,7 @@ void Motherboard::runMotherboardSlice() {
 		Extruder_Two.getExtruderHeater().set_target_temperature(0);
 		platform_heater.set_target_temperature(0);
 	}
-	
+#ifndef HEAT_DIAGNOSTICS	
 	if(heatShutdown && !triggered)
 	{
 		triggered = true;
@@ -365,6 +364,7 @@ void Motherboard::runMotherboardSlice() {
 		command::heatShutdown();
 		steppers::abort();
 	}
+#endif
 		       
 	// Temperature monitoring thread
 	Extruder_One.runExtruderSlice();

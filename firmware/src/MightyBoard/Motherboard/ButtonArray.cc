@@ -18,9 +18,9 @@ void ButtonArray::init() {
 void ButtonArray::scanButtons() {
         // Don't bother scanning if we already have a button 
         // or if sufficient time has not elapsed between the last button push
-        if (buttonPressWaiting || (buttonTimeout.isActive() && !buttonTimeout.hasElapsed())) {
+        if (buttonPressWaiting )//|| (buttonTimeout.isActive() && !buttonTimeout.hasElapsed())) {
                 return;
-        }
+        //}
         
         buttonTimeout.clear();
 
@@ -73,7 +73,7 @@ void ButtonArray::scanButtons() {
                                         if (!buttonPressWaiting) {
                                                 buttonPress = i;
                                                 buttonPressWaiting = true;
-                                                buttonTimeout.start(ButtonDelay);
+                                             //   buttonTimeout.start(ButtonDelay);
                                         }
                                 }
                         }

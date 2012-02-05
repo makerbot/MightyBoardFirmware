@@ -87,9 +87,10 @@ void runHostSlice() {
 
         // Then, reset local board
 		reset(hard_reset);
-		hard_reset = false;
 		packet_in_timeout.abort();
 
+
+        hard_reset = false;
 		// Clear the machine and build names
 		machineName[0] = 0;
 		buildName[0] = 0;
