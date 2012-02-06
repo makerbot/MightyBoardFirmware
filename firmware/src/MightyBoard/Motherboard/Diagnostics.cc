@@ -222,8 +222,8 @@ void runHeaterTestsSlice(void){
             Motherboard::getBoard().interfaceBlink(0,0);            
                 
             // set relative point, extruder steppers to run for 5 minutes
-            uint32_t interval = 300000000;
-            uint32_t steps = interval / 6250;
+            int32_t interval = 300000000;
+            int32_t steps = -interval / 6250;
             Point target = Point(0,0,0, steps, steps);
             steppers::setTargetNew(target, interval, 0x1f);
             heatTimer.clear();
@@ -241,8 +241,8 @@ void runHeaterTestsSlice(void){
             steppers::abort();
          
             // set relative point, extruder steppers to reverse for 2 minutes
-            uint32_t interval = 120000000;
-            uint32_t steps = -interval / 6250;
+            int32_t interval = 120000000;
+            int32_t steps = interval / 6250;
             Point target = Point(0,0,0, steps, steps);
             steppers::setTargetNew(target, interval, 0x1f);
             heatTimer.clear();
