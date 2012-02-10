@@ -129,6 +129,8 @@ public:
 	/// never called, always return true.
 	bool buttonPushed();
 	
+	void clearButtonWait();
+	
 	/// push Error Message Screen
 	void errorMessage(char buf[]);
 };

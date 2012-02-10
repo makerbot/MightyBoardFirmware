@@ -193,7 +193,7 @@ void Motherboard::reset(bool hard_reset) {
 	// Check if the interface board is attached
 	hasInterfaceBoard = interface::isConnected();
 
-	if (hasInterfaceBoard){// && (heatFailMode != HEATER_FAIL_HARDWARE_CUTOFF)) {
+	if (hasInterfaceBoard){
 		// Make sure our interface board is initialized
         interfaceBoard.init();
         
@@ -230,12 +230,10 @@ void Motherboard::reset(bool hard_reset) {
 		Piezo::startUpTone();
 		RGB_LED::setDefaultColor(); 
 #endif
-
+	}
 		heatShutdown = false;
 		heatFailMode = HEATER_FAIL_NONE;
-		cutoff.init();
-
-    } 		
+		cutoff.init(); 		
 	
 	HBP_HEAT.setDirection(true);
 	platform_thermistor.init();
@@ -277,6 +275,7 @@ void Motherboard::doInterrupt() {
 
 void Motherboard::heaterFail(HeaterFailMode mode){
 
+#ifndef HEAT_DIAGNOSTICS
 	heatFailMode = mode;
 	if(heatFailMode == HEATER_FAIL_NOT_PLUGGED_IN)
 	{
@@ -287,6 +286,8 @@ void Motherboard::heaterFail(HeaterFailMode mode){
 				return;
 	}
 	heatShutdown = true;
+#endif
+
 }
 
 void Motherboard::startButtonWait(){
@@ -338,7 +339,7 @@ void Motherboard::runMotherboardSlice() {
 		Extruder_Two.getExtruderHeater().set_target_temperature(0);
 		platform_heater.set_target_temperature(0);
 	}
-#ifndef HEAT_DIAGNOSTICS	
+	
 	if(heatShutdown && !triggered)
 	{
 		triggered = true;
@@ -364,7 +365,6 @@ void Motherboard::runMotherboardSlice() {
 		command::heatShutdown();
 		steppers::abort();
 	}
-#endif
 		       
 	// Temperature monitoring thread
 	Extruder_One.runExtruderSlice();

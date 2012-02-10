@@ -1645,7 +1645,7 @@ void MainMenu::handleSelect(uint8_t index) {
 
 
 DiagnosticsMenu::DiagnosticsMenu() {
-	itemCount = 6;
+	itemCount = 7;
 	reset();
 }
 void DiagnosticsMenu::resetState() {
@@ -1682,6 +1682,9 @@ void DiagnosticsMenu::drawItem(uint8_t index, LiquidCrystalSerial& lcd) {
     case 5:
         lcd.writeFromPgmspace(reverse);
         break;
+    case 6:
+		lcd.writeFromPgmspace(cutoffs);
+		break;
 	}
 }
 
@@ -1705,6 +1708,9 @@ void DiagnosticsMenu::handleSelect(uint8_t index) {
         case 5:
             testing::setHeatTestMode(testing::EXTRUDE_REVERSE, false);
             break;
+        case 6:
+			testing::setHeatTestMode(testing::CUTOFF_TEST_START, false);
+			break;
 		}
 }
 

@@ -28,6 +28,8 @@
 #define HEAT_TEMP 225
 #define FAN_TIMEOUT 240000000
 #define HEAT_TIMEOUT 240000000
+#define CUTOFF_TEMP 370
+#define CUTOFF_TIMEOUT 600000000 //10 minutes
 
 
 namespace testing{
@@ -40,6 +42,7 @@ namespace testing{
     bool fanFail = false;
     bool singleTest = false;
     bool extrudeReverseSingle = false;
+    bool secondTimer = false;
     
     heatMode_t testMode;
     
@@ -50,6 +53,8 @@ void reset(void){
     extrudeReverseSingle = false;
     fanFail = false;
     exOneTemp = exTwoTemp = 0;
+ //   msgScreen.clearMessage();
+ //   Motherboard::getBoard().getInterfaceBoard().clearButtonWait();
 }
 
 
@@ -296,7 +301,39 @@ void runHeaterTestsSlice(void){
             interface::popScreen();
             testMode = HEAT_TEST_OFF;
         }
-    }        
+    } 
+    if(testMode == CUTOFF_TEST_START){
+		msgScreen.clearMessage();
+		 msgScreen.addMessage("Heating up Extrudersto test safety      cutoff ", true);  
+                    
+		Motherboard::getBoard().getExtruderBoard(0).getExtruderHeater().set_target_temperature(CUTOFF_TEMP);
+		Motherboard::getBoard().getExtruderBoard(1).getExtruderHeater().set_target_temperature(CUTOFF_TEMP);
+		
+		heatTimer.clear();
+		heatTimer.start(CUTOFF_TIMEOUT);
+		
+		secondTimer = false;
+		testMode = CUTOFF_TEST_WAIT;
+	}       
+	if(testMode == CUTOFF_TEST_WAIT){
+		
+		if(!secondTimer && (Motherboard::getBoard().getExtruderBoard(0).getExtruderHeater().has_reached_target_temperature() ||
+			Motherboard::getBoard().getExtruderBoard(1).getExtruderHeater().has_reached_target_temperature())){
+			
+			heatTimer.clear();
+			heatTimer.start(60000000); //1 minute
+			secondTimer = true;
+			}
+		else if(heatTimer.hasElapsed()){
+			
+			if(secondTimer)
+				messageWait("Cutoff Failed to     Trigger!  ");
+			else
+				messageWait("Heaters not heating to 370 degrees.     FAIL!");
+			
+			testMode = HEAT_TEST_FAIL;
+		}
+	}
 }
 
 void motorTest(void){

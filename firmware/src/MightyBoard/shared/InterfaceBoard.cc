@@ -187,6 +187,9 @@ void InterfaceBoard::setLED(uint8_t id, bool on){
 void InterfaceBoard::waitForButton(uint8_t button_mask) {
   waitingMask = button_mask;
 }
+void InterfaceBoard::clearButtonWait(){
+	waitingMask = 0;
+}
 
 /// Check if the expected button push has been made. If waitForButton was
 /// never called, always return true.

@@ -36,7 +36,9 @@ namespace testing{
         HEAT_TEST_DONE,
         HEAT_TEST_QUIT,
         HEAT_TEST_FAIL,
-        HEAT_TEST_OFF
+        HEAT_TEST_OFF,
+        CUTOFF_TEST_START,
+        CUTOFF_TEST_WAIT
     };
 
     void motorSpin(void);
