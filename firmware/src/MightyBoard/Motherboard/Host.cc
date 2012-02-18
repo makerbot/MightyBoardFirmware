@@ -20,6 +20,7 @@
 #include <string.h>
 #include "Commands.hh"
 #include "Steppers.hh"
+#include "Planner.hh"
 #include "DebugPacketProcessor.hh"
 #include "Timeout.hh"
 #include "Version.hh"
@@ -391,7 +392,7 @@ enum { // bit assignments
 inline void handleExtendedStop(const InPacket& from_host, OutPacket& to_host) {
 	uint8_t flags = from_host.read8(1);
 	if (flags & _BV(ES_STEPPERS)) {
-		steppers::abort();
+		planner::abort();
 	}
 	if (flags & _BV(ES_COMMANDS)) {
 		command::reset();
@@ -571,9 +572,11 @@ void startOnboardBuild(uint8_t  build){
 	if(utility::startPlayback(build))
 		currentState = HOST_STATE_BUILDING_ONBOARD;
 	command::reset();
-	steppers::abort();
+	planner::abort();
+	
+	// Whuh?
 	steppers::init(Motherboard::getBoard());
-
+	planner::init();
 }
 
 // Stop the current build, if any

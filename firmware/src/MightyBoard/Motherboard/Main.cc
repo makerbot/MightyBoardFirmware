@@ -25,6 +25,7 @@
 #include <avr/wdt.h>
 #include "Timeout.hh"
 #include "Steppers.hh"
+#include "Planner.hh"
 #include "Motherboard.hh"
 #include "SDCard.hh"
 #include "Eeprom.hh"
@@ -58,13 +59,13 @@ void reset(bool hard_reset) {
 		
 		// initialize major classes
 		Motherboard& board = Motherboard::getBoard();	
-        sdcard::reset();
+		sdcard::reset();
 		utility::reset();
-		steppers::abort();
 		command::reset();
 		eeprom::init();
 		initThermistorTables();
-		board.reset(hard_reset);
+		board.reset(hard_reset); // sets up the steps/mm and such for the planner...
+		planner::abort(); // calls steppers::abort()
 		
 	// brown out occurs on normal power shutdown, so this is not a good message		
 	//	if(brown_out)
@@ -79,6 +80,7 @@ int main() {
 
 	Motherboard& board = Motherboard::getBoard();
 	steppers::init(Motherboard::getBoard());
+	planner::init();
 	reset(true);
 	sei();
 	while (1) {

@@ -80,54 +80,70 @@ const static uint16_t COOLING_FAN_SETTINGS 	= 	0x001A;
 
 namespace eeprom_offsets {
 /// Firmware Version, low byte: 1 byte
-const static uint16_t VERSION_LOW				= 0x0000;
+const static uint16_t VERSION_LOW               = 0x0000;
 /// Firmware Version, high byte: 1 byte
-const static uint16_t VERSION_HIGH				= 0x0001;
+const static uint16_t VERSION_HIGH              = 0x0001;
 /// Axis inversion flags: 1 byte.
 /// Axis N (where X=0, Y=1, etc.) is inverted if the Nth bit is set.
 /// Bit 7 is used for HoldZ OFF: 1 = off, 0 = on
-const static uint16_t AXIS_INVERSION			= 0x0002;
+const static uint16_t AXIS_INVERSION            = 0x0002;
 /// Endstop inversion flags: 1 byte.
 /// The endstops for axis N (where X=0, Y=1, etc.) are considered
 /// to be logically inverted if the Nth bit is set.
 /// Bit 7 is set to indicate endstops are present; it is zero to indicate
 /// that endstops are not present.
 /// Ordinary endstops (H21LOB et. al.) are inverted.
-const static uint16_t ENDSTOP_INVERSION			= 0x0004;
+const static uint16_t ENDSTOP_INVERSION         = 0x0004;
 /// Digital Potentiometer Settings : 5 Bytes
-const static uint16_t DIGI_POT_SETTINGS			= 0x0006;
+const static uint16_t DIGI_POT_SETTINGS         = 0x0006;
 /// axis home direction (1 byte)
-const static uint16_t AXIS_HOME_DIRECTION 		= 0x000C;
+const static uint16_t AXIS_HOME_DIRECTION = 0x000C;
 /// Default locations for the axis in step counts: 5 x 32 bit = 20 bytes
-const static uint16_t AXIS_HOME_POSITIONS		= 0x000E;
+const static uint16_t AXIS_HOME_POSITIONS       = 0x000E;
 /// Name of this machine: 16 bytes (16 bytes extra buffer) 
-const static uint16_t MACHINE_NAME				= 0x0022;
+const static uint16_t MACHINE_NAME              = 0x0022;
 /// Tool count : 2 bytes
-const static uint16_t TOOL_COUNT 				= 0x0042;
+const static uint16_t TOOL_COUNT                = 0x0042;
 /// Hardware ID. Must exactly match the USB VendorId/ProductId pair: 4 bytes
-const static uint16_t VID_PID_INFO				= 0x0044;
+const static uint16_t VID_PID_INFO              = 0x0044;
 /// 44 bytes padding
 /// Thermistor table 0: 128 bytes
-const static uint16_t THERM_TABLE				= 0x0074;
+const static uint16_t THERM_TABLE               = 0x0074;
 /// Padding: 8 bytes
 // Toolhead 0 data: 28 bytes (see above)
-const static uint16_t T0_DATA_BASE				= 0x0100;
+const static uint16_t T0_DATA_BASE              = 0x0100;
 // Toolhead 0 data: 28 bytes (see above)
-const static uint16_t T1_DATA_BASE				= 0x011C;
+const static uint16_t T1_DATA_BASE              = 0x011C;
 /// axis lengths (mm) (6 bytes)
-const static uint16_t AXIS_LENGTHS				= 0x0138;
+const static uint16_t AXIS_LENGTHS              = 0x0138;
 /// 2 bytes padding
 /// Light Effect table. 3 Bytes x 3 entries
-const static uint16_t LED_STRIP_SETTINGS		= 0x0140;
+const static uint16_t LED_STRIP_SETTINGS        = 0x0140;
 /// Buzz Effect table. 4 Bytes x 3 entries
-const static uint16_t BUZZ_SETTINGS		= 0x014A;
+const static uint16_t BUZZ_SETTINGS             = 0x014A;
 ///  1 byte. 0x01 for 'never booted before' 0x00 for 'have been booted before)
-const static uint16_t FIRST_BOOT_FLAG  = 0x0156;
+const static uint16_t FIRST_BOOT_FLAG           = 0x0156;
 /// 7 bytes, short int x 3 entries, 1 byte on/off
-const static uint16_t PREHEAT_SETTINGS = 0x0158;
+const static uint16_t PREHEAT_SETTINGS          = 0x0158;
+
+/// Default steps/mm for each axis: 5 x 32 bit = 20 bytes
+const static uint16_t STEPS_PER_MM              = 0x0160; // .. 0x008B
+
+/// Master acceleration rate for each axis: 32 bits = 4 bytes
+const static uint16_t MASTER_ACCELERATION_RATE  = 0x0174; // .. 0x008F
+
+/// Default acceleration rates for each axis: 5 x 32 bit = 20 bytes
+const static uint16_t AXIS_ACCELERATION_RATES   = 0x0178; // .. 0x00A3
+
+/// Default acceleration rates for each axis: 4 x 32 bit = 16 bytes
+/// X+Y have an integrated value, and Z, A, and B have their own values.
+const static uint16_t AXIS_JUNCTION_JERK        = 0x018C; // .. 0x00B3
+
+/// Default minimum planner speed: 32 bits = 1 byte
+const static uint16_t MINIMUM_PLANNER_SPEED     = 0x019C; // .. 0x00B5
 
 /// start of free space
-const static uint16_t FREE_EEPROM_STARTS = 0x0160;
+const static uint16_t FREE_EEPROM_STARTS = 0x019D;
 
 
 }

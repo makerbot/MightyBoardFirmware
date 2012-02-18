@@ -26,7 +26,10 @@
 // possible time between steps; in practical terms, your time between steps should
 // be at least eight times this large.  Reducing the interval can cause resource
 // starvation; leave this at 64uS or greater unless you know what you're doing.
-#define INTERVAL_IN_MICROSECONDS 128
+#define INTERVAL_IN_MICROSECONDS 256
+
+#define TICKS_PER_ACCELERATION   5  // lower is better
+#define ACCELERATION_TICKS_PER_SECOND (1000000/(INTERVAL_IN_MICROSECONDS*TICKS_PER_ACCELERATION))
 
 // --- Power Supply Unit configuration ---
 // Define as 1 if a PSU is present; 0 if not.
@@ -237,6 +240,31 @@
 // bot shuts down printers after a defined timeout 
 #define USER_INPUT_TIMEOUT		1200000000 // 20 minutes
 
+
+// The number of movements we can plan ahead at a time
+// THIS MUST BE A POWER OF 2! 4, 8, 16, 32, you get the idea...
+#define BLOCK_BUFFER_SIZE 32
+
+#define DEFAULT_ACCELERATION 2000.0 // mm/s/s
+#define DEFAULT_X_ACCELERATION 2000.0 // mm/s/s
+#define DEFAULT_Y_ACCELERATION 2000.0 // mm/s/s
+#define DEFAULT_Z_ACCELERATION 10.0 // mm/s/s
+#define DEFAULT_A_ACCELERATION 200.0 // mm/s/s
+#define DEFAULT_B_ACCELERATION 200.0 // mm/s/s
+
+#define DEFAULT_MAX_XY_JERK 8.0 // ms/s <-- unused if CENTREPEDAL is defined below
+#define DEFAULT_MAX_Z_JERK 8.0 // mm/s
+#define DEFAULT_MAX_A_JERK 10.0 // mm/s
+#define DEFAULT_MAX_B_JERK 10.0 // mm/s
+
+// Minimum planner junction speed. Sets the default minimum speed the planner plans for at the end
+// of the buffer and all stops. This should not be much greater than zero and should only be changed
+// if unwanted behavior is observed on a user's machine when running at very slow speeds.
+#define DEFAULT_MINIMUM_PLANNER_SPEED 4.0 // (mm/sec)
+
+//  define CENTREPEDAL to use centrepedal calucations -- so far I can't get there to work -Rob
+#undef CENTREPEDAL
+#define DEFAULT_JUNCTION_DEVIATION 0.05 // mm
 
 
 #endif // BOARDS_MBV40_CONFIGURATION_HH_
