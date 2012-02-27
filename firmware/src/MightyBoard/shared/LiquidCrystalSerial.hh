@@ -49,9 +49,9 @@
 
 class LiquidCrystalSerial {
 public:
-  LiquidCrystalSerial(Pin strobe, Pin data, Pin CLK);
+  LiquidCrystalSerial();
 
-  void init(Pin strobe, Pin data, Pin CLK);
+  void init();
     
   void begin(uint8_t cols, uint8_t rows, uint8_t charsize = LCD_5x8DOTS);
 
@@ -95,9 +95,9 @@ private:
   void load(uint8_t);
   void pulseEnable(uint8_t value);
 
-  Pin _strobe_pin; // LOW: command.  HIGH: character.
-  Pin _data_pin; // LOW: write to LCD.  HIGH: read from LCD.
-  Pin _clk_pin; // activated by a HIGH pulse.
+  static const Pin _strobe_pin; // LOW: command.  HIGH: character.
+  static const Pin _data_pin; // LOW: write to LCD.  HIGH: read from LCD.
+  static const Pin _clk_pin; // activated by a HIGH pulse.
 
   uint8_t _displayfunction;
   uint8_t _displaycontrol;

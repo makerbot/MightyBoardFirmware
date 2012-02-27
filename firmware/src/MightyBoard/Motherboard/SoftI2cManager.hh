@@ -60,8 +60,8 @@ public:
   bool write(uint8_t b, Pin sdaPin);
     
 private:
-    Pin sdaPins[MAX_STEPPERS];
-    Pin sclPin;
+    static const Pin sdaPins[MAX_STEPPERS];
+    static const Pin sclPin;
     uint8_t numPins;
 };
 #endif //SOFT_I2C_MANAGER

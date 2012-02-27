@@ -21,7 +21,7 @@ public:
                                         ///< zero, a step is taken.
         volatile int32_t delta;         ///< Amount to increment counter per tick
         volatile bool direction;        ///< True for positive, false for negative
-        volatile int8_t  step_multiplier;    ///< Used to simulate dynamic microstep switching, must be > 0 and 2^N
+        // volatile int8_t  step_multiplier;    ///< Used to simulate dynamic microstep switching, must be > 0 and 2^N
         volatile int8_t  step_change;        ///< Uses internally. step_change = direction ? step_multiplier : -step_multiplier;
 #if defined(SINGLE_SWITCH_ENDSTOPS) && (SINGLE_SWITCH_ENDSTOPS == 1)
         volatile bool prev_direction;   ///< Record the previous direction for endstop detection
@@ -62,7 +62,7 @@ public:
 
         /// Set the step multiplier -- must be 2^N
         /// \param[in] new_multiplier
-        void setStepMultiplier(const int8_t new_multiplier);
+        // void setStepMultiplier(const int8_t new_multiplier);
 
         /// Start a homing procedure
         /// \param[in] direction_in If true, home in the positive direction.
@@ -84,12 +84,12 @@ public:
 
         /// Handle interrupt for the given axis.
         /// \param[in] intervals Intervals that have passed since the previous interrupt
-        bool doInterrupt(const int32_t intervals);
+	bool doInterrupt(const int32_t &intervals, const int32_t &step_multiplier);
 
         /// Run the next step of the homing procedure.
         /// \param[in] intervals Intervals that have passed since the previous interrupt
         /// \return True if the axis is still homing.
-        bool doHoming(const int32_t intervals);
+        bool doHoming(const int32_t &intervals);
 };
 
 #endif // STEPPERAXIS_HH

@@ -25,17 +25,22 @@
 // initiate static i2cManager instance
 SoftI2cManager SoftI2cManager::i2cManager;
 
+
+// compile-time init the Pins
+const Pin SoftI2cManager::sdaPins[] = {
+	X_POT_PIN,
+	Y_POT_PIN,
+	Z_POT_PIN,
+	A_POT_PIN,
+	B_POT_PIN,
+};
+
+const Pin SoftI2cManager::sclPin = POTS_SCL;
+
 // constructor
 SoftI2cManager::SoftI2cManager():
-    numPins(STEPPER_COUNT),
-    sclPin(POTS_SCL)
+    numPins(STEPPER_COUNT)
 {
-    sdaPins[0] = X_POT_PIN;
-    sdaPins[1] = Y_POT_PIN;
-    sdaPins[2] = Z_POT_PIN;
-    sdaPins[3] = A_POT_PIN;
-    sdaPins[4] = B_POT_PIN;
-    
 }
 
 

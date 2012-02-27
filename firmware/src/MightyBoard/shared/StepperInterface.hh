@@ -28,7 +28,7 @@
 class StepperInterface {
 private:
     /// Default constructor
-    StepperInterface() {}
+    // StepperInterface() {}
     StepperInterface(const Pin& dir,
                     const Pin& step,
                     const Pin& enable,
@@ -72,7 +72,9 @@ public:
 	/// Set the value of the step line
         /// \param[in] value True to enable, false to disable. This should be toggled
         ///                  back and fourth to effect stepping.
-	void step(bool value);
+	void step(bool value) {
+	    step_pin.setValue(value);
+	};
 
         /// Enable or disable the stepper motor on this axis
         /// \param[in] True to enable the motor
@@ -80,11 +82,21 @@ public:
 
         /// Check if the maximum endstop has been triggered for this axis.
         /// \return True if the axis has triggered its maximum endstop
-	bool isAtMaximum();
+	bool isAtMaximum() {
+	    if (max_pin.isNull()) return false;
+	    bool v = max_pin.getValue();
+	    if (invert_endstops) v = !v;
+	    return v;
+	};
 
         /// Check if the minimum endstop has been triggered for this axis.
         /// \return True if the axis has triggered its minimum endstop
-	bool isAtMinimum();
+	bool isAtMinimum() {
+	    if (min_pin.isNull()) return false;
+	    bool v = min_pin.getValue();
+	    if (invert_endstops) v = !v;
+	    return v;
+	};
 	
         /// set default values for i2c pots
 	void resetPots();

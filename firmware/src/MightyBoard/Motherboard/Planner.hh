@@ -39,6 +39,7 @@ namespace planner {
 			Busy          = 1<<0,
 			Recalculate   = 1<<1,
 			NominalLength = 1<<2,
+			PlannedToStop = 1<<3,
 		} PlannerFlags;
 
 		// Fields used by the bresenham algorithm for tracing the line
@@ -107,9 +108,9 @@ namespace planner {
 	/// \param[in] position New system position
 	void definePosition(const Point& position);
 
-    /// Abort the current motion (and all planeed movments) and set the stepper subsystem to
-    /// the not-running state.
-    void abort();
+	/// Abort the current motion (and all planeed movments) and set the stepper subsystem to
+	/// the not-running state.
+	void abort();
 
 	/// Get the current system position
 	/// \return The current machine position.
@@ -135,6 +136,9 @@ namespace planner {
 	
 	// pushes the tail forward, making it available
 	void doneWithNextBlock();
+	
+	// mark that the last move command from the buffer
+	void markLastMoveCommand();
 }
 
 #endif /* end of include guard: PLANNER_HH */

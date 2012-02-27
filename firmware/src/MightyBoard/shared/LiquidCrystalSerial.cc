@@ -24,17 +24,18 @@
 // can't assume that its in that state when a sketch starts (and the
 // LiquidCrystal constructor is called).
 
-LiquidCrystalSerial::LiquidCrystalSerial(Pin strobe, Pin data, Pin CLK) 
+const Pin LiquidCrystalSerial::_strobe_pin = LCD_STROBE; // LOW: command.  HIGH: character.
+const Pin LiquidCrystalSerial::_data_pin   = LCD_DATA; // LOW: write to LCD.  HIGH: read from LCD.
+const Pin LiquidCrystalSerial::_clk_pin    = LCD_CLK; // activated by a HIGH pulse.
+
+
+LiquidCrystalSerial::LiquidCrystalSerial() 
 {
-  init(strobe, data, CLK);
+  init();
 }
 
-void LiquidCrystalSerial::init(Pin strobe, Pin data, Pin clk)
-{
-  _strobe_pin = strobe;
-  _data_pin = data;
-  _clk_pin = clk;
-  
+void LiquidCrystalSerial::init()
+{  
   _strobe_pin.setDirection(true);
   _data_pin.setDirection(true);
   _clk_pin.setDirection(true);

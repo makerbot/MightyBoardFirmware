@@ -20,6 +20,7 @@
 #include "Planner.hh"
 #include "StepperAxis.hh"
 #include <stdint.h>
+#include <avr/interrupt.h> // sei()
 
 namespace steppers {
 
@@ -41,7 +42,7 @@ volatile int8_t  feedrate_dirty; // indicates if the feedrate_inverted needs rec
 volatile int32_t feedrate_inverted;
 volatile int32_t feedrate_changerate;
 volatile int32_t acceleration_tick_counter;
-volatile int32_t feedrate_multiplier; // should always be 2^N and > 0
+volatile int8_t feedrate_multiplier; // should always be > 0
 volatile uint8_t current_feedrate_index;
 
 volatile int32_t timer_counter;
@@ -54,7 +55,7 @@ bool holdZ = false;
 planner::Block *current_block;
 
 bool isRunning() {
-	return is_running || is_homing;
+	return is_running || is_homing || !planner::isBufferEmpty();
 }
 
 //public:
@@ -242,6 +243,8 @@ bool getNextMove() {
 	return true;
 }
 
+// Possibly to be removed, or repared
+#if 0
 void currentBlockChanged() {
 	// If we are here, then we are moving AND the interrupts are frozen, so get out *fast*
 
@@ -292,6 +295,7 @@ void currentBlockChanged() {
 	
 	// the steppers themselves haven't changed...
 }
+#endif
 
 /// Start homing
 void startHoming(const bool maximums, const uint8_t axes_enabled, const uint32_t us_per_step) {
@@ -345,14 +349,13 @@ bool doInterrupt() {
 			} else {
 				// if we are supposed to step too fast, we simulate double-size microsteps
 				feedrate_multiplier = 1;
-				while (timer_counter <= -feedrate_inverted) {
+				while (timer_counter <= -feedrate_inverted && intervals_remaining > feedrate_multiplier) {
 					feedrate_multiplier++;
 					timer_counter += feedrate_inverted;
 				}
 	
 				for (int i = 0; i < STEPPER_COUNT; i++) {
-					axes[i].setStepMultiplier(feedrate_multiplier);
-					bool not_at_end = axes[i].doInterrupt(intervals);
+					bool not_at_end = axes[i].doInterrupt(intervals, feedrate_multiplier);
 					// do something with not_at_end ...?
 				}
 				

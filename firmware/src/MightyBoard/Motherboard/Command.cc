@@ -288,7 +288,11 @@ void runCommandSlice() {
 				uint8_t command = command_buffer[0];
 				if (command == HOST_CMD_QUEUE_POINT_EXT || command == HOST_CMD_QUEUE_POINT_NEW) {
 					handleMovementCommand(command);
+				} else {
+					planner::markLastMoveCommand();
 				}
+			} else {
+				planner::markLastMoveCommand();
 			}
 		}
 	}

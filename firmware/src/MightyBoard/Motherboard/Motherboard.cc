@@ -39,13 +39,60 @@
 /// Instantiate static motherboard instance
 Motherboard Motherboard::motherboard;
 
+/// Set up the stepper pins on board creation
+StepperInterface Motherboard::stepper[STEPPER_COUNT] = {
+#if STEPPER_COUNT > 0
+	StepperInterface(X_DIR_PIN,
+	                 X_STEP_PIN,
+	                 X_ENABLE_PIN,
+	                 X_MAX_PIN,
+	                 X_MIN_PIN,
+	                 X_POT_PIN,
+	                 eeprom_offsets::AXIS_INVERSION),
+#endif
+#if STEPPER_COUNT > 1
+	StepperInterface(Y_DIR_PIN,
+	                 Y_STEP_PIN,
+	                 Y_ENABLE_PIN,
+	                 Y_MAX_PIN,
+	                 Y_MIN_PIN,
+	                 Y_POT_PIN,
+	                 eeprom_offsets::AXIS_INVERSION),
+#endif
+#if STEPPER_COUNT > 2
+	StepperInterface(Z_DIR_PIN,
+	                 Z_STEP_PIN,
+	                 Z_ENABLE_PIN,
+	                 Z_MAX_PIN,
+	                 Z_MIN_PIN,
+	                 Z_POT_PIN,
+	                 eeprom_offsets::AXIS_INVERSION),
+#endif
+#if STEPPER_COUNT > 3
+	StepperInterface(A_DIR_PIN,
+	                 A_STEP_PIN,
+	                 A_ENABLE_PIN,
+	                 Pin(),
+	                 Pin(),
+	                 A_POT_PIN,
+	                 eeprom_offsets::AXIS_INVERSION),
+#endif
+#if STEPPER_COUNT > 4
+	StepperInterface(B_DIR_PIN,
+	                 B_STEP_PIN,
+	                 B_ENABLE_PIN,
+	                 Pin(),
+	                 Pin(),
+	                 B_POT_PIN,
+	                 eeprom_offsets::AXIS_INVERSION),
+#endif
+};
+
 /// Create motherboard object
 Motherboard::Motherboard() :
-        lcd(LCD_STROBE, LCD_DATA, LCD_CLK),
+        lcd(),
         interfaceBoard(buttonArray,
             lcd,
-            INTERFACE_GLED,
-            INTERFACE_RLED,
             &mainMenu,
             &monitorMode,
             &messageScreen),
@@ -56,52 +103,6 @@ Motherboard::Motherboard() :
 			Extruder_One(0, EX1_PWR, EX1_FAN, THERMOCOUPLE_CS1,eeprom_offsets::T0_DATA_BASE),
 			Extruder_Two(1, EX2_PWR, EX2_FAN, THERMOCOUPLE_CS2,eeprom_offsets::T1_DATA_BASE)
 {
-	/// Set up the stepper pins on board creation
-#if STEPPER_COUNT > 0
-        stepper[0] = StepperInterface(X_DIR_PIN,
-                                      X_STEP_PIN,
-                                      X_ENABLE_PIN,
-                                      X_MAX_PIN,
-                                      X_MIN_PIN,
-                                      X_POT_PIN,
-                                      eeprom_offsets::AXIS_INVERSION);
-#endif
-#if STEPPER_COUNT > 1
-        stepper[1] = StepperInterface(Y_DIR_PIN,
-                                      Y_STEP_PIN,
-                                      Y_ENABLE_PIN,
-                                      Y_MAX_PIN,
-                                      Y_MIN_PIN,
-                                      Y_POT_PIN,
-                                      eeprom_offsets::AXIS_INVERSION);
-#endif
-#if STEPPER_COUNT > 2
-        stepper[2] = StepperInterface(Z_DIR_PIN,
-                                      Z_STEP_PIN,
-                                      Z_ENABLE_PIN,
-                                      Z_MAX_PIN,
-                                      Z_MIN_PIN,
-                                      Z_POT_PIN,
-                                      eeprom_offsets::AXIS_INVERSION);
-#endif
-#if STEPPER_COUNT > 3
-        stepper[3] = StepperInterface(A_DIR_PIN,
-                                      A_STEP_PIN,
-                                      A_ENABLE_PIN,
-                                      Pin(),
-                                      Pin(),
-                                      A_POT_PIN,
-                                      eeprom_offsets::AXIS_INVERSION);
-#endif
-#if STEPPER_COUNT > 4
-        stepper[4] = StepperInterface(B_DIR_PIN,
-                                      B_STEP_PIN,
-                                      B_ENABLE_PIN,
-                                      Pin(),
-                                      Pin(),
-                                      B_POT_PIN,
-                                      eeprom_offsets::AXIS_INVERSION);
-#endif
 }
 
 /// Reset the motherboard to its initial state.
