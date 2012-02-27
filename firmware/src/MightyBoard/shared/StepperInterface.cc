@@ -27,7 +27,7 @@ StepperInterface::StepperInterface(const Pin& dir,
                                    const Pin& max,
                                    const Pin& min,
                                    const Pin& pot,
-                                   const uint16_t eeprom_base_in) :
+                                   const uint16_t &eeprom_base_in) :
     dir_pin(dir),
     step_pin(step),
     enable_pin(enable),
@@ -39,9 +39,8 @@ StepperInterface::StepperInterface(const Pin& dir,
     eeprom_base(eeprom_base_in) {
 }
 
-void StepperInterface::setDirection(bool forward) {
-	if (invert_axis) forward = !forward;
-        dir_pin.setValue(forward);
+void StepperInterface::setDirection(const bool forward) {
+        dir_pin.setValue(invert_axis ? !forward : forward);
 }
 
 // Moved to inline (in .hh)
@@ -49,7 +48,7 @@ void StepperInterface::setDirection(bool forward) {
 // 	step_pin.setValue(value);
 // }
 
-void StepperInterface::setEnabled(bool enabled) {
+void StepperInterface::setEnabled(const bool enabled) {
 	// The A3982 stepper driver chip has an inverted enable.
 	enable_pin.setValue(!enabled);
 }
@@ -70,7 +69,7 @@ void StepperInterface::setEnabled(bool enabled) {
 // 	return v;
 // }
 
-void StepperInterface::init(uint8_t idx) {
+void StepperInterface::init(const uint8_t idx) {
 	dir_pin.setDirection(true);
 	step_pin.setDirection(true);
 	enable_pin.setValue(true);
@@ -105,7 +104,7 @@ void StepperInterface::init(uint8_t idx) {
 	}
 }
 
-bool StepperInterface::isSoftwareAxisEnd(uint32_t pos)
+bool StepperInterface::isSoftwareAxisEnd(const uint32_t pos)
 {
        /// for this check we are looking at the axis end without endstops
        bool axis_end = false;
@@ -133,12 +132,10 @@ void StepperInterface::resetPots()
     i2cPots.stop();
 }
 
-void StepperInterface::setPotValue(uint8_t val)
+void StepperInterface::setPotValue(const uint8_t val)
 {
-	if(val > DIGI_POT_MAX)
-		val = DIGI_POT_MAX;
     SoftI2cManager i2cPots = SoftI2cManager::getI2cManager();
     i2cPots.start(0b01011110 | I2C_WRITE, pot_pin);
-    i2cPots.write(val, pot_pin);
+    i2cPots.write(val > DIGI_POT_MAX ? DIGI_POT_MAX : val, pot_pin);
     i2cPots.stop(); 
 }
