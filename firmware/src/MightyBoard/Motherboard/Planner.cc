@@ -308,13 +308,13 @@ namespace planner {
 	// Calculates the maximum allowable speed at this point when you must be able to reach target_velocity using the 
 	// acceleration within the allotted distance.
 	// Needs to be conbverted to fixed-point.
-	FORCE_INLINE float max_allowable_speed(float acceleration, float target_velocity, float distance) {
+	FORCE_INLINE float max_allowable_speed(const float &acceleration, const float &target_velocity, const float &distance) {
 		return sqrt((target_velocity*target_velocity)-(acceleration*2.0)*distance);
 	}
 
 	// Calculates the distance (not time) it takes to accelerate from initial_rate to target_rate using the 
 	// given acceleration:
-	FORCE_INLINE int32_t estimate_acceleration_distance(int32_t initial_rate_squared, int32_t target_rate_squared, int32_t acceleration_doubled)
+	FORCE_INLINE int32_t estimate_acceleration_distance(const int32_t &initial_rate_squared, const int32_t &target_rate_squared, const int32_t &acceleration_doubled)
 	{
 		if (acceleration_doubled!=0) {
 			return ((target_rate_squared-initial_rate_squared)/acceleration_doubled);
@@ -329,7 +329,7 @@ namespace planner {
 	// a total travel of distance. This can be used to compute the intersection point between acceleration and
 	// deceleration in the cases where the trapezoid has no plateau (i.e. never reaches maximum speed)
 
-	FORCE_INLINE int32_t intersection_distance(int32_t initial_rate_squared, int32_t final_rate_squared, int32_t acceleration_mangled, int32_t acceleration_quadrupled, int32_t distance) 
+	FORCE_INLINE int32_t intersection_distance(const int32_t &initial_rate_squared, const int32_t &final_rate_squared, const int32_t &acceleration_mangled, const int32_t &acceleration_quadrupled, const int32_t &distance) 
 	{
 		if (acceleration_quadrupled!=0) {
 			return ((acceleration_mangled*distance-initial_rate_squared+final_rate_squared)/acceleration_quadrupled);
@@ -358,7 +358,7 @@ namespace planner {
 
 	// Calculates trapezoid parameters so that the entry- and exit-speed is compensated by the provided factors.
 	// calculate_trapezoid_for_block(block, block->entry_speed/block->nominal_speed, exit_factor_speed/block->nominal_speed);
-	void Block::calculate_trapezoid(float exit_factor_speed) {
+	void Block::calculate_trapezoid(const float &exit_factor_speed) {
 		// stepperTimingDebugPin.setValue(true);
 
 		float entry_factor = entry_speed/nominal_speed;

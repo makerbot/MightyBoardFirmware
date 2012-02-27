@@ -74,7 +74,7 @@ namespace planner {
 		Block() : target() {};
 		
 	// functions
-		void calculate_trapezoid(float exit_factor_speed);
+		void calculate_trapezoid(const float &exit_factor_speed);
 	};
 
 	/// Initilaize the planner data structures
