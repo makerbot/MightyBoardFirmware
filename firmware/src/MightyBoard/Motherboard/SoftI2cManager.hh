@@ -25,7 +25,7 @@
 #include "Configuration.hh"
 
 // delay used to tweek signals
-#define I2C_DELAY_USEC 4
+#define I2C_DELAY_USEC 7
 
 // R/W direction bit to OR with address for start or restart
 #define I2C_READ 1
