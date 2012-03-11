@@ -72,8 +72,8 @@ StepperInterface Motherboard::stepper[STEPPER_COUNT] = {
 	StepperInterface(A_DIR_PIN,
 	                 A_STEP_PIN,
 	                 A_ENABLE_PIN,
-	                 Pin(),
-	                 Pin(),
+	                 NullPin,
+	                 NullPin,
 	                 A_POT_PIN,
 	                 eeprom_offsets::AXIS_INVERSION),
 #endif
@@ -81,8 +81,8 @@ StepperInterface Motherboard::stepper[STEPPER_COUNT] = {
 	StepperInterface(B_DIR_PIN,
 	                 B_STEP_PIN,
 	                 B_ENABLE_PIN,
-	                 Pin(),
-	                 Pin(),
+	                 NullPin,
+	                 NullPin,
 	                 B_POT_PIN,
 	                 eeprom_offsets::AXIS_INVERSION),
 #endif
@@ -100,8 +100,8 @@ Motherboard::Motherboard() :
             platform_heater(platform_thermistor,platform_element,SAMPLE_INTERVAL_MICROS_THERMISTOR,
             		eeprom_offsets::T0_DATA_BASE + toolhead_eeprom_offsets::HBP_PID_BASE, false), //TRICKY: HBP is only and anways on T0 for this machine
 			using_platform(true),
-			Extruder_One(0, EX1_PWR, EX1_FAN, THERMOCOUPLE_CS1,eeprom_offsets::T0_DATA_BASE),
-			Extruder_Two(1, EX2_PWR, EX2_FAN, THERMOCOUPLE_CS2,eeprom_offsets::T1_DATA_BASE)
+			Extruder_One(0, EX1_PWR, EX1_FAN, THERMOCOUPLE_CS1, eeprom_offsets::T0_DATA_BASE),
+			Extruder_Two(1, EX2_PWR, EX2_FAN, THERMOCOUPLE_CS2, eeprom_offsets::T1_DATA_BASE)
 {
 }
 

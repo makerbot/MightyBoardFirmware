@@ -13,8 +13,9 @@ private:
 	const uint8_t pin_index;
 	const uint8_t pin_mask;
 	const uint8_t pin_mask_inverted;
-public:
 	Pin() : port_base(NullPort.port_base), is_null(true), pin_index(0), pin_mask(0), pin_mask_inverted((uint8_t)~0) {}
+
+public:
 	
 	Pin(const AvrPort& port_in, uint8_t pin_index_in) : port_base(port_in.port_base), is_null(false), pin_index(pin_index_in), pin_mask((uint8_t)_BV(pin_index_in)), pin_mask_inverted((uint8_t)~_BV(pin_index_in)) {}
 	
@@ -55,6 +56,6 @@ public:
 	//const uint8_t getPinIndex() const { return pin_index; }
 };
 
-static const Pin NullPin;
+static const Pin NullPin(NullPort, 0);
 
 #endif // PIN_HH

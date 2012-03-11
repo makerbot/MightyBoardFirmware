@@ -243,7 +243,7 @@
 
 // The number of movements we can plan ahead at a time
 // THIS MUST BE A POWER OF 2! 4, 8, 16, 32, you get the idea...
-#define BLOCK_BUFFER_SIZE 16
+#define BLOCK_BUFFER_SIZE 8
 
 // Give the processor some time to breathe and plan...
 #define MIN_MS_PER_SEGMENT_SD 12000 // from SD card

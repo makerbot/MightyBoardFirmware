@@ -26,9 +26,9 @@
 /// \ingroup SoftwareLibraries
 class Thermocouple : public TemperatureSensor {
 private:
-        Pin cs_pin;  ///< Chip select pin (output)
-        Pin sck_pin; ///< Clock pin (output)
-        Pin so_pin;  ///< Data pin (input)
+        const Pin cs_pin;  ///< Chip select pin (output)
+        const Pin sck_pin; ///< Clock pin (output)
+        const Pin so_pin;  ///< Data pin (input)
 public:
         /// Create a new thermocouple instance, and attach it to the given pins.
         /// \param [in] cs Chip Select (output).

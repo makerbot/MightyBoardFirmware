@@ -46,23 +46,23 @@ class ExtruderBoard {
 //        static ExtruderBoard extruder_board;
 
 public:
-			/**
-			 *
-			 * @param slave_id_in
-			 * @param HeaterPin_In
-			 * @param FanPin_In
-			 * @param ThermocouplePin_In
-			 * @param eeprom_base Start of the chunk of EEPROM  memorycontaining extruder settings
-			 * @return
-			 */
-			ExtruderBoard(uint8_t slave_id_in, Pin HeaterPin_In, Pin FanPin_In,
-					Pin ThermocouplePin_In, uint16_t eeprom_base);
+	/**
+	 *
+	 * @param slave_id_in
+	 * @param HeaterPin_In
+	 * @param FanPin_In
+	 * @param ThermocouplePin_In
+	 * @param eeprom_base Start of the chunk of EEPROM  memorycontaining extruder settings
+	 * @return
+	 */
+	ExtruderBoard(uint8_t slave_id_in, const Pin &HeaterPin_In, const Pin &FanPin_In,
+			const Pin &ThermocouplePin_In, uint16_t eeprom_base);
 private:
         Thermocouple extruder_thermocouple;
         ExtruderHeatingElement extruder_element;
         Heater extruder_heater;
         
-        Pin Heater_Pin;
+        const Pin Heater_Pin;
 
         uint8_t slave_id;
 
