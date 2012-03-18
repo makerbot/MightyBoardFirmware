@@ -36,9 +36,6 @@
 #include <util/delay.h>mo
 
 
-/// Instantiate static motherboard instance
-Motherboard Motherboard::motherboard;
-
 /// Set up the stepper pins on board creation
 StepperInterface Motherboard::stepper[STEPPER_COUNT] = {
 #if STEPPER_COUNT > 0
@@ -88,6 +85,9 @@ StepperInterface Motherboard::stepper[STEPPER_COUNT] = {
 #endif
 };
 
+/// Instantiate static motherboard instance
+Motherboard Motherboard::motherboard;
+
 /// Create motherboard object
 Motherboard::Motherboard() :
         lcd(),
@@ -110,6 +110,12 @@ Motherboard::Motherboard() :
 /// to any attached toolheads.
 void Motherboard::reset(bool hard_reset) {
 	indicateError(0); // turn on blinker
+
+	// Configure the debug pins.
+	DEBUG_PIN.setDirection(true);
+	DEBUG_PIN1.setDirection(true);
+	DEBUG_PIN2.setDirection(true);
+	DEBUG_PIN3.setDirection(true);	
 
 	// Init steppers
 	uint8_t axis_invert = eeprom::getEeprom8(eeprom_offsets::AXIS_INVERSION, 0);
@@ -174,9 +180,13 @@ void Motherboard::reset(bool hard_reset) {
 	UART::getHostUART().in.reset();
 
 // initialize the extruders
+	DEBUG_PIN1.setValue(true);
 	Extruder_One.reset();
+	DEBUG_PIN3.setValue(true);
 	Extruder_Two.reset();
-		
+	DEBUG_PIN2.setValue(true);
+
+
 	// Reset and configure timer 0, the piezo buzzer timer
 	// Mode: Phase-correct PWM with OCRnA (WGM2:0 = 101)
 	// Prescaler: set on call by piezo function
@@ -185,7 +195,7 @@ void Motherboard::reset(bool hard_reset) {
 	OCR0A = 0;
 	OCR0B = 0;
 	TIMSK0 = 0b00000000; //interrupts default to off   
-	
+
 	// Reset and configure timer 3, the microsecond and stepper
 	// interrupt timer.
 	TCCR3A = 0x00;
@@ -193,12 +203,12 @@ void Motherboard::reset(bool hard_reset) {
 	TCCR3C = 0x00;
 	OCR3A = INTERVAL_IN_MICROSECONDS * 16;
 	TIMSK3 = 0x02; // turn on OCR3A match interrupt
-	
+
 	// Reset and configure timer 2, the debug LED flasher timer.
 	TCCR2A = 0x00;
 	TCCR2B = 0x07; // prescaler at 1/1024
 	TIMSK2 = 0x01; // OVF flag on
-	
+
 	// reset and configure timer 5, the HBP PWM timer
 	// not currently being used
 	TCCR5A = 0b00000000;  
@@ -206,7 +216,7 @@ void Motherboard::reset(bool hard_reset) {
 	OCR5A = 0;
 	OCR5B = 0;
 	TIMSK5 = 0b00000000; // no interrupts needed
-	
+
 	// reset and configure timer 1, the Extruder Two PWM timer
 	// Mode: Phase-correct PWM with OCRnA(WGM3:0 = 1011), cycle freq= 976 Hz
 	// Prescaler: 1/64 (250 KHz)
@@ -215,7 +225,7 @@ void Motherboard::reset(bool hard_reset) {
 	OCR1A = 0;
 	OCR1B = 0;
 	TIMSK1 = 0b00000000; // no interrupts needed
-	
+
 	// reset and configure timer 4, the Extruder One PWM timer
 	// Mode: Phase-correct PWM with OCRnA (WGM3:0 = 1011), cycle freq= 976 Hz
 	// Prescaler: 1/64 (250 KHz)
@@ -224,60 +234,52 @@ void Motherboard::reset(bool hard_reset) {
 	OCR4A = 0;
 	OCR4B = 0;
 	TIMSK4 = 0b00000000; // no interrupts needed
-		
+
 	// Check if the interface board is attached
 	hasInterfaceBoard = interface::isConnected();
 
 	if (hasInterfaceBoard) {
 		// Make sure our interface board is initialized
-        interfaceBoard.init();
+		interfaceBoard.init();
 
-        // start with welcome script if the first boot flag is not set
-        if(eeprom::getEeprom8(eeprom_offsets::FIRST_BOOT_FLAG, 0) == 0)
-            interfaceBoard.pushScreen(&welcomeScreen);
-        else
-            // otherwise start with the splash screen.
-            interfaceBoard.pushScreen(&splashScreen);
-        
-        
-        if(hard_reset)
+	// start with welcome script if the first boot flag is not set
+		if(eeprom::getEeprom8(eeprom_offsets::FIRST_BOOT_FLAG, 0) == 0)
+			interfaceBoard.pushScreen(&welcomeScreen);
+		else
+	// otherwise start with the splash screen.
+			interfaceBoard.pushScreen(&splashScreen);
+
+		if(hard_reset)
 			_delay_us(3000000);
 
+	// Finally, set up the interface
+		interface::init(&interfaceBoard, &lcd);
 
-        // Finally, set up the interface
-        interface::init(&interfaceBoard, &lcd);
+		interface_update_timeout.start(interfaceBoard.getUpdateRate());
+	}
 
-        interface_update_timeout.start(interfaceBoard.getUpdateRate());
-    }
-    
-    // interface LEDs default to full ON
-    interfaceBlink(0,0);
-    
-    // only call the piezo buzzer on full reboot start up
-    // do not clear heater fail messages, though the user should not be able to soft reboot from heater fail
-    if(hard_reset)
+// interface LEDs default to full ON
+	interfaceBlink(0,0);
+
+// only call the piezo buzzer on full reboot start up
+// do not clear heater fail messages, though the user should not be able to soft reboot from heater fail
+	if(hard_reset)
 	{
-		// Configure the debug pins.
-		DEBUG_PIN.setDirection(true);
-		DEBUG_PIN1.setDirection(true);
-		DEBUG_PIN2.setDirection(true);
-		DEBUG_PIN3.setDirection(true);	
-		
 		RGB_LED::init();
-		
-		Piezo::startUpTone();
-		
+
+		// Piezo::startUpTone();
+
 		heatShutdown = false;
 		heatFailMode = HEATER_FAIL_NONE;
 		cutoff.init();
-    } 		
-	
+	} 		
+
 	RGB_LED::setDefaultColor(); 
 	HBP_HEAT.setDirection(true);
 	platform_thermistor.init();
 	platform_heater.reset();
 	buttonWait = false;	
-	
+
 }
 
 /// Get the number of microseconds that have passed since

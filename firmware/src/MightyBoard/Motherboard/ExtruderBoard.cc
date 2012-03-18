@@ -28,9 +28,12 @@
 
 //ExtruderBoard ExtruderBoard::extruder_board;
 
+const Pin ThermocoupleSCK = THERMOCOUPLE_SCK;
+const Pin ThermocoupleSO  = THERMOCOUPLE_SO;
+
 ExtruderBoard::ExtruderBoard(uint8_t slave_id_in, const Pin &HeaterPin_In, const Pin &FanPin_In,
 		const Pin &ThermocouplePin_In,	uint16_t eeprom_base) :
-     		extruder_thermocouple(ThermocouplePin_In,THERMOCOUPLE_SCK,THERMOCOUPLE_SO),
+     		extruder_thermocouple(ThermocouplePin_In,ThermocoupleSCK,ThermocoupleSO),
      		extruder_element(slave_id_in),
      		extruder_heater(extruder_thermocouple,extruder_element,SAMPLE_INTERVAL_MICROS_THERMOCOUPLE,
         		  (eeprom_base+ toolhead_eeprom_offsets::EXTRUDER_PID_BASE), true ),
@@ -43,8 +46,6 @@ ExtruderBoard::ExtruderBoard(uint8_t slave_id_in, const Pin &HeaterPin_In, const
 
 
 void ExtruderBoard::reset() {
-
-
 	// Set the output mode for the mosfets.  
 	Heater_Pin.setValue(false);
 	Heater_Pin.setDirection(true);
@@ -52,7 +53,6 @@ void ExtruderBoard::reset() {
 	extruder_heater.reset();
 	extruder_thermocouple.init();
 	coolingFan.reset();
-
 }
 
 void ExtruderBoard::runExtruderSlice() {

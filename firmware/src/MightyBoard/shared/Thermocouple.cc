@@ -18,6 +18,7 @@
 
 
 #include "Thermocouple.hh"
+#include <util/delay.h>
 
 
 // We'll throw in nops to get the timing right (if necessary)
@@ -52,15 +53,15 @@ void Thermocouple::init() {
 Thermocouple::SensorState Thermocouple::update() {
 	// TODO: Check timing against datasheet.
 	cs_pin.setValue(false);
-	nop();
+	_delay_us(5);
 	sck_pin.setValue(false);
-	nop();
+	_delay_us(5);
 
 	int raw = 0;
 	bool bad_temperature = false; // Indicate a disconnected state
 	for (int i = 0; i < 16; i++) {
 		sck_pin.setValue(true);
-		nop();
+		_delay_us(5);
 		if (i >= 1 && i < 11) { // data bit... skip LSBs
 			raw = raw << 1;
 			if (so_pin.getValue()) { raw = raw | 0x01; }
@@ -71,11 +72,11 @@ Thermocouple::SensorState Thermocouple::update() {
 			}
 		}
 		sck_pin.setValue(false);
-		nop();
+		_delay_us(5);
 	}
 
 	cs_pin.setValue(true);
-	nop();
+	_delay_us(5);
 	sck_pin.setValue(false);
 
 	if (bad_temperature) {

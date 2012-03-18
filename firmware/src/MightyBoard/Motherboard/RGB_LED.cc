@@ -67,9 +67,9 @@ void init(){
  	}
  	
  	uint8_t error = TWI_write_data(LEDAddress, data1, 2);
-     _delay_us(1);
+     _delay_us(5);
     error = TWI_write_data(LEDAddress, data2, 2);
-     _delay_us(1);
+     _delay_us(5);
  	
      LEDSelect = data1[1];
  		
@@ -100,9 +100,9 @@ void init(){
  		return;
  	
      uint8_t error = TWI_write_data(LEDAddress, data1, 2);
-     _delay_us(1);
+     _delay_us(5);
      error = TWI_write_data(LEDAddress, data2, 2);
-     _delay_us(1);
+     _delay_us(5);
      
  	LEDSelect = data1[1];	
  }

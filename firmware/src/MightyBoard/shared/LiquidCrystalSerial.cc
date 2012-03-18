@@ -310,15 +310,15 @@ void LiquidCrystalSerial::load(uint8_t value)
 
 void LiquidCrystalSerial::pulseEnable(uint8_t value) {
 	
-  _delay_us(1);
+  _delay_us(5);
    // set enable to true
    value |= 0b01000;
    writeSerial(value);
-  _delay_us(1);    // enable pulse must be >450ns
+  _delay_us(5);    // enable pulse must be >450ns
    //set enable to false
    value &= 0b11110111;
    writeSerial(value);
-  _delay_us(1);   // commands need > 37us to settle [citation needed]
+  _delay_us(5);   // commands need > 37us to settle [citation needed]
 }
 
 void LiquidCrystalSerial::writeSerial(uint8_t value) {
@@ -332,11 +332,11 @@ void LiquidCrystalSerial::writeSerial(uint8_t value) {
 	  _data_pin.setValue(data);
 	  
 	  _clk_pin.setValue(true);
-	  _delay_us(1); 
+	  _delay_us(5); 
   } 
   
     _strobe_pin.setValue(true);
-    _delay_us(1);
+    _delay_us(5);
     _strobe_pin.setValue(false);
      
 }
