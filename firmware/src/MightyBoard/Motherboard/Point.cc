@@ -87,6 +87,20 @@ Point operator- (const Point &a, const Point &b) {
 	return c;
 }
 
+/// Addition operator, for offsets
+Point operator+ (const Point &a, const Point &b) {
+	Point c = Point(
+		a.coordinates[0] + b.coordinates[0],
+		a.coordinates[1] + b.coordinates[1],
+		a.coordinates[2] + b.coordinates[2],
+#if AXIS_COUNT > 3
+		a.coordinates[3] + b.coordinates[3],
+		a.coordinates[4] + b.coordinates[4]
+#endif
+	);
+	return c;
+}
+
 // Point &Point::operator=(const Point &other) {
 // 	coordinates[0] = other.coordinates[0];
 // 	coordinates[1] = other.coordinates[1];

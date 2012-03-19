@@ -27,7 +27,7 @@
 #define PLANNER_HH
 
 #include "Configuration.hh"
-#include <stdint.h>
+#include "Types.hh"
 #include "Point.hh"
 
 namespace planner {
@@ -139,6 +139,9 @@ namespace planner {
 	
 	// mark that the last move command from the buffer
 	void markLastMoveCommand();
+
+	/// Change active tool.  Applies offsets to tool for nozzle separation
+	void changeToolIndex(uint8_t tool);
 }
 
 #endif /* end of include guard: PLANNER_HH */

@@ -78,6 +78,8 @@
 
 #include "Steppers.hh"
 #include "Point.hh"
+#include "EepromMap.hh"
+#include "Eeprom.hh"
 
 #define X_AXIS 0
 #define Y_AXIS 1
@@ -253,11 +255,20 @@ namespace planner {
 	Block block_buffer_data[BLOCK_BUFFER_SIZE];
 	ReusingCircularBufferTempl<Block> block_buffer(BLOCK_BUFFER_SIZE, block_buffer_data);
 	
+	Point tolerance_offset_T0;
+	Point tolerance_offset_T1;
+	Point *tool_offsets;
+	
 	// let's get verbose
 	volatile bool is_planning_and_using_prev_speed = false;
 	
 	void init()
 	{
+		/// if eeprom has not been initialized. store default values
+		if(eeprom::getEeprom32(eeprom_offsets::TOOLHEAD_OFFSET_SETTINGS, INT32_MAX) == INT32_MAX) {
+			eeprom::storeToolheadToleranceDefaults();
+		}
+
 		abort();
 
 		// stepperTimingDebugPin.setDirection(true);
@@ -636,7 +647,7 @@ namespace planner {
 
 	
 	// Buffer the move. IOW, add a new block, and recalculate the acceleration accordingly
-	bool addMoveToBuffer(const Point& target, int32_t us_per_step)
+	bool addMoveToBuffer(const Point& set_target, int32_t us_per_step)
 	{
 		// stepperTimingDebugPin.setValue(true);
 		if (block_buffer.isFull()) {
@@ -649,6 +660,8 @@ namespace planner {
 		Block *block = block_buffer.getHead();
 		// Mark block as not busy (Not executed by the stepper interrupt)
 		block->flags = 0;
+		
+		Point target = set_target + *tool_offsets;
 		
 		block->target = target;
 
@@ -889,9 +902,29 @@ namespace planner {
 		// STUB
 	}
 	
+	inline void loadToleranceOffsets(){
+		// get toolhead offsets
+		ATOMIC_BLOCK(ATOMIC_RESTORESTATE){
+			for(int i = 0; i  < 3; i++){
+				int32_t tolerance_err = (int32_t)(eeprom::getEeprom32(eeprom_offsets::TOOLHEAD_OFFSET_SETTINGS + i*4, 0)) / 10;
+				tolerance_offset_T0[i] = (tolerance_err/2);
+			}
+			for (int i = 3; i < STEPPER_COUNT; i++)
+				tolerance_offset_T0[i] = 0;
+
+			for(int i = 0; i  < STEPPER_COUNT; i++)
+				tolerance_offset_T1[i] = -1 * tolerance_offset_T0[i];
+		}
+	}
+	
 	void abort() {
 		steppers::abort();
 		position = steppers::getPosition();
+
+		/// load toolhead offset values from eeprom
+		loadToleranceOffsets();
+		/// tool 0 is default
+		changeToolIndex(0);
 		
 		// reset speed
 		for (int i = 0; i < STEPPER_COUNT; i++) {
@@ -908,6 +941,13 @@ namespace planner {
 #endif
 	}
 	
+	void changeToolIndex(uint8_t tool){
+		if(tool == 1)
+			tool_offsets = &tolerance_offset_T1;
+		else
+			tool_offsets = &tolerance_offset_T0;
+	}
+
 	void definePosition(const Point& new_position)
 	{
 		position = new_position;

@@ -81,9 +81,6 @@ namespace steppers {
     ///                  through the entire build. If false, it will be
     ///                  disabled when not moving.
     void setHoldZ(bool holdZ);
-    
-    /// Change active tool.  Applies offsets to tool for nozzle separation
-    void changeToolIndex(uint8_t tool);
 
     void startRunning();
 
