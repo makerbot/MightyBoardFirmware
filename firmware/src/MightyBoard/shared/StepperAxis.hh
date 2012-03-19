@@ -84,12 +84,12 @@ public:
 
         /// Handle interrupt for the given axis.
         /// \param[in] intervals Intervals that have passed since the previous interrupt
-	bool doInterrupt(const int32_t &intervals, const int32_t &step_multiplier);
+        bool doInterrupt(const int32_t &intervals, const int8_t step_multiplier);
 
         /// Run the next step of the homing procedure.
         /// \param[in] intervals Intervals that have passed since the previous interrupt
         /// \return True if the axis is still homing.
-        bool doHoming(const int32_t &intervals);
+        bool doHoming(const int32_t &intervals, const int8_t step_multiplier);
 };
 
 #endif // STEPPERAXIS_HH

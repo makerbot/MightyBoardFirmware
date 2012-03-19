@@ -26,8 +26,8 @@
 #ifndef PLANNER_HH
 #define PLANNER_HH
 
-#include "Configuration.hh"
 #include "Types.hh"
+#include "Configuration.hh"
 #include "Point.hh"
 
 namespace planner {
@@ -36,10 +36,12 @@ namespace planner {
 	class Block {
 	public:
 		typedef enum {
-			Busy          = 1<<0,
-			Recalculate   = 1<<1,
-			NominalLength = 1<<2,
-			PlannedToStop = 1<<3,
+			Busy            = 1<<0,
+			Recalculate     = 1<<1,
+			NominalLength   = 1<<2,
+			PlannedToStop   = 1<<3,
+			PlannedFromStop = 1<<4,
+			Locked          = 1<<5,
 		} PlannerFlags;
 
 		// Fields used by the bresenham algorithm for tracing the line
@@ -58,8 +60,9 @@ namespace planner {
 		float entry_speed;                                 // Entry speed at previous-current junction in mm/min
 		float max_entry_speed;                             // Maximum allowable junction entry speed in mm/min
 		float millimeters;                                 // The total travel of this block in mm
+		float steps_per_mm;                                // The integrated steps/mm for this move
 		float acceleration;                                // acceleration mm/sec^2
-		// float stop_speed;                            // Speed to decelerate to if this is the last move
+		float stop_speed;                            // Speed to decelerate to if this is the last move
 		// uint8_t recalculate_flag;                    // Planner flag to recalculate trapezoids on entry junction
 		// uint8_t nominal_length_flag;                 // Planner flag for nominal speed always reached
 
@@ -74,7 +77,7 @@ namespace planner {
 		Block() : target() {};
 		
 	// functions
-		void calculate_trapezoid(const float &exit_factor_speed);
+		bool calculate_trapezoid(const float &exit_factor_speed);
 	};
 
 	/// Initilaize the planner data structures
@@ -130,12 +133,16 @@ namespace planner {
 	
 	bool isBufferFull();
 	bool isBufferEmpty();
+	bool isReady();
 	
 	// Fetches the *tail*
 	Block *getNextBlock();
 	
 	// pushes the tail forward, making it available
 	void doneWithNextBlock();
+	
+	// how many items are in the buffer
+	uint8_t bufferCount();
 	
 	// mark that the last move command from the buffer
 	void markLastMoveCommand();

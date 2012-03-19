@@ -41,11 +41,9 @@ volatile int8_t  feedrate_dirty; // indicates if the feedrate_inverted needs rec
 volatile int32_t feedrate_inverted;
 volatile int32_t feedrate_changerate;
 volatile int32_t acceleration_tick_counter;
-volatile int8_t feedrate_multiplier; // should always be > 0
 volatile uint8_t current_feedrate_index;
 
 volatile int32_t timer_counter;
-
 StepperAxis axes[STEPPER_COUNT];
 volatile bool is_homing;
 
@@ -81,22 +79,19 @@ void init(Motherboard& motherboard) {
 	feedrate = 0;
 	feedrate_inverted = 0;
 	feedrate_dirty = 1;
-	feedrate_multiplier = 1;
 	acceleration_tick_counter = 0;
 	current_feedrate_index = 0;
 }
 
 void abort() {
 	is_running = false;
-	is_homing = false;	
-	
+	is_homing = false;
 	timer_counter = 0;
 	current_block = NULL;
 	feedrate_steps_remaining = 0;
 	feedrate = 0;
 	feedrate_inverted = 0;
 	feedrate_dirty = 1;
-	feedrate_multiplier = 1;
 	acceleration_tick_counter = 0;
 	current_feedrate_index = 0;
 }
@@ -137,16 +132,6 @@ inline void recalcFeedrate() {
 	feedrate_dirty = 0;
 }
 
-uint32_t getCurrentStep() {
-	return intervals - intervals_remaining;
-}
-
-// WARNING: Freezes the current feedrate!
-uint32_t getCurrentFeedrate() {
-	feedrate_changerate = 0;
-	return feedrate;
-}
-
 // load up the next movment
 // WARNING: called from inside the ISR, so get out fast
 bool getNextMove() {
@@ -157,154 +142,232 @@ bool getNextMove() {
 		planner::doneWithNextBlock();
 		current_block = NULL;
 	}
-	
-	if (planner::isBufferEmpty()) {
+
+	if (!planner::isReady()) {
+		is_running = !planner::isBufferEmpty();
 		return false;
 	}
-	
-	current_block = planner::getNextBlock();
-	// Mark block as busy (being executed by the stepper interrupt)
-	current_block->flags |= planner::Block::Busy;
-	
-	Point &target = current_block->target;
-	
-	feedrate_multiplier = 1; // setTarget sets the multiplier to one
-	int32_t max_delta = current_block->step_event_count;
-	for (int i = 0; i < STEPPER_COUNT; i++) {
-		axes[i].setTarget(target[i], false);
-		const int32_t delta = axes[i].delta;
 
-		// Only shut z axis on inactivity
-		if (i == 2 && !holdZ) axes[i].enableStepper(delta != 0);
-		else if (delta != 0) axes[i].enableStepper(true);
-		
-		// if (delta > max_delta) {
-		// 	max_delta = delta;
-		// }
-	}
-		
+	current_block = planner::getNextBlock();
+
+	// Mark block as busy (being executed by the stepper interrupt)
+	// Also mark it a locked
+	current_block->flags |= planner::Block::Busy | planner::Block::Locked;
+
+	Point &target = current_block->target;
+
+	int32_t max_delta = current_block->step_event_count;
+	//X
+	axes[0].setTarget(target[0], false);
+	if (axes[0].delta != 0) axes[0].enableStepper(true);
+	//Y
+	axes[1].setTarget(target[1], false);
+	if (axes[1].delta != 0) axes[1].enableStepper(true);
+	//Z
+	axes[2].setTarget(target[2], false);
+	// Disable z axis on inactivity, unless holdZ is true
+	if (axes[2].delta != 0)
+		axes[2].enableStepper(true);
+	else if (!holdZ)
+		axes[2].enableStepper(false);
+
+#if STEPPER_COUNT > 3
+	axes[3].setTarget(target[3], false);
+	if (axes[3].delta != 0) axes[3].enableStepper(true);
+#endif
+#if STEPPER_COUNT > 4
+	axes[4].setTarget(target[4], false);
+	if (axes[4].delta != 0) axes[4].enableStepper(true);
+#endif
+
+	int32_t local_acceleration_rate = current_block->acceleration_rate;
+	uint32_t local_accelerate_until = current_block->accelerate_until;
+	uint32_t local_decelerate_after = current_block->decelerate_after;
+	uint32_t local_nominal_rate = current_block->nominal_rate;
+	uint32_t local_final_rate = current_block->final_rate;
+
 	current_feedrate_index = 0;
 	int feedrate_being_setup = 0;
 	// setup acceleration
 	feedrate = 0;
-	if (current_block->accelerate_until > 0) {
+	if (local_accelerate_until > 0) {
 		feedrate = current_block->initial_rate;
 
-		feedrate_elements[feedrate_being_setup].steps     = current_block->accelerate_until;
-		feedrate_elements[feedrate_being_setup].rate      = current_block->acceleration_rate;
-		feedrate_elements[feedrate_being_setup].target    = current_block->nominal_rate;
+		feedrate_elements[feedrate_being_setup].steps     = local_accelerate_until;
+		feedrate_elements[feedrate_being_setup].rate      = local_acceleration_rate;
+		feedrate_elements[feedrate_being_setup].target    = local_nominal_rate;
 		feedrate_being_setup++;
 	}
 
 	// setup plateau
-	if (current_block->decelerate_after > current_block->accelerate_until) {
+	if (local_decelerate_after > local_accelerate_until) {
 		if (feedrate_being_setup == 0)
-			feedrate = current_block->nominal_rate;
-		
-		feedrate_elements[feedrate_being_setup].steps     = current_block->decelerate_after - current_block->accelerate_until;
+			feedrate = local_nominal_rate;
+
+		feedrate_elements[feedrate_being_setup].steps     = local_decelerate_after - local_accelerate_until;
 		feedrate_elements[feedrate_being_setup].rate      = 0;
-		feedrate_elements[feedrate_being_setup].target    = current_block->nominal_rate;
+		feedrate_elements[feedrate_being_setup].target    = local_nominal_rate;
 		feedrate_being_setup++;
 	}
-	
+
 
 	// setup deceleration
-	if (current_block->decelerate_after < current_block->step_event_count) {
+	if (local_decelerate_after < current_block->step_event_count) {
 		if (feedrate_being_setup == 0)
-			feedrate = current_block->nominal_rate;
+			feedrate = local_nominal_rate;
 
 		// To prevent "falling off the end" we will say we have a "bazillion" steps left...
-		feedrate_elements[feedrate_being_setup].steps     = INT32_MAX; //current_block->step_event_count - current_block->decelerate_after;
-		feedrate_elements[feedrate_being_setup].rate      = -current_block->acceleration_rate;
-		feedrate_elements[feedrate_being_setup].target    = current_block->final_rate;
+		feedrate_elements[feedrate_being_setup].steps     = INT32_MAX; //current_block->step_event_count - local_decelerate_after;
+		feedrate_elements[feedrate_being_setup].rate      = -local_acceleration_rate;
+		feedrate_elements[feedrate_being_setup].target    = local_final_rate;
 	} else {
 		// and in case there wasn't a deceleration phase, we'll do the same for whichever phase was last...
 		feedrate_elements[feedrate_being_setup-1].steps     = INT32_MAX;
 		// We don't setup anything else because we limit to the target speed anyway.
 	}
-	
+
+	// unlock the block
+	current_block->flags &= ~planner::Block::Locked;
+
 	if (feedrate == 0) {
 		is_running = false;
 		return false;
 	}
-	
+
 	prepareFeedrateIntervals();
 	recalcFeedrate();
 	acceleration_tick_counter = TICKS_PER_ACCELERATION;
-	
-	timer_counter = feedrate_inverted;
+
+	timer_counter = 0;
 
 	intervals = max_delta;
 	intervals_remaining = intervals;
 	const int32_t negative_half_interval = -(intervals>>1);
-	for (int i = 0; i < STEPPER_COUNT; i++) {
-		axes[i].counter = negative_half_interval;
-	}
+	axes[0].counter = negative_half_interval;
+	axes[1].counter = negative_half_interval;
+	axes[2].counter = negative_half_interval;
+#if STEPPER_COUNT > 3
+	axes[3].counter = negative_half_interval;
+#endif
+#if STEPPER_COUNT > 4
+	axes[4].counter = negative_half_interval;
+#endif
 	is_running = true;
-	
+
 	return true;
 }
 
-// Possibly to be removed, or repared
-#if 0
-void currentBlockChanged() {
+// This needs to be called with interrupts off
+bool currentBlockChanged(const planner::Block *block_check) {
 	// If we are here, then we are moving AND the interrupts are frozen, so get out *fast*
-
-	current_feedrate_index = 0;
-	int feedrate_being_setup = 0;
-	// setup acceleration
-	feedrate = 0;
-	if (current_block->accelerate_until > 0) {
-		feedrate = current_block->initial_rate;
-
-		feedrate_elements[feedrate_being_setup].steps     = current_block->accelerate_until;
-		feedrate_elements[feedrate_being_setup].rate      = current_block->acceleration_rate;
-		feedrate_elements[feedrate_being_setup].target    = current_block->nominal_rate;
-		feedrate_being_setup++;
+	
+	// If the block passed in is not this block, then the planner was too slow, bail
+	if (block_check != current_block) {
+		return false;
 	}
-
-	// setup plateau
-	if (current_block->decelerate_after > current_block->accelerate_until) {
-		if (feedrate_being_setup == 0)
-			feedrate = current_block->nominal_rate;
+	
+	// We have a few scenarios to handle:
+	// A- We are still accelerating, and are below current_block->accelerate_until steps
+	//  Then plan as usual, and drop us in the right spot
+	// B- We are still in plateau, and are below current_block->decelerate_after steps
+	//  Then plan as usual, and drop us in the right spot
+	// C- We are decelerating, and are still above current_block->final_rate
+	//  Then set the destination speed of the deceleration phase, and call it good
+	//  Kinda bad, because we slowed down too soon, but otherwise it's ok
 		
-		feedrate_elements[feedrate_being_setup].steps     = current_block->decelerate_after - current_block->accelerate_until;
+	uint32_t steps_in = intervals - intervals_remaining;
+	
+	// clear PlannedToStop so we know we got the new plan in
+	current_block->flags &= ~planner::Block::PlannedToStop;
+
+	int32_t temp_changerate = feedrate_elements[current_feedrate_index].rate;
+	int32_t local_acceleration_rate = current_block->acceleration_rate;
+	uint32_t local_accelerate_until = current_block->accelerate_until;
+	uint32_t local_decelerate_after = current_block->decelerate_after;
+	uint32_t local_nominal_rate = current_block->nominal_rate;
+	uint32_t local_final_rate = current_block->final_rate;
+	
+
+	int feedrate_being_setup = 0;
+	// A- We are still accelerating. (The phase can only get longer, so we'lll assume the rest.)
+	if (temp_changerate > 0) {
+		// If we're accelerating, then we will only possibly extend the acceleration phase,
+		// which means we have one for sure, and it has to be the first one, index 0.
+		feedrate_elements[0].steps     = local_accelerate_until;
+		feedrate_elements[0].rate      = local_acceleration_rate;
+		feedrate_elements[0].target    = local_nominal_rate;
+		
+		feedrate_steps_remaining = local_accelerate_until - steps_in;
+		feedrate_target = local_nominal_rate;
+		feedrate_changerate = local_acceleration_rate;
+		
+		// leave it ready to setup plateau and deceleration
+		feedrate_being_setup = 1;
+
+		// We do the rest after the last else below
+	}
+	// B- We are still in plateau. (The plateau speed won't change, and won't get shorter.)
+	else if (temp_changerate == 0) {
+		feedrate_steps_remaining = local_decelerate_after - steps_in;
+		feedrate_target = local_nominal_rate;
+		feedrate_changerate = 0;
+		
+		// We do the rest after the last else below
+	}
+	// C- We are decelerating, and are still above local_final_rate
+	else if (feedrate > local_final_rate) {
+		feedrate_elements[0].steps     = INT32_MAX;
+		feedrate_elements[0].rate      = -local_acceleration_rate;
+		feedrate_elements[0].target    = local_final_rate;
+
+		// 'Till the end of *time*, er, this move...
+		feedrate_steps_remaining = INT32_MAX;
+		feedrate_changerate = -local_acceleration_rate;
+		feedrate_target = local_final_rate;
+
+		return true;
+	}
+	// In all other cases, we got here too late. Return that we failed.
+	else {
+		return false;
+	}
+	
+	current_feedrate_index = 0;
+	
+	// setup plateau
+	if (local_decelerate_after > local_accelerate_until) {
+		feedrate_elements[feedrate_being_setup].steps     = local_decelerate_after - local_accelerate_until;
 		feedrate_elements[feedrate_being_setup].rate      = 0;
 		feedrate_elements[feedrate_being_setup].target    = current_block->nominal_rate;
 		feedrate_being_setup++;
 	}
 	
-
 	// setup deceleration
-	if (current_block->decelerate_after < current_block->step_event_count) {
-		if (feedrate_being_setup == 0)
-			feedrate = current_block->nominal_rate;
-
+	if (local_decelerate_after < current_block->step_event_count) {
 		// To prevent "falling off the end" we will say we have a "bazillion" steps left...
-		feedrate_elements[feedrate_being_setup].steps     = INT32_MAX; //current_block->step_event_count - current_block->decelerate_after;
-		feedrate_elements[feedrate_being_setup].rate      = -current_block->acceleration_rate;
-		feedrate_elements[feedrate_being_setup].target    = current_block->final_rate;
+		feedrate_elements[feedrate_being_setup].steps     = INT32_MAX; //current_block->step_event_count - local_decelerate_after;
+		feedrate_elements[feedrate_being_setup].rate      = -local_acceleration_rate;
+		feedrate_elements[feedrate_being_setup].target    = local_final_rate;
 	} else {
 		// and in case there wasn't a deceleration phase, we'll do the same for whichever phase was last...
 		feedrate_elements[feedrate_being_setup-1].steps     = INT32_MAX;
 		// We don't setup anything else because we limit to the target speed anyway.
 	}
 
-	prepareFeedrateIntervals();
-	recalcFeedrate();
+	// We should be setup now so that the stepper interrupt will just flow into the new plan.
+	// The steppers themselves haven't changed.
 	
-	timer_counter = feedrate_inverted;
-	
-	// the steppers themselves haven't changed...
+	return true;
 }
-#endif
 
 /// Start homing
 void startHoming(const bool maximums, const uint8_t axes_enabled, const uint32_t us_per_step) {
 	intervals_remaining = INT32_MAX;
-	intervals = us_per_step / INTERVAL_IN_MICROSECONDS;
-	const int32_t negative_half_interval = -intervals / 2;
-	for (int i = 0; i < AXIS_COUNT; i++) {
+	intervals = 1;
+	feedrate_inverted = us_per_step;
+	// ToDo: Return to using the interval if the us_per_step > INTERVAL_IN_MICROSECONDS
+	const int32_t negative_half_interval = -1;
+	for (int i = 0; i < STEPPER_COUNT; i++) {
 		axes[i].counter = negative_half_interval;
 		if ((axes_enabled & (1<<i)) != 0) {
 			axes[i].setHoming(maximums);
@@ -312,6 +375,7 @@ void startHoming(const bool maximums, const uint8_t axes_enabled, const uint32_t
 			axes[i].delta = 0;
 		}
 	}
+	timer_counter = feedrate_inverted;
 	is_homing = true;
 }
 
@@ -332,74 +396,107 @@ void setAxisPotValue(uint8_t index, uint8_t value){
 void startRunning() {
 	if (is_running)
 		return;
-	// is_running = true;
-	getNextMove();
+	is_running = true;
+	// getNextMove();
 }
 
 
 bool doInterrupt() {
 	if (is_running) {
-                // stepperTimingDebugPin.setValue(true);
-		timer_counter -= INTERVAL_IN_MICROSECONDS;
-
-		if (timer_counter <= 0) {
-			if ((intervals_remaining -= feedrate_multiplier) <= 0) {
-				getNextMove();
-                                // stepperTimingDebugPin.setValue(false);
+		if (current_block == NULL) {
+			bool got_a_move = getNextMove();
+			if (!got_a_move) {
 				return is_running;
-				// is_running = false;
-			} else {
-				// if we are supposed to step too fast, we simulate double-size microsteps
-				feedrate_multiplier = 1;
-				while (timer_counter <= -feedrate_inverted && intervals_remaining > feedrate_multiplier) {
-					feedrate_multiplier++;
-					timer_counter += feedrate_inverted;
-				}
-	
-				for (int i = 0; i < STEPPER_COUNT; i++) {
-					bool not_at_end = axes[i].doInterrupt(intervals, feedrate_multiplier);
-					// do something with not_at_end ...?
-				}
-				
-				if ((feedrate_steps_remaining-=feedrate_multiplier) <= 0) {
-					current_feedrate_index++;
-					prepareFeedrateIntervals();
-				}
-				
-				if (feedrate_dirty) {
-					recalcFeedrate();
-				}
-				
-				timer_counter += feedrate_inverted;
 			}
 		}
 		
+		timer_counter -= INTERVAL_IN_MICROSECONDS;
+
+		if (timer_counter < 0) {
+			// if we are supposed to step too fast, we simulate double-size microsteps
+			int8_t feedrate_multiplier = 1;
+			timer_counter += feedrate_inverted;
+			while (timer_counter < 0 && feedrate_multiplier < intervals_remaining) {
+				feedrate_multiplier++;
+				timer_counter += feedrate_inverted;
+			}
+			
+			bool not_at_end = false;
+			not_at_end |= axes[0].doInterrupt(intervals, feedrate_multiplier);
+			not_at_end |= axes[1].doInterrupt(intervals, feedrate_multiplier);
+			not_at_end |= axes[2].doInterrupt(intervals, feedrate_multiplier);
+#if STEPPER_COUNT > 3
+			not_at_end |= axes[3].doInterrupt(intervals, feedrate_multiplier);
+#endif
+#if STEPPER_COUNT > 4
+			not_at_end |= axes[4].doInterrupt(intervals, feedrate_multiplier);
+#endif
+			// do something with not_at_end ...?
+
+
+			intervals_remaining -= feedrate_multiplier;
+
+			if (intervals_remaining <= 0) { // should never need the < part, but just in case...
+				bool got_a_move = getNextMove();
+				if (!got_a_move) {
+					return is_running;
+				}
+			}
+
+			if ((feedrate_steps_remaining-=feedrate_multiplier) <= 0) {
+				current_feedrate_index++;
+				prepareFeedrateIntervals();
+			}
+
+			if (feedrate_dirty) {
+				recalcFeedrate();
+			}
+		}
+
 		if (feedrate_changerate != 0 && acceleration_tick_counter-- <= 0) {
 			acceleration_tick_counter = TICKS_PER_ACCELERATION;
 			// Change our feedrate. Here it's important to note that we can over/undershoot
 
 			feedrate += feedrate_changerate;
 			feedrate_dirty = 1;
-		
+
 			if ((feedrate_changerate > 0 && feedrate > feedrate_target)
 			    || (feedrate_changerate < 0 && feedrate < feedrate_target)) {
+				
 				feedrate_changerate = 0;
 				feedrate = feedrate_target;
 			} 
 
 		}
-		
-                // stepperTimingDebugPin.setValue(false);
 		return is_running;
 	} else if (is_homing) {
-		is_homing = false;
-		for (int i = 0; i < STEPPER_COUNT; i++) {
-			bool still_homing = axes[i].doHoming(intervals);
-			is_homing = still_homing || is_homing;
+		timer_counter -= INTERVAL_IN_MICROSECONDS;
+		if (timer_counter <= 0) {
+			is_homing = false;
+			// if we are supposed to step too fast, we simulate double-size microsteps
+			int8_t feedrate_multiplier = 1;
+			while (timer_counter <= -feedrate_inverted) {
+				feedrate_multiplier++;
+				timer_counter += feedrate_inverted;
+			}
+
+			// Warning: do N || is_homing
+			// is_homing || N will not execute N if is_homing
+			is_homing = axes[0].doHoming(1, feedrate_multiplier) || is_homing;
+			is_homing = axes[1].doHoming(1, feedrate_multiplier) || is_homing;
+			is_homing = axes[2].doHoming(1, feedrate_multiplier) || is_homing;
+	#if STEPPER_COUNT > 3
+			is_homing = axes[3].doHoming(1, feedrate_multiplier) || is_homing;
+	#endif
+	#if STEPPER_COUNT > 4
+			is_homing = axes[4].doHoming(1, feedrate_multiplier) || is_homing;
+	#endif
+			// if we're done, force a sync with the planner
+			if (!is_homing)
+				planner::abort();
+
+			timer_counter += feedrate_inverted;
 		}
-		// if we're done, force a sync with the planner
-		if (!is_homing)
-			planner::abort();
 		return is_homing;
 	}
 	return false;

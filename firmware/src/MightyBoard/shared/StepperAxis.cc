@@ -9,11 +9,6 @@ StepperAxis::StepperAxis(StepperInterface& stepper_interface) :
         reset();
 }
 
-// void StepperAxis::setStepMultiplier(const int8_t new_multiplier) {
-//         step_multiplier = new_multiplier;
-//         step_change = direction ? step_multiplier : -step_multiplier;
-// }
-
 void StepperAxis::setTarget(const int32_t target_in,
                             bool relative) {
         target = target_in;
@@ -113,36 +108,34 @@ bool StepperAxis::checkEndstop(const bool isHoming) {
 #endif
 }
 
-bool StepperAxis::doInterrupt(const int32_t &intervals, const int32_t &step_multiplier) {
+bool StepperAxis::doInterrupt(const int32_t &intervals, const int8_t step_multiplier) {
 	bool hit_endstop = checkEndstop(false);
 	
 	// make a local copies volatiles
 	int32_t counter_local = counter; // we have to push this back after! 
 	int32_t position_local = position; // we have to push this back after! 
-	const int8_t step_change_local = step_change;
+	const int8_t step_change_local = step_change * step_multiplier;
 	const int32_t delta_local = delta;
 	const int32_t intervals_local = intervals;
 	
 	if (!hit_endstop) {
-		for (int8_t steps = step_multiplier; steps > 0; steps--) {
-			counter_local += delta_local;
+		counter_local += delta_local;
 
-			if (counter_local >= 0) {
+		if (counter_local >= 0) {
+			counter_local -= intervals_local;
+			position_local += step_change_local;
+			for (int8_t steps = step_multiplier; steps > 0; steps--) {
 				interface->step(true);
-				counter_local -= intervals_local;
-				position_local += step_change_local;
 				interface->step(false);
 			}
 		}
 	} else {
-		// looks like a waste, duplicating like this, but we need to keep this loop tight
-		for (int8_t steps = step_multiplier; steps > 0; steps--) {
-			counter_local += delta_local;
+		// looks like a waste, duplicating like this, but we to keep this loop tight
+		counter_local += delta_local;
 
-			if (counter_local >= 0) {
-				counter_local -= intervals_local;
-				position_local += step_change_local;
-			}
+		if (counter_local >= 0) {
+			counter_local -= intervals_local;
+			position_local += step_change_local;
 		}
 	}
 	
@@ -154,20 +147,21 @@ bool StepperAxis::doInterrupt(const int32_t &intervals, const int32_t &step_mult
 }
 
 
-bool StepperAxis::doHoming(const int32_t &intervals) {
+bool StepperAxis::doHoming(const int32_t &intervals, const int8_t step_multiplier) {
         if (delta == 0) return false;
         counter += delta;
         if (counter >= 0) {
-                interface->setDirection(direction);
                 counter -= intervals;
                 bool hit_endstop = checkEndstop(true);
                 if (!hit_endstop) {
-                        interface->step(true);
-                        interface->step(false);
+			for (int8_t steps = step_multiplier; steps > 0; steps--) {
+				interface->step(true);
+				interface->step(false);
+			}
                 } else {
                         return false;
                 }
-                position += step_change;
+                position += step_change*step_multiplier;
         }
         return true;
 }

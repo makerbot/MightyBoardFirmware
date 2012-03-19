@@ -18,6 +18,7 @@
 #ifndef SHARED_AVR_PORT_HH_
 #define SHARED_AVR_PORT_HH_
 
+#define __STDC_LIMIT_MACROS
 #include <stdint.h>
 #include <util/atomic.h>
 

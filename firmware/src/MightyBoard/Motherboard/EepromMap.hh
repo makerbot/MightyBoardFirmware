@@ -123,31 +123,33 @@ const static uint16_t BUZZ_SETTINGS             = 0x014A;
 ///  1 byte. 0x01 for 'never booted before' 0x00 for 'have been booted before)
 const static uint16_t FIRST_BOOT_FLAG           = 0x0156;
 /// 7 bytes, short int x 3 entries, 1 byte on/off
-const static uint16_t PREHEAT_SETTINGS = 0x0158;
+const static uint16_t PREHEAT_SETTINGS          = 0x0158;
 /// 1 byte,  0x01 for help menus on, 0x00 for off
-const static uint16_t FILAMENT_HELP_SETTINGS = 0x0160;
+const static uint16_t FILAMENT_HELP_SETTINGS    = 0x0160;
 /// This indicates how far out of tolerance the toolhead0 toolhead1 distance is
 /// in steps.  3 x 32 bits = 12 bytes
-const static uint16_t TOOLHEAD_OFFSET_SETTINGS = 0x0162;
+const static uint16_t TOOLHEAD_OFFSET_SETTINGS  = 0x0162;
+
+// 50 bytes of free space for expansion
 
 /// Default steps/mm for each axis: 5 x 32 bit = 20 bytes
-const static uint16_t STEPS_PER_MM              = 0x0160; // .. 0x008B
+const static uint16_t STEPS_PER_MM              = 0x0194;
 
 /// Master acceleration rate for each axis: 32 bits = 4 bytes
-const static uint16_t MASTER_ACCELERATION_RATE  = 0x0174; // .. 0x008F
+const static uint16_t MASTER_ACCELERATION_RATE  = 0x01A8;
 
 /// Default acceleration rates for each axis: 5 x 32 bit = 20 bytes
-const static uint16_t AXIS_ACCELERATION_RATES   = 0x0178; // .. 0x00A3
+const static uint16_t AXIS_ACCELERATION_RATES   = 0x01AC;
 
 /// Default acceleration rates for each axis: 4 x 32 bit = 16 bytes
 /// X+Y have an integrated value, and Z, A, and B have their own values.
-const static uint16_t AXIS_JUNCTION_JERK        = 0x018C; // .. 0x00B3
+const static uint16_t AXIS_JUNCTION_JERK        = 0x01C0;
 
 /// Default minimum planner speed: 32 bits = 1 byte
-const static uint16_t MINIMUM_PLANNER_SPEED     = 0x019C; // .. 0x00B5
+const static uint16_t MINIMUM_PLANNER_SPEED     = 0x01D0;
 
 /// start of free space
-const static uint16_t FREE_EEPROM_STARTS = 0x016D;
+const static uint16_t FREE_EEPROM_STARTS        = 0x01D1;
 
 
 }

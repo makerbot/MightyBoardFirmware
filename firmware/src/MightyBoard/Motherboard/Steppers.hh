@@ -19,13 +19,13 @@
 #define STEPPERS_HH_
 
 #include "Configuration.hh"
+#include "Types.hh"
 #include <stdlib.h>
-#include <stdint.h>
 #include "Pin.hh"
 #include "Command.hh"
 #include "Point.hh"
+#include "Planner.hh"
 
-#include "Types.hh"
 #include "Motherboard.hh"
 
 namespace steppers {
@@ -84,10 +84,7 @@ namespace steppers {
 
     void startRunning();
 
-    void currentBlockChanged();
-
-    uint32_t getCurrentStep();
-    uint32_t getCurrentFeedrate();
+    bool currentBlockChanged(const planner::Block *block_check);
 };
 
 #endif // STEPPERS_HH_
