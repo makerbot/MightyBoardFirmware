@@ -33,7 +33,7 @@
 #include "RGB_LED.hh"
 #include "Errors.hh"
 #include <avr/eeprom.h>
-#include <util/delay.h>mo
+#include <util/delay.h>
 
 
 /// Set up the stepper pins on board creation
@@ -176,17 +176,17 @@ void Motherboard::reset(bool hard_reset) {
 	planner::setMinimumPlannerSpeed(eeprom::getEepromFixed32(eeprom_offsets::MINIMUM_PLANNER_SPEED, DEFAULT_MINIMUM_PLANNER_SPEED));
 
 	// Initialize the host and slave UARTs
-	UART::getHostUART().enable(true);
-	UART::getHostUART().in.reset();
-
-// initialize the extruders
-	DEBUG_PIN1.setValue(true);
-	Extruder_One.reset();
-	DEBUG_PIN3.setValue(true);
-	Extruder_Two.reset();
-	DEBUG_PIN2.setValue(true);
-
-
+        UART::getHostUART().enable(true);
+        UART::getHostUART().in.reset();
+    
+    // initialize the extruders
+    Extruder_One.reset();
+    Extruder_Two.reset();
+    
+    Extruder_One.getExtruderHeater().set_target_temperature(0);
+	Extruder_Two.getExtruderHeater().set_target_temperature(0);
+	platform_heater.set_target_temperature(0);
+		
 	// Reset and configure timer 0, the piezo buzzer timer
 	// Mode: Phase-correct PWM with OCRnA (WGM2:0 = 101)
 	// Prescaler: set on call by piezo function
@@ -252,23 +252,24 @@ void Motherboard::reset(bool hard_reset) {
 		if(hard_reset)
 			_delay_us(3000000);
 
-	// Finally, set up the interface
-		interface::init(&interfaceBoard, &lcd);
 
-		interface_update_timeout.start(interfaceBoard.getUpdateRate());
-	}
+        // Finally, set up the interface
+        interface::init(&interfaceBoard, &lcd);
 
-// interface LEDs default to full ON
-	interfaceBlink(0,0);
-
-// only call the piezo buzzer on full reboot start up
-// do not clear heater fail messages, though the user should not be able to soft reboot from heater fail
-	if(hard_reset)
+        interface_update_timeout.start(interfaceBoard.getUpdateRate());
+    }
+    
+    // interface LEDs default to full ON
+    interfaceBlink(0,0);
+    
+    // only call the piezo buzzer on full reboot start up
+    // do not clear heater fail messages, though the user should not be able to soft reboot from heater fail
+    if(hard_reset)
 	{
 		RGB_LED::init();
-
-		// Piezo::startUpTone();
-
+		
+		Piezo::startUpTone();
+		
 		heatShutdown = false;
 		heatFailMode = HEATER_FAIL_NONE;
 		cutoff.init();
@@ -402,7 +403,7 @@ void Motherboard::runMotherboardSlice() {
 				interfaceBoard.errorMessage("Heaters shutdown    due to inactivity");//37
 				startButtonWait();
                 // turn LEDs blue
-				RGB_LED::setColor(0,0,255);
+				RGB_LED::setColor(0,0,255, true);
 		}
         // set tempertures to 0
 		Extruder_One.getExtruderHeater().set_target_temperature(0);
@@ -411,7 +412,7 @@ void Motherboard::runMotherboardSlice() {
 	}
 	
     // respond to heatshutdown.  response only needs to be called once
-	if(heatShutdown && !triggered)
+	if(heatShutdown && !triggered && !Piezo::isPlaying())
 	{
         triggered = true;
 		// rgb led response
@@ -601,9 +602,10 @@ void Motherboard::setUsingPlatform(bool is_using) {
 
 void Motherboard::setValve(bool on) {
   	ATOMIC_BLOCK(ATOMIC_RESTORESTATE) {
-		setUsingPlatform(false);
-		pwmHBP_On(false);
-		HBP_HEAT.setValue(on);
+		//setUsingPlatform(false);
+		//pwmHBP_On(false);
+		EXTRA_FET.setDirection(true);
+		EXTRA_FET.setValue(on);
 	}
 }
 

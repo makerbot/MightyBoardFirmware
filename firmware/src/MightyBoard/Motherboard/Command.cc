@@ -262,15 +262,16 @@ void runCommandSlice() {
 			sdcard::finishPlayback();
 	}
     // get command from onboard script if building from onboard
-	if(utility::isPlaying()){
+	if(utility::isPlaying()){		
 		while (command_buffer.getRemainingCapacity() > 0 && utility::playbackHasNext()){
 			command_buffer.push(utility::playbackNext());
 		}
-		if(!utility::playbackHasNext() && command_buffer.isEmpty())
+		if(!utility::playbackHasNext() && command_buffer.isEmpty()){
 			utility::finishPlayback();
+		}
 	}
 	// don't execute commands if paused or shutdown because of heater failure
-	if (paused || heat_shutdown) { return; }
+	if (paused || heat_shutdown) {	return; }
     
 	if (mode == HOMING) {
 		if (!steppers::isRunning()) {
@@ -340,7 +341,7 @@ void runCommandSlice() {
 	}
 
 	if (mode == READY) {
-
+		
 		// process next command on the queue.
 		if ((command_buffer.getLength() > 0)){
 			Motherboard::getBoard().resetUserInputTimeout();
@@ -362,7 +363,8 @@ void runCommandSlice() {
 			} else if (command == HOST_CMD_CHANGE_TOOL) {
 				if (command_buffer.getLength() >= 2) {
 					command_buffer.pop(); // remove the command code
-					currentToolIndex = command_buffer.pop();
+                    currentToolIndex = command_buffer.pop();
+                    steppers::changeToolIndex(currentToolIndex);
 				}
 			} else if (command == HOST_CMD_ENABLE_AXES) {
 				if (command_buffer.getLength() >= 2) {

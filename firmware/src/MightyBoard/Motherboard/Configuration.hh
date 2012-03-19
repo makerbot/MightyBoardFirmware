@@ -240,6 +240,10 @@
 // bot shuts down printers after a defined timeout 
 #define USER_INPUT_TIMEOUT		1200000000 // 20 minutes
 
+#define XSTEPS_PER_MM			94.139704f
+#define YSTEPS_PER_MM			94.139704f
+#define ZSTEPS_PER_MM			400
+
 
 // The number of movements we can plan ahead at a time
 // THIS MUST BE A POWER OF 2! 4, 8, 16, 32, you get the idea...

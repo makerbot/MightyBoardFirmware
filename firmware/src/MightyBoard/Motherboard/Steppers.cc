@@ -20,6 +20,8 @@
 #include "Planner.hh"
 #include "StepperAxis.hh"
 #include <stdint.h>
+#include "EepromMap.hh"
+#include "Eeprom.hh"
 #include <avr/interrupt.h> // sei()
 
 namespace steppers {
@@ -49,6 +51,9 @@ volatile int32_t timer_counter;
 
 StepperAxis axes[STEPPER_COUNT];
 volatile bool is_homing;
+int32_t tolerance_offset_T0[STEPPER_COUNT];
+int32_t tolerance_offset_T1[STEPPER_COUNT];
+int32_t *tool_offsets;
 
 bool holdZ = false;
 
@@ -58,6 +63,22 @@ bool isRunning() {
 	return is_running || is_homing || !planner::isBufferEmpty();
 }
 
+inline void loadToleranceOffsets(){
+
+	// get toolhead offsets
+	ATOMIC_BLOCK(ATOMIC_RESTORESTATE){
+		for(int i = 0; i  < 3; i++){
+			int32_t tolerance_err = (int32_t)(eeprom::getEeprom32(eeprom_offsets::TOOLHEAD_OFFSET_SETTINGS + i*4, 0)) / 10;
+			tolerance_offset_T0[i] = (tolerance_err/2);
+		}
+		for (int i = 3; i < STEPPER_COUNT; i++)
+			tolerance_offset_T0[i] = 0;
+		
+		for(int i = 0; i  < STEPPER_COUNT; i++)
+			tolerance_offset_T1[i] = -1 * tolerance_offset_T0[i];
+	}
+}
+
 //public:
 void init(Motherboard& motherboard) {
 	is_running = false;
@@ -65,6 +86,16 @@ void init(Motherboard& motherboard) {
 	for (int i = 0; i < STEPPER_COUNT; i++) {
 		axes[i] = StepperAxis(motherboard.getStepperInterface(i));
 	}
+
+	/// if eeprom has not been initialized. store default values
+	if(eeprom::getEeprom32(eeprom_offsets::TOOLHEAD_OFFSET_SETTINGS, INT32_MAX) == INT32_MAX){
+		eeprom::storeToolheadToleranceDefaults();
+	}
+	/// load toolhead offset values from eeprom
+	loadToleranceOffsets();
+	/// tool 0 is default
+	changeToolIndex(0);
+
 	timer_counter = 0;
 
 	current_block = NULL;
@@ -80,21 +111,24 @@ void init(Motherboard& motherboard) {
 	feedrate = 0;
 	feedrate_inverted = 0;
 	feedrate_dirty = 1;
-        feedrate_multiplier = 1;
+	feedrate_multiplier = 1;
 	acceleration_tick_counter = 0;
 	current_feedrate_index = 0;
 }
 
 void abort() {
 	is_running = false;
-	is_homing = false;
+	is_homing = false;	
+
+	loadToleranceOffsets();
+	
 	timer_counter = 0;
 	current_block = NULL;
 	feedrate_steps_remaining = 0;
 	feedrate = 0;
 	feedrate_inverted = 0;
 	feedrate_dirty = 1;
-        feedrate_multiplier = 1;
+	feedrate_multiplier = 1;
 	acceleration_tick_counter = 0;
 	current_feedrate_index = 0;
 }
@@ -117,6 +151,14 @@ const Point getPosition() {
 
 void setHoldZ(bool holdZ_in) {
 	holdZ = holdZ_in;
+}
+
+void changeToolIndex(uint8_t tool){
+
+	if(tool == 1)
+		tool_offsets = tolerance_offset_T1;
+	else
+		tool_offsets = tolerance_offset_T0;
 }
 
 inline void prepareFeedrateIntervals() {
