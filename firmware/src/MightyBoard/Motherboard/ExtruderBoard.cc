@@ -33,7 +33,7 @@ const Pin ThermocoupleSO  = THERMOCOUPLE_SO;
 
 ExtruderBoard::ExtruderBoard(uint8_t slave_id_in, const Pin &HeaterPin_In, const Pin &FanPin_In,
 		const Pin &ThermocouplePin_In,	uint16_t eeprom_base) :
-     		extruder_thermocouple(ThermocouplePin_In,ThermocoupleSCK,ThermocoupleSO),
+     		extruder_thermocouple(ThermocouplePin_In, ThermocoupleSCK, ThermocoupleSO),
      		extruder_element(slave_id_in),
      		extruder_heater(extruder_thermocouple,extruder_element,SAMPLE_INTERVAL_MICROS_THERMOCOUPLE,
         		  (eeprom_base+ toolhead_eeprom_offsets::EXTRUDER_PID_BASE), true ),

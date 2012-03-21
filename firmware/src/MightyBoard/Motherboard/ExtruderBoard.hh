@@ -62,7 +62,7 @@ private:
         ExtruderHeatingElement extruder_element;
         Heater extruder_heater;
         
-        const Pin Heater_Pin;
+        const Pin &Heater_Pin;
 
         uint8_t slave_id;
 

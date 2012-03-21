@@ -23,11 +23,7 @@
 
 // We'll throw in nops to get the timing right (if necessary)
 inline void nop() {
-        asm volatile("nop"::);
-        asm volatile("nop"::);
-        asm volatile("nop"::);
-        asm volatile("nop"::);
-        asm volatile("nop"::);
+	_delay_us(1);
 }
 
 
@@ -53,15 +49,15 @@ void Thermocouple::init() {
 Thermocouple::SensorState Thermocouple::update() {
 	// TODO: Check timing against datasheet.
 	cs_pin.setValue(false);
-	_delay_us(2);
+	nop();
 	sck_pin.setValue(false);
-	_delay_us(2);
+	nop();
 
 	int raw = 0;
 	bool bad_temperature = false; // Indicate a disconnected state
 	for (int i = 0; i < 16; i++) {
 		sck_pin.setValue(true);
-		_delay_us(2);
+		nop();
 		if (i >= 1 && i < 11) { // data bit... skip LSBs
 			raw = raw << 1;
 			if (so_pin.getValue()) { raw = raw | 0x01; }
@@ -72,11 +68,11 @@ Thermocouple::SensorState Thermocouple::update() {
 			}
 		}
 		sck_pin.setValue(false);
-		_delay_us(2);
+		nop();
 	}
 
 	cs_pin.setValue(true);
-	_delay_us(2);
+	nop();
 	sck_pin.setValue(false);
 
 	if (bad_temperature) {

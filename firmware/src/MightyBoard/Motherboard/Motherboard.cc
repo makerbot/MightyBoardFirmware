@@ -88,20 +88,29 @@ StepperInterface Motherboard::stepper[STEPPER_COUNT] = {
 /// Instantiate static motherboard instance
 Motherboard Motherboard::motherboard;
 
+const Pin Ex1_Pwr = EX1_PWR;
+const Pin Ex2_Pwr = EX2_PWR;
+
+const Pin Ex1_Fan = EX1_FAN;
+const Pin Ex2_Fan = EX2_FAN;
+
+const Pin ThermocoupleCS1 = THERMOCOUPLE_CS1;
+const Pin ThermocoupleCS2 = THERMOCOUPLE_CS2;
+
 /// Create motherboard object
 Motherboard::Motherboard() :
-        lcd(),
-        interfaceBoard(buttonArray,
-            lcd,
-            &mainMenu,
-            &monitorMode,
-            &messageScreen),
-            platform_thermistor(PLATFORM_PIN,0),
-            platform_heater(platform_thermistor,platform_element,SAMPLE_INTERVAL_MICROS_THERMISTOR,
-            		eeprom_offsets::T0_DATA_BASE + toolhead_eeprom_offsets::HBP_PID_BASE, false), //TRICKY: HBP is only and anways on T0 for this machine
-			using_platform(true),
-			Extruder_One(0, EX1_PWR, EX1_FAN, THERMOCOUPLE_CS1, eeprom_offsets::T0_DATA_BASE),
-			Extruder_Two(1, EX2_PWR, EX2_FAN, THERMOCOUPLE_CS2, eeprom_offsets::T1_DATA_BASE)
+	lcd(),
+	interfaceBoard(buttonArray,
+	    lcd,
+	    &mainMenu,
+	    &monitorMode,
+	    &messageScreen),
+	platform_thermistor(PLATFORM_PIN,0),
+	platform_heater(platform_thermistor, platform_element, SAMPLE_INTERVAL_MICROS_THERMISTOR,
+	                eeprom_offsets::T0_DATA_BASE + toolhead_eeprom_offsets::HBP_PID_BASE, false), //TRICKY: HBP is only and anways on T0 for this machine
+	using_platform(true),
+	Extruder_One(0, Ex1_Pwr, Ex1_Fan, ThermocoupleCS1, eeprom_offsets::T0_DATA_BASE),
+	Extruder_Two(1, Ex2_Pwr, Ex2_Fan, ThermocoupleCS2, eeprom_offsets::T1_DATA_BASE)
 {
 }
 
@@ -176,14 +185,14 @@ void Motherboard::reset(bool hard_reset) {
 	planner::setMinimumPlannerSpeed(eeprom::getEepromFixed32(eeprom_offsets::MINIMUM_PLANNER_SPEED, DEFAULT_MINIMUM_PLANNER_SPEED));
 
 	// Initialize the host and slave UARTs
-        UART::getHostUART().enable(true);
-        UART::getHostUART().in.reset();
-    
-    // initialize the extruders
-    Extruder_One.reset();
-    Extruder_Two.reset();
-    
-    Extruder_One.getExtruderHeater().set_target_temperature(0);
+	UART::getHostUART().enable(true);
+	UART::getHostUART().in.reset();
+
+// initialize the extruders
+	Extruder_One.reset();
+	Extruder_Two.reset();
+
+	Extruder_One.getExtruderHeater().set_target_temperature(0);
 	Extruder_Two.getExtruderHeater().set_target_temperature(0);
 	platform_heater.set_target_temperature(0);
 		
