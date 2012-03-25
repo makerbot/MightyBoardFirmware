@@ -11,10 +11,10 @@
 Timeout button_timeout;
 bool pop2 = false;
 
+const Pin InterfaceBoard::LEDs[] = { INTERFACE_GLED, INTERFACE_RLED };
+
 InterfaceBoard::InterfaceBoard(ButtonArray& buttons_in,
                                LiquidCrystalSerial& lcd_in,
-                               const Pin& gled_in,
-                               const Pin& rled_in,
                                Screen* mainScreen_in,
                                Screen* buildScreen_in,
                                MessageScreen* messageScreen_in) :
@@ -25,8 +25,6 @@ InterfaceBoard::InterfaceBoard(ButtonArray& buttons_in,
         buildScreen = buildScreen_in;
         mainScreen = mainScreen_in;
         messageScreen = messageScreen_in;
-        LEDs[0] = gled_in;
-        LEDs[1] = rled_in;
         buildPercentage = 101;
 }
 

@@ -18,15 +18,12 @@
 
 
 #include "Thermocouple.hh"
+#include <util/delay.h>
 
 
 // We'll throw in nops to get the timing right (if necessary)
 inline void nop() {
-        asm volatile("nop"::);
-        asm volatile("nop"::);
-        asm volatile("nop"::);
-        asm volatile("nop"::);
-        asm volatile("nop"::);
+	_delay_us(1);
 }
 
 

@@ -28,14 +28,14 @@
 class StepperInterface {
 private:
     /// Default constructor
-    StepperInterface() {}
+    // StepperInterface() {}
     StepperInterface(const Pin& dir,
                     const Pin& step,
                     const Pin& enable,
                     const Pin& max,
                     const Pin& min,
                     const Pin& pot,
-                    uint16_t eeprom_base_in);
+                    const uint16_t &eeprom_base_in);
 
         friend class Motherboard;
 
@@ -67,34 +67,46 @@ private:
 public:
 	/// Set the direction for the stepper to move
         /// \param[in] forward True to move the stepper forward, false otherwise.
-	void setDirection(bool forward);
+	void setDirection(const bool forward);
 
 	/// Set the value of the step line
         /// \param[in] value True to enable, false to disable. This should be toggled
         ///                  back and fourth to effect stepping.
-	void step(bool value);
+	void step(const bool value) {
+	    step_pin.setValue(value);
+	};
 
         /// Enable or disable the stepper motor on this axis
         /// \param[in] True to enable the motor
-	void setEnabled(bool enabled);
+	void setEnabled(const bool enabled);
 
         /// Check if the maximum endstop has been triggered for this axis.
         /// \return True if the axis has triggered its maximum endstop
-	bool isAtMaximum();
+	bool isAtMaximum() {
+	    if (max_pin.isNull()) return false;
+	    bool v = max_pin.getValue();
+	    if (invert_endstops) v = !v;
+	    return v;
+	};
 
         /// Check if the minimum endstop has been triggered for this axis.
         /// \return True if the axis has triggered its minimum endstop
-	bool isAtMinimum();
+	bool isAtMinimum() {
+	    if (min_pin.isNull()) return false;
+	    bool v = min_pin.getValue();
+	    if (invert_endstops) v = !v;
+	    return v;
+	};
 	
         /// set default values for i2c pots
 	void resetPots();
     
         /// set i2c pot to specified value (0-127 valid)
-    void setPotValue(uint8_t val);
+    void setPotValue(const uint8_t val);
     
     /// Check if axis position is at or beyond the axis length
     /// this check is relevant on the axis end without endstops
-    bool isSoftwareAxisEnd(uint32_t pos);
+    bool isSoftwareAxisEnd(const uint32_t pos);
 
 };
 

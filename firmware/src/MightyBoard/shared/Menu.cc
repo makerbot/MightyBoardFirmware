@@ -6,6 +6,7 @@
 #ifdef HAS_INTERFACE_BOARD
 
 #include "Steppers.hh"
+#include "Planner.hh"
 #include "Commands.hh"
 #include "Errors.hh"
 #include "Host.hh"
@@ -751,13 +752,13 @@ void FilamentScreen::startMotor(){
     Point target = Point(0,0,0, 0,0);
     target[axisID] = steps;
     
-    steppers::setTargetNew(target, interval, 0x1f);
+    planner::addMoveToBufferRelative(target, interval, 0x1f);
     filamentTimer.clear();
     filamentTimer.start(300000000); //5 minutes
 }
 void FilamentScreen::stopMotor(){
     
-    steppers::abort();
+    planner::abort();
     for(int i = 0; i < STEPPER_COUNT; i++)
         steppers::enableAxis(i, false);
 
@@ -901,7 +902,7 @@ void FilamentScreen::update(LiquidCrystalSerial& lcd, bool forceRedraw) {
 				if(target[2] < 1000){
 					target[2] = 60000;
 					interval = 5000000;
-					steppers::setTargetNew(target, interval, 0x1f);
+					planner::addMoveToBufferRelative(target, interval, 0x1f);
 				}
 				_delay_us(1000000);
 				Motherboard::getBoard().interfaceBlink(25,15);
@@ -1506,7 +1507,7 @@ void JogMode::update(LiquidCrystalSerial& lcd, bool forceRedraw) {
 
 void JogMode::jog(ButtonArray::ButtonName direction) {
 	Point position = steppers::getPosition();
-	steppers::abort();
+	planner::abort();
 
 	int32_t interval = 1000;
 	int32_t steps;
@@ -1571,7 +1572,7 @@ void JogMode::jog(ButtonArray::ButtonName direction) {
 		}
 	}
 
-	steppers::setTarget(position, interval);
+	planner::addMoveToBuffer(position, interval);
 }
 
 void JogMode::notifyButtonPressed(ButtonArray::ButtonName button) {

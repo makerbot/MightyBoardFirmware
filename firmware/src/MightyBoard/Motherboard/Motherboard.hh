@@ -59,7 +59,7 @@ public:
 
 private:
         /// Collection of stepper controllers that are on this board
-        StepperInterface stepper[STEPPER_COUNT];
+        static StepperInterface stepper[STEPPER_COUNT];
 
 	/// Microseconds since board initialization
 	volatile micros_t micros;

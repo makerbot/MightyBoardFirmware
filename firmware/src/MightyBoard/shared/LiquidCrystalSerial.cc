@@ -24,17 +24,18 @@
 // can't assume that its in that state when a sketch starts (and the
 // LiquidCrystal constructor is called).
 
-LiquidCrystalSerial::LiquidCrystalSerial(Pin strobe, Pin data, Pin CLK) 
+const Pin LiquidCrystalSerial::_strobe_pin = LCD_STROBE; // LOW: command.  HIGH: character.
+const Pin LiquidCrystalSerial::_data_pin   = LCD_DATA; // LOW: write to LCD.  HIGH: read from LCD.
+const Pin LiquidCrystalSerial::_clk_pin    = LCD_CLK; // activated by a HIGH pulse.
+
+
+LiquidCrystalSerial::LiquidCrystalSerial() 
 {
-  init(strobe, data, CLK);
+  init();
 }
 
-void LiquidCrystalSerial::init(Pin strobe, Pin data, Pin clk)
-{
-  _strobe_pin = strobe;
-  _data_pin = data;
-  _clk_pin = clk;
-  
+void LiquidCrystalSerial::init()
+{  
   _strobe_pin.setDirection(true);
   _data_pin.setDirection(true);
   _clk_pin.setDirection(true);
@@ -309,15 +310,15 @@ void LiquidCrystalSerial::load(uint8_t value)
 
 void LiquidCrystalSerial::pulseEnable(uint8_t value) {
 	
-  _delay_us(1);
+  _delay_us(5);
    // set enable to true
    value |= 0b01000;
    writeSerial(value);
-  _delay_us(1);    // enable pulse must be >450ns
+  _delay_us(5);    // enable pulse must be >450ns
    //set enable to false
    value &= 0b11110111;
    writeSerial(value);
-  _delay_us(1);   // commands need > 37us to settle [citation needed]
+  _delay_us(5);   // commands need > 37us to settle [citation needed]
 }
 
 void LiquidCrystalSerial::writeSerial(uint8_t value) {
@@ -331,11 +332,11 @@ void LiquidCrystalSerial::writeSerial(uint8_t value) {
 	  _data_pin.setValue(data);
 	  
 	  _clk_pin.setValue(true);
-	  _delay_us(1); 
+	  _delay_us(5); 
   } 
   
     _strobe_pin.setValue(true);
-    _delay_us(1);
+    _delay_us(5);
     _strobe_pin.setValue(false);
      
 }

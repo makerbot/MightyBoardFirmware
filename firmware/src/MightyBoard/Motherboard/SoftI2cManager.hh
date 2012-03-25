@@ -25,7 +25,7 @@
 #include "Configuration.hh"
 
 // delay used to tweek signals
-#define I2C_DELAY_USEC 4
+#define I2C_DELAY_USEC 7
 
 // R/W direction bit to OR with address for start or restart
 #define I2C_READ 1
@@ -45,23 +45,23 @@ public:
   void init();
   
   /** read a byte and send Ack if last is false else Nak to terminate read */
-  uint8_t read(bool last, Pin sdaPin);
+  uint8_t read(bool last, const Pin &sdaPin);
   
   /** send new address and read/write bit without stop */
-  uint8_t restart(uint8_t addressRW, Pin sdaPin);
+  uint8_t restart(uint8_t addressRW, const Pin &sdaPin);
   
   /** issue a start condition for i2c address with read/write bit */
-  uint8_t start(uint8_t addressRW, Pin sdaPin);
+  uint8_t start(uint8_t addressRW, const Pin &sdaPin);
   
   /** issue a stop condition */
   void stop(void);
   
   /** write byte and return true for Ack or false for Nak */
-  bool write(uint8_t b, Pin sdaPin);
+  bool write(uint8_t b, const Pin &sdaPin);
     
 private:
-    Pin sdaPins[MAX_STEPPERS];
-    Pin sclPin;
+    static const Pin sdaPins[MAX_STEPPERS];
+    static const Pin sclPin;
     uint8_t numPins;
 };
 #endif //SOFT_I2C_MANAGER

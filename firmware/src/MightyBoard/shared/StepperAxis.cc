@@ -13,24 +13,33 @@ void StepperAxis::setTarget(const int32_t target_in,
                             bool relative) {
         target = target_in;
         if (relative) {
-                delta = target;
+                delta = target_in;
+                target = position + target_in;
         } else {
-                delta = target - position;
+                delta = target_in - position;
+                target = target_in;
         }
         direction = true;
         if (delta != 0) {
                 interface->setEnabled(true);
         }
+	// step_multiplier = 1;
         if (delta < 0) {
                 delta = -delta;
                 direction = false;
+                step_change = -1;
+        } else {
+                step_change = 1;
         }
+        interface->setDirection(direction);
 }
 
 void StepperAxis::setHoming(const bool direction_in) {
         direction = direction_in;
+        interface->setDirection(direction);
         interface->setEnabled(true);
         delta = 1;
+	step_change = direction ? 1 : -1;
 }
 
 void StepperAxis::definePosition(const int32_t position_in) {
@@ -51,6 +60,8 @@ void StepperAxis::reset() {
         target = 0;
         counter = 0;
         delta = 0;
+        // step_multiplier = 1;
+        step_change = 1;
 #if defined(SINGLE_SWITCH_ENDSTOPS) && (SINGLE_SWITCH_ENDSTOPS == 1)
         endstop_play = ENDSTOP_DEFAULT_PLAY;
         endstop_status = ESS_UNKNOWN;
@@ -97,54 +108,60 @@ bool StepperAxis::checkEndstop(const bool isHoming) {
 #endif
 }
 
-bool StepperAxis::doInterrupt(const int32_t intervals) {
-		bool hit_endstop = false;
-		 bool hit_softEnd = false;
-        counter += delta;
-        if (counter >= 0) {
-                interface->setDirection(direction);
-                counter -= intervals;
-                hit_endstop = checkEndstop(false);
-             //   hit_softEnd = interface->isSoftwareAxisEnd(position);
-                if (direction) {
-						 if (!hit_endstop)
-                                interface->step(true);
-                        position++;
-                } else {
-						if (!hit_endstop)
-                                interface->step(true);              
-                        position--;
-                }
-                interface->step(false);
-        }
-        
-        return !hit_endstop;
+bool StepperAxis::doInterrupt(const int32_t &intervals, const int8_t step_multiplier) {
+	bool hit_endstop = checkEndstop(false);
+	
+	// make a local copies volatiles
+	int32_t counter_local = counter; // we have to push this back after! 
+	int32_t position_local = position; // we have to push this back after! 
+	const int8_t step_change_local = step_change * step_multiplier;
+	const int32_t delta_local = delta;
+	const int32_t intervals_local = intervals;
+	
+	if (!hit_endstop) {
+		counter_local += delta_local;
+
+		if (counter_local >= 0) {
+			counter_local -= intervals_local;
+			position_local += step_change_local;
+			for (int8_t steps = step_multiplier; steps > 0; steps--) {
+				interface->step(true);
+				interface->step(false);
+			}
+		}
+	} else {
+		// looks like a waste, duplicating like this, but we to keep this loop tight
+		counter_local += delta_local;
+
+		if (counter_local >= 0) {
+			counter_local -= intervals_local;
+			position_local += step_change_local;
+		}
+	}
+	
+	// push the possibly-changed locals back out
+	counter = counter_local;
+	position = position_local;
+	
+	return !hit_endstop;
 }
 
 
-bool StepperAxis::doHoming(const int32_t intervals) {
+bool StepperAxis::doHoming(const int32_t &intervals, const int8_t step_multiplier) {
         if (delta == 0) return false;
         counter += delta;
         if (counter >= 0) {
-                interface->setDirection(direction);
                 counter -= intervals;
                 bool hit_endstop = checkEndstop(true);
-                if (direction) {
-                        if (!hit_endstop) {
-                                interface->step(true);
-                        } else {
-                                return false;
-                        }
-                        position++;
+                if (!hit_endstop) {
+			for (int8_t steps = step_multiplier; steps > 0; steps--) {
+				interface->step(true);
+				interface->step(false);
+			}
                 } else {
-                        if (!hit_endstop) {
-                                interface->step(true);
-                        } else {
-                                return false;
-                        }
-                        position--;
+                        return false;
                 }
-                interface->step(false);
+                position += step_change*step_multiplier;
         }
         return true;
 }
