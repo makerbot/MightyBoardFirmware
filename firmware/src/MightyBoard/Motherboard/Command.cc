@@ -145,7 +145,7 @@ bool isReady() {
 // Handle movement comands -- called from a few places
 static void handleMovementCommand(const uint8_t &command) {
 	// if we're already moving, check to make sure the buffer isn't full
-	if (mode == MOVING && planner::isBufferFull()) {
+	if (/*mode == MOVING && */planner::isBufferFull()) {
 		return; // we'll be back!
 	}
 	if (command == HOST_CMD_QUEUE_POINT_EXT) {

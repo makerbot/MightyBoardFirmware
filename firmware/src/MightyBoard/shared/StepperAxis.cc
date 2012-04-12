@@ -61,7 +61,7 @@ void StepperAxis::reset() {
 	target = 0;
 	counter = 0;
 	delta = 0;
-		// step_multiplier = 1;
+	// step_multiplier = 1;
 	step_change = 1;
 #if defined(SINGLE_SWITCH_ENDSTOPS) && (SINGLE_SWITCH_ENDSTOPS == 1)
 	endstop_play = ENDSTOP_DEFAULT_PLAY;
