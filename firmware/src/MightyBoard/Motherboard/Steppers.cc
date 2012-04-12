@@ -306,7 +306,7 @@ bool currentBlockChanged(const planner::Block *block_check) {
 	
 
 	int feedrate_being_setup = 0;
-	// A- We are still accelerating. (The phase can only get longer, so we'lll assume the rest.)
+	// A- We are still accelerating. (The phase can only get longer, so we'll assume the rest.)
 	if (temp_changerate > 0) {
 		// If we're accelerating, then we will only possibly extend the acceleration phase,
 		// which means we have one for sure, and it has to be the first one, index 0.
@@ -324,7 +324,7 @@ bool currentBlockChanged(const planner::Block *block_check) {
 		// We do the rest after the last else below
 	}
 	// B- We are still in plateau. (The plateau speed won't change, and won't get shorter.)
-	else if (temp_changerate == 0) {
+	else if (temp_changerate == 0 && current_block->decelerate_after > current_block->accelerate_until) {
 		feedrate_steps_remaining = current_block->decelerate_after - steps_in;
 		feedrate_target = current_block->nominal_rate;
 		feedrate_changerate = 0;
@@ -362,12 +362,12 @@ bool currentBlockChanged(const planner::Block *block_check) {
 	// setup deceleration
 	if (current_block->decelerate_after < current_block->step_event_count) {
 		// To prevent "falling off the end" we will say we have a "bazillion" steps left...
-		feedrate_elements[feedrate_being_setup].steps     = INT32_MAX; //current_block->step_event_count - current_block->decelerate_after;
+		feedrate_elements[feedrate_being_setup].steps     = INT16_MAX; //current_block->step_event_count - current_block->decelerate_after;
 		feedrate_elements[feedrate_being_setup].rate      = -current_block->acceleration_rate;
 		feedrate_elements[feedrate_being_setup].target    = current_block->final_rate;
 	} else {
 		// and in case there wasn't a deceleration phase, we'll do the same for whichever phase was last...
-		feedrate_elements[feedrate_being_setup-1].steps     = INT32_MAX;
+		feedrate_elements[feedrate_being_setup-1].steps     = INT16_MAX;
 		// We don't setup anything else because we limit to the target speed anyway.
 	}
 
@@ -487,7 +487,6 @@ bool doInterrupt() {
 				feedrate_changerate = 0;
 				feedrate = feedrate_target;
 			} 
-
 		}
 		DEBUG_PIN1.setValue(false);
 		return is_running;
