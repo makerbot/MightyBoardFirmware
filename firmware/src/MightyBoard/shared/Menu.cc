@@ -21,6 +21,7 @@
 #include "Eeprom.hh"
 #include <avr/eeprom.h>
 #include "RGB_LED.hh"
+#include "Planner.hh"
 
 
 #define HOST_PACKET_TIMEOUT_MS 20
@@ -44,7 +45,7 @@ void SplashScreen::update(LiquidCrystalSerial& lcd, bool forceRedraw) {
 	static PROGMEM prog_uchar splash3[] = "                    ";
 	static PROGMEM prog_uchar splash1[] = "  The Replicator    ";
 	static PROGMEM prog_uchar splash2[] = "    ----------      ";
-	static PROGMEM prog_uchar splash4[] = "Firmware Version b. ";
+	static PROGMEM prog_uchar splash4[] = "Firmware Version 9. ";
 
 
 	if (forceRedraw) {
@@ -746,18 +747,20 @@ void SelectAlignmentMenu::handleSelect(uint8_t index) {
 void FilamentScreen::startMotor(){
     int32_t interval = 300000000;  // 5 minutes
     int32_t steps = interval / 6250;
-    if(forward)
+    if (forward)
         steps *= -1;
-    Point target = Point(0,0,0, 0,0);
+    Point target = Point(0,0,0,0,0);
     target[axisID] = steps;
     
-    steppers::setTargetNew(target, interval, 0x1f);
+    planner::addMoveToBufferRelative(target, interval, 0x1f);
+ //   planner::markLastMoveCommand();
     filamentTimer.clear();
     filamentTimer.start(300000000); //5 minutes
 }
+
 void FilamentScreen::stopMotor(){
-    
-    steppers::abort();
+    // TODO: change this to soft-stop
+    planner::abort();
     for(int i = 0; i < STEPPER_COUNT; i++)
         steppers::enableAxis(i, false);
 
@@ -897,11 +900,11 @@ void FilamentScreen::update(LiquidCrystalSerial& lcd, bool forceRedraw) {
 				lcd.writeFromPgmspace(explain_four);			
 				//_delay_us(1000000);
 				// if z stage is at zero, move z stage down
-				target = steppers::getPosition();
+				target = planner::getPosition();
 				if(target[2] < 1000){
 					target[2] = 60000;
 					interval = 5000000;
-					steppers::setTargetNew(target, interval, 0x1f);
+					planner::addMoveToBufferRelative(target, interval, 0x1f);
 				}
 				_delay_us(1000000);
 				Motherboard::getBoard().interfaceBlink(25,15);
@@ -1505,8 +1508,8 @@ void JogMode::update(LiquidCrystalSerial& lcd, bool forceRedraw) {
 }
 
 void JogMode::jog(ButtonArray::ButtonName direction) {
-	Point position = steppers::getPosition();
-	steppers::abort();
+	Point position = planner::getPosition();
+	//planner::abort();
 
 	int32_t interval = 1000;
 	int32_t steps;
@@ -1516,7 +1519,7 @@ void JogMode::jog(ButtonArray::ButtonName direction) {
 		steps = 20;
 		break;
 	case DISTANCE_LONG:
-		steps = 1000;
+		steps = 200;
 		break;
 	}
 
@@ -1571,7 +1574,8 @@ void JogMode::jog(ButtonArray::ButtonName direction) {
 		}
 	}
 
-	steppers::setTarget(position, interval);
+	planner::addMoveToBuffer(position, interval);
+	planner::markLastMoveCommand();
 }
 
 void JogMode::notifyButtonPressed(ButtonArray::ButtonName button) {
@@ -1895,18 +1899,17 @@ void MonitorMode::update(LiquidCrystalSerial& lcd, bool forceRedraw) {
         if(!singleTool){
             lcd.setCursor(12,1);
 			data = board.getExtruderBoard(0).getExtruderHeater().get_current_temperature();
-			if(board.getExtruderBoard(0).getExtruderHeater().has_failed()){
+			if(board.getExtruderBoard(0).getExtruderHeater().has_failed())
 				lcd.writeString("  NA    ");
-			} else if(board.getExtruderBoard(0).getExtruderHeater().isPaused()){
-				lcd.writeString("waiting ");
-			} else
+			else
 				lcd.writeInt(data,3);
 			}
 		break;
 
 	case 1:
 		if(!singleTool){
-            if(!board.getExtruderBoard(0).getExtruderHeater().has_failed() && !board.getExtruderBoard(0).getExtruderHeater().isPaused()){           
+            if(!board.getExtruderBoard(0).getExtruderHeater().has_failed()){
+                
                 data = board.getExtruderBoard(0).getExtruderHeater().get_set_temperature();
                 if(data > 0){
 					lcd.setCursor(15,1);
@@ -1925,25 +1928,22 @@ void MonitorMode::update(LiquidCrystalSerial& lcd, bool forceRedraw) {
             lcd.setCursor(12,2);
             data = board.getExtruderBoard(!singleTool * 1).getExtruderHeater().get_current_temperature();
                
-            if(board.getExtruderBoard(!singleTool * 1).getExtruderHeater().has_failed()){
-				lcd.writeString("  NA    ");
-			} else if(board.getExtruderBoard(!singleTool * 1).getExtruderHeater().isPaused()){
-				lcd.writeString("waiting ");
-			} 
-            else{
+            if(board.getExtruderBoard(!singleTool * 1).getExtruderHeater().has_failed())
+                lcd.writeString("  NA    ");
+            else
                 lcd.writeInt(data,3);
-			}
 		break;
 	case 3:
-        if(!board.getExtruderBoard(!singleTool * 1).getExtruderHeater().has_failed() && !board.getExtruderBoard(!singleTool * 1).getExtruderHeater().isPaused()){
+        if(!board.getExtruderBoard(!singleTool * 1).getExtruderHeater().has_failed()){
             lcd.setCursor(16,2);
-            data = board.getExtruderBoard(!singleTool * 1).getExtruderHeater().get_set_temperature();
+            data = board.getExtruderBoard(!singleTool*1).getExtruderHeater().get_set_temperature();
             if(data > 0){
 					lcd.setCursor(15,2);
 					lcd.writeString("/   C");
 					lcd.setCursor(16,2);
                     lcd.writeInt(data,3);
-			}else{
+				}
+            else{
                 lcd.setCursor(15,2);
                 lcd.writeString("C    ");
             }
@@ -1953,17 +1953,14 @@ void MonitorMode::update(LiquidCrystalSerial& lcd, bool forceRedraw) {
 	case 4:
             lcd.setCursor(12,3);
 			data = board.getPlatformHeater().get_current_temperature();
-			if(board.getPlatformHeater().has_failed()){
+			if(board.getPlatformHeater().has_failed())
 				lcd.writeString("  NA    ");
-			} else if (board.getPlatformHeater().isPaused()){
-				lcd.writeString("waiting ");
-			} else {
+			else
 				lcd.writeInt(data,3);
-			}
 		break;
 
 	case 5:
-        if(!board.getPlatformHeater().has_failed() && !board.getPlatformHeater().isPaused()){
+        if(!board.getPlatformHeater().has_failed()){
             lcd.setCursor(16,3);
             data = board.getPlatformHeater().get_set_temperature();
             if(data > 0){
@@ -3039,7 +3036,7 @@ void SDMenu::drawItem(uint8_t index, LiquidCrystalSerial& lcd) {
 
     if ( !getFilename(index, fnbuf, maxFileLength)) {
         interface::popScreen();
-        Motherboard::getBoard().errorResponse(" SD card read error");
+        Motherboard::getBoard().errorResponse("SD card read error");
         return;
 	}
 
@@ -3058,7 +3055,7 @@ void SDMenu::handleSelect(uint8_t index) {
 		return;
 	}
 	if (host::getHostState() != host::HOST_STATE_READY) {
-		Motherboard::getBoard().errorResponse(" I'm already building");
+		Motherboard::getBoard().errorResponse("I'm already building");
 		return;
 	}
 		
@@ -3066,7 +3063,7 @@ void SDMenu::handleSelect(uint8_t index) {
 
     if ( !getFilename(index, buildName, host::MAX_FILE_LEN) ) {
         interface::popScreen();
-		Motherboard::getBoard().errorResponse(" SD card read error");
+		Motherboard::getBoard().errorResponse("SD card read error");
 		return;
 	}
 
@@ -3075,7 +3072,7 @@ void SDMenu::handleSelect(uint8_t index) {
 	
 	if (e != sdcard::SD_SUCCESS) {
         interface::popScreen();
-		Motherboard::getBoard().errorResponse(" SD card read error");
+		Motherboard::getBoard().errorResponse("SD card read error");
 		return;
 	}
 }

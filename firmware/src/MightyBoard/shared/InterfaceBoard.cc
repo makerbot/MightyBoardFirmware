@@ -93,8 +93,6 @@ void InterfaceBoard::doUpdate() {
 			building = true;
 		}
 		break;
-	case host::HOST_STATE_HEAT_SHUTDOWN:
-		break;
 	default:
 		if (building) {
 			if(!(screenStack[screenIndex]->screenWaiting())){	
@@ -129,7 +127,7 @@ void InterfaceBoard::doUpdate() {
             } else {
                 screenStack[screenIndex]->notifyButtonPressed(button);
                 if(screenStack[screenIndex]->continuousButtons()) {
-                    button_timeout.start(ButtonArray::ButtonDelay);// 1s timeout 
+                    button_timeout.start(100000);// 1s timeout 
                 }
             }
         }

@@ -20,6 +20,7 @@
 #include <string.h>
 #include "Commands.hh"
 #include "Steppers.hh"
+#include "Planner.hh"
 #include "DebugPacketProcessor.hh"
 #include "Timeout.hh"
 #include "Version.hh"
@@ -33,6 +34,7 @@
 #include "Eeprom.hh"
 #include "EepromMap.hh"
 #include "UtilityScripts.hh"
+#include "Planner.hh"
 
 namespace host {
 
@@ -48,7 +50,7 @@ bool processExtruderQueryPacket(const InPacket& from_host, OutPacket& to_host);
 Timeout packet_in_timeout;
 Timeout cancel_timeout;
 
-#define HOST_PACKET_TIMEOUT_MS 20
+#define HOST_PACKET_TIMEOUT_MS 200
 #define HOST_PACKET_TIMEOUT_MICROS (1000L*HOST_PACKET_TIMEOUT_MS)
 
 //#define HOST_TOOL_RESPONSE_TIMEOUT_MS 50
@@ -67,10 +69,9 @@ HostState currentState;
 
 bool do_host_reset = false;
 bool hard_reset = false;
-bool cancelBuild = false;
 
 void runHostSlice() {
-		
+		bool cancelBuild = false;
         InPacket& in = UART::getHostUART().in;
         OutPacket& out = UART::getHostUART().out;
 	if (out.isSending()) {
@@ -88,6 +89,7 @@ void runHostSlice() {
 	if (do_host_reset && !cancelBuild){
 		
 		do_host_reset = false;
+
 
 		// reset local board
 		reset(hard_reset);
@@ -128,12 +130,7 @@ void runHostSlice() {
 		out.reset();
 	  // do not respond to commands if the bot has had a heater failure
 		if(currentState == HOST_STATE_HEAT_SHUTDOWN){
-			if(cancelBuild){
-				out.append8(RC_CANCEL_BUILD);
-				cancelBuild= false;
-			}else{
-				out.append8(RC_CMD_UNSUPPORTED);
-			}
+			out.append8(RC_CMD_UNSUPPORTED);
 		}else if(cancelBuild){
 			out.append8(RC_CANCEL_BUILD);
 			cancelBuild = false;
@@ -214,8 +211,7 @@ bool processCommandPacket(const InPacket& from_host, OutPacket& to_host) {
 
     // alert the host that the bot has had a heat failure
 void heatShutdown(){
-	currentState = HOST_STATE_HEAT_SHUTDOWN;
-	cancelBuild = true;
+	currentState == HOST_STATE_HEAT_SHUTDOWN;
 }
 
 
@@ -251,7 +247,7 @@ inline void handleGetBufferSize(const InPacket& from_host, OutPacket& to_host) {
 
 inline void handleGetPosition(const InPacket& from_host, OutPacket& to_host) {
 	ATOMIC_BLOCK(ATOMIC_FORCEON) {
-		const Point p = steppers::getPosition();
+		const Point p = planner::getPosition();
 		to_host.append8(RC_OK);
 		to_host.append32(p[0]);
 		to_host.append32(p[1]);
@@ -271,7 +267,7 @@ inline void handleGetPosition(const InPacket& from_host, OutPacket& to_host) {
 
 inline void handleGetPositionExt(const InPacket& from_host, OutPacket& to_host) {
 	ATOMIC_BLOCK(ATOMIC_FORCEON) {
-		const Point p = steppers::getPosition();
+		const Point p = planner::getPosition();
 		to_host.append8(RC_OK);
 		to_host.append32(p[0]);
 		to_host.append32(p[1]);
@@ -386,9 +382,7 @@ inline void handleWriteEeprom(const InPacket& from_host, OutPacket& to_host) {
     for (int i = 0; i < length; i++) {
         data[i] = from_host.read8(i + 4);
     }
-    ATOMIC_BLOCK(ATOMIC_RESTORESTATE){
-		eeprom_write_block(data, (void*) offset, length);
-	}
+    eeprom_write_block(data, (void*) offset, length);
     to_host.append8(RC_OK);
     to_host.append8(length);
 }
@@ -402,7 +396,7 @@ enum { // bit assignments
 inline void handleExtendedStop(const InPacket& from_host, OutPacket& to_host) {
 	uint8_t flags = from_host.read8(1);
 	if (flags & _BV(ES_STEPPERS)) {
-		steppers::abort();
+		planner::abort();
 	}
 	if (flags & _BV(ES_COMMANDS)) {
 		command::reset();
@@ -583,7 +577,7 @@ void startOnboardBuild(uint8_t  build){
 		currentState = HOST_STATE_BUILDING_ONBOARD;
 	}
 	command::reset();
-	steppers::abort();
+	planner::abort();
 }
 
 // Stop the current build, if any

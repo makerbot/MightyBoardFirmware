@@ -26,7 +26,7 @@
 // possible time between steps; in practical terms, your time between steps should
 // be at least eight times this large.  Reducing the interval can cause resource
 // starvation; leave this at 64uS or greater unless you know what you're doing.
-#define INTERVAL_IN_MICROSECONDS 128
+#define INTERVAL_IN_MICROSECONDS 256
 
 // --- Power Supply Unit configuration ---
 // Define as 1 if a PSU is present; 0 if not.
@@ -237,10 +237,28 @@
 // bot shuts down printers after a defined timeout 
 #define USER_INPUT_TIMEOUT		1200000000 // 20 minutes
 
-#define XSTEPS_PER_MM			94.139704f
-#define YSTEPS_PER_MM			94.139704f
-#define ZSTEPS_PER_MM			400
+#define XSTEPS_PER_MM          94.139704f
+#define YSTEPS_PER_MM          94.139704f
+#define ZSTEPS_PER_MM          400
+#define ASTEPS_PER_MM          96.2752018f
+#define BSTEPS_PER_MM          96.2752018f
 
+
+#define DEFAULT_ACCELERATION   3500.0 // mm/s/s
+#define DEFAULT_X_ACCELERATION 3500.0 // mm/s/s
+#define DEFAULT_Y_ACCELERATION 3000.0 // mm/s/s
+#define DEFAULT_Z_ACCELERATION 50.0 // mm/s/s
+#define DEFAULT_A_ACCELERATION 2000.0 // mm/s/s
+#define DEFAULT_B_ACCELERATION 2000.0 // mm/s/s
+
+#define DEFAULT_MAX_XY_JERK 20.0 // ms/s <-- unused if CENTREPEDAL is defined below
+#define DEFAULT_MAX_Z_JERK 10.0 // mm/s
+#define DEFAULT_MAX_A_JERK 10.0 // mm/s
+#define DEFAULT_MAX_B_JERK 10.0 // mm/s
+
+//  define CENTREPEDAL to use centrepedal calucations -- so far I can't get there to work -Rob
+#undef CENTREPEDAL
+#define DEFAULT_JUNCTION_DEVIATION 0.05 // mm
 
 
 #endif // BOARDS_MBV40_CONFIGURATION_HH_

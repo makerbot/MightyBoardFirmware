@@ -18,7 +18,6 @@
 #include "EepromMap.hh"
 #include "Eeprom.hh"
 #include <avr/eeprom.h>
-#include <avr/delay.h>
 
 //for thermistor generation
 #include "ThermistorTable.hh"
@@ -180,6 +179,18 @@ void setDefaultsPreheat(uint16_t eeprom_base)
     eeprom_write_word((uint16_t*)(eeprom_base + preheat_eeprom_offsets::PREHEAT_PLATFORM_OFFSET), 100);
     eeprom_write_byte((uint8_t*)(eeprom_base + preheat_eeprom_offsets::PREHEAT_ON_OFF_OFFSET), (1<<HEAT_MASK_RIGHT) + (1<<HEAT_MASK_PLATFORM));
 }    
+
+/**
+ *
+ * break with the form here as eeprom_base is available in class and we
+ * want to cleanly call this function externally
+ */
+void setDefaultsAcceleration()
+{
+    eeprom_write_byte((uint8_t*)(eeprom_offsets::ACCELERATION_SETTINGS + acceleration_eeprom_offsets::ACTIVE_OFFSET), 1);
+    eeprom_write_word((uint16_t*)(eeprom_offsets::ACCELERATION_SETTINGS + acceleration_eeprom_offsets::ACCELERATION_RATE_OFFSET), 500);
+    
+}    
     
 
 /// Does a factory reset (resets all defaults except home/endstops, axis direction and tool count)
@@ -201,11 +212,11 @@ void factoryResetEEPROM() {
     
     uint32_t homes[5] = {replicator_axis_offsets::DUAL_X_OFFSET,replicator_axis_offsets::Y_OFFSET,0,0,0};
     /// set axis offsets depending on number of tool heads
-    if(getEeprom8(eeprom_offsets::TOOL_COUNT, 1) == 1)
+    if(getEeprom8(eeprom_offsets::TOOL_COUNT, 1))
 		homes[0] = replicator_axis_offsets::SINGLE_X_OFFSET;
 	eeprom_write_block((uint8_t*)&(homes[0]),(uint8_t*)(eeprom_offsets::AXIS_HOME_POSITIONS), 20 );
 	
-	
+	setDefaultsAcceleration();
 	
 	eeprom_write_byte((uint8_t*)eeprom_offsets::FILAMENT_HELP_SETTINGS, 1);
 	
@@ -280,7 +291,7 @@ void storeToolheadToleranceDefaults(){
 void fullResetEEPROM() {
 	
 	// axis inversion settings
-	uint8_t axis_invert = 0b11011; // invert XYAB
+	uint8_t axis_invert = 0b10111; // A axis not inverted
 	eeprom_write_byte((uint8_t*)eeprom_offsets::AXIS_INVERSION, axis_invert);
 	
 	// tool count settings

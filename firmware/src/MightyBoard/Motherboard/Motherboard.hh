@@ -1,19 +1,19 @@
 /*
- * Copyright 2010 by Adam Mayer	 <adam@makerbot.com>
- *
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <http://www.gnu.org/licenses/>
- */
+* Copyright 2010 by Adam Mayer	 <adam@makerbot.com>
+*
+* This program is free software: you can redistribute it and/or modify
+* it under the terms of the GNU General Public License as published by
+* the Free Software Foundation, either version 3 of the License, or
+* (at your option) any later version.
+*
+* This program is distributed in the hope that it will be useful,
+* but WITHOUT ANY WARRANTY; without even the implied warranty of
+* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+* GNU General Public License for more details.
+*
+* You should have received a copy of the GNU General Public License
+* along with this program.  If not, see <http://www.gnu.org/licenses/>
+*/
 
 #ifndef BOARDS_MB40_MOTHERBOARD_HH_
 #define BOARDS_MB40_MOTHERBOARD_HH_
@@ -47,19 +47,19 @@ public:
 /// \ingroup MBv40
 class Motherboard {
 private:
-        // TODO: Declare this in main, drop the singleton.
-        /// Static instance of the motherboard
-        static Motherboard motherboard;
+		// TODO: Declare this in main, drop the singleton.
+		/// Static instance of the motherboard
+	static Motherboard motherboard;
 
 public:
-        /// Get the motherboard instance.
-        static Motherboard& getBoard() { return motherboard; }
-        // TODO handle case when id is invalid
-        ExtruderBoard& getExtruderBoard(uint8_t id) { if(id == 1){ return Extruder_Two;} else if(id == 0) { return Extruder_One;} }
+		/// Get the motherboard instance.
+	static Motherboard& getBoard() { return motherboard; }
+		// TODO handle case when id is invalid
+	ExtruderBoard& getExtruderBoard(uint8_t id) { if(id == 1){ return Extruder_Two;} else if(id == 0) { return Extruder_One;} }
 
 private:
-        /// Collection of stepper controllers that are on this board
-        StepperInterface stepper[STEPPER_COUNT];
+		/// Collection of stepper controllers that are on this board
+	static StepperInterface stepper[STEPPER_COUNT];
 
 	/// Microseconds since board initialization
 	volatile micros_t micros;
@@ -67,31 +67,31 @@ private:
 	/// Private constructor; use the singleton
 	Motherboard();
 
-        // TODO: Move this to an interface board slice.
+		// TODO: Move this to an interface board slice.
 	Timeout interface_update_timeout;
 	Timeout user_input_timeout;
 
-        /// True if we have an interface board attached
+		/// True if we have an interface board attached
 	bool hasInterfaceBoard;
-	
+
 	ExtruderBoard Extruder_One;
 	ExtruderBoard Extruder_Two;
-	
+
 	ButtonArray buttonArray;
 	LiquidCrystalSerial lcd;
 	InterfaceBoard interfaceBoard;
-	
+
 	MainMenu mainMenu;              ///< Main system menu
 	SplashScreen splashScreen;      ///< Displayed at startup
 	MonitorMode monitorMode;        ///< Displayed during build
 	WelcomeScreen welcomeScreen;	///< Displayed on Startup for the first time
 	MessageScreen messageScreen;    ///< Displayed by user-specified messages
-    
+
 	Thermistor platform_thermistor;
 	BuildPlatformHeatingElement platform_element;
 	Heater platform_heater;
 	bool using_platform;
-	
+
 	Cutoff cutoff;
 	bool heatShutdown;  // set if safety cutoff is triggered
 	bool buttonWait;
@@ -106,7 +106,7 @@ public:
 	void runMotherboardSlice();
 
 	/// Count the number of steppers available on this board.
-        const int getStepperCount() const { return STEPPER_COUNT; }
+	const int getStepperCount() const { return STEPPER_COUNT; }
 	/// Get the stepper interface for the nth stepper.
 	StepperInterface& getStepperInterface(int n)
 	{
@@ -122,13 +122,13 @@ public:
 	void indicateError(int errorCode);
 	/// Get the current error being displayed.
 	uint8_t getCurrentError();
-	
+
 	/// set the interface LEDs to blink
 	void interfaceBlink(int on_time, int off_time);
 
 	/// Perform the timer interrupt routine.
 	void doInterrupt();
-	
+
 	bool isUsingPlatform() { return using_platform; }
 	void setUsingPlatform(bool is_using);
 	void setValve(bool on);
@@ -137,7 +137,7 @@ public:
 	InterfaceBoard& getInterfaceBoard() { return interfaceBoard; }	
 
 	MessageScreen* getMessageScreen() { return &messageScreen; }
-	
+
 	void resetUserInputTimeout();
 	void startButtonWait();
 	void heaterFail(HeaterFailMode mode);
