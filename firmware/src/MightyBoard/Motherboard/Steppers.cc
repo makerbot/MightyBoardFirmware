@@ -36,17 +36,17 @@ static const int16_t * rate_table_fast = ifeedrate_table + 720;
 */
 
 struct feedrate_element {
-	uint16_t rate; // interval value of the feedrate axis
+	uint32_t rate; // interval value of the feedrate axis
 	uint32_t steps;     // number of steps of the master axis to change
-	uint16_t target;
+	uint32_t target;
 };
 feedrate_element feedrate_elements[3];
 volatile int32_t feedrate_steps_remaining;
-volatile int16_t feedrate;
-volatile int16_t feedrate_target; // convenient storage to save lookup time
+volatile int32_t feedrate;
+volatile int32_t feedrate_target; // convenient storage to save lookup time
 volatile int8_t  feedrate_dirty; // indicates if the feedrate_inverted needs recalculated
-volatile int16_t feedrate_inverted;
-volatile int16_t feedrate_changerate;
+volatile int32_t feedrate_inverted;
+volatile int32_t feedrate_changerate;
 volatile int32_t acceleration_tick_counter;
 volatile uint8_t current_feedrate_index;
 
@@ -135,7 +135,7 @@ inline void prepareFeedrateIntervals() {
 inline void recalcFeedrate() {
 	if (feedrate < 32)
 		return; 
-	feedrate_inverted = 1000000/feedrate;
+	feedrate_inverted = 1000000L/feedrate;
 	
 /*	if(feedrate  >= 4096)
 		feedrate_inverted = pgm_read_word(&rate_table_fast[feedrate >> 8]);
@@ -197,46 +197,46 @@ bool getNextMove() {
 	if (axes[4].delta != 0) axes[4].enableStepper(true);
 #endif
 
-	int32_t local_acceleration_rate = current_block->acceleration_rate;
-	uint32_t local_accelerate_until = current_block->accelerate_until;
-	uint32_t local_decelerate_after = current_block->decelerate_after;
-	uint32_t local_nominal_rate = current_block->nominal_rate;
-	uint32_t local_final_rate = current_block->final_rate;
+	// int32_t local_acceleration_rate = current_block->acceleration_rate;
+	// uint32_t local_accelerate_until = current_block->accelerate_until;
+	// uint32_t local_decelerate_after = current_block->decelerate_after;
+	// uint32_t local_nominal_rate = current_block->nominal_rate;
+	// uint32_t local_final_rate = current_block->final_rate;
 
 	current_feedrate_index = 0;
 	int feedrate_being_setup = 0;
 	// setup acceleration
 	feedrate = 0;
-	if (local_accelerate_until > 0) {
+	if (current_block->accelerate_until > 0) {
 		feedrate = current_block->initial_rate;
 
-		feedrate_elements[feedrate_being_setup].steps     = local_accelerate_until;
-		feedrate_elements[feedrate_being_setup].rate      = local_acceleration_rate;
-		feedrate_elements[feedrate_being_setup].target    = local_nominal_rate;
+		feedrate_elements[feedrate_being_setup].steps     = current_block->accelerate_until;
+		feedrate_elements[feedrate_being_setup].rate      = current_block->acceleration_rate;
+		feedrate_elements[feedrate_being_setup].target    = current_block->nominal_rate;
 		feedrate_being_setup++;
 	}
 
 	// setup plateau
-	if (local_decelerate_after > local_accelerate_until) {
+	if (current_block->decelerate_after > current_block->accelerate_until) {
 		if (feedrate_being_setup == 0)
-			feedrate = local_nominal_rate;
+			feedrate = current_block->nominal_rate;
 
-		feedrate_elements[feedrate_being_setup].steps     = local_decelerate_after - local_accelerate_until;
+		feedrate_elements[feedrate_being_setup].steps     = current_block->decelerate_after - current_block->accelerate_until;
 		feedrate_elements[feedrate_being_setup].rate      = 0;
-		feedrate_elements[feedrate_being_setup].target    = local_nominal_rate;
+		feedrate_elements[feedrate_being_setup].target    = current_block->nominal_rate;
 		feedrate_being_setup++;
 	}
 
 
 	// setup deceleration
-	if (local_decelerate_after < current_block->step_event_count) {
+	if (current_block->decelerate_after < current_block->step_event_count) {
 		if (feedrate_being_setup == 0)
-			feedrate = local_nominal_rate;
+			feedrate = current_block->nominal_rate;
 
 		// To prevent "falling off the end" we will say we have a "bazillion" steps left...
-		feedrate_elements[feedrate_being_setup].steps     = INT16_MAX; //current_block->step_event_count - local_decelerate_after;
-		feedrate_elements[feedrate_being_setup].rate      = -local_acceleration_rate;
-		feedrate_elements[feedrate_being_setup].target    = local_final_rate;
+		feedrate_elements[feedrate_being_setup].steps     = INT16_MAX; //current_block->step_event_count - current_block->decelerate_after;
+		feedrate_elements[feedrate_being_setup].rate      = -current_block->acceleration_rate;
+		feedrate_elements[feedrate_being_setup].target    = current_block->final_rate;
 	} else {
 		// and in case there wasn't a deceleration phase, we'll do the same for whichever phase was last...
 		feedrate_elements[feedrate_being_setup-1].steps     = INT16_MAX;
@@ -298,25 +298,25 @@ bool currentBlockChanged(const planner::Block *block_check) {
 	current_block->flags &= ~planner::Block::PlannedToStop;
 
 	int32_t temp_changerate = feedrate_elements[current_feedrate_index].rate;
-	int32_t local_acceleration_rate = current_block->acceleration_rate;
-	uint32_t local_accelerate_until = current_block->accelerate_until;
-	uint32_t local_decelerate_after = current_block->decelerate_after;
-	uint32_t local_nominal_rate = current_block->nominal_rate;
-	uint32_t local_final_rate = current_block->final_rate;
+	// int32_t local_acceleration_rate = current_block->acceleration_rate;
+	// uint32_t local_accelerate_until = current_block->accelerate_until;
+	// uint32_t local_decelerate_after = current_block->decelerate_after;
+	// uint32_t local_nominal_rate = current_block->nominal_rate;
+	// uint32_t local_final_rate = current_block->final_rate;
 	
 
 	int feedrate_being_setup = 0;
-	// A- We are still accelerating. (The phase can only get longer, so we'lll assume the rest.)
+	// A- We are still accelerating. (The phase can only get longer, so we'll assume the rest.)
 	if (temp_changerate > 0) {
 		// If we're accelerating, then we will only possibly extend the acceleration phase,
 		// which means we have one for sure, and it has to be the first one, index 0.
-		feedrate_elements[0].steps     = local_accelerate_until;
-		feedrate_elements[0].rate      = local_acceleration_rate;
-		feedrate_elements[0].target    = local_nominal_rate;
+		feedrate_elements[0].steps     = current_block->accelerate_until;
+		feedrate_elements[0].rate      = current_block->acceleration_rate;
+		feedrate_elements[0].target    = current_block->nominal_rate;
 		
-		feedrate_steps_remaining = local_accelerate_until - steps_in;
-		feedrate_target = local_nominal_rate;
-		feedrate_changerate = local_acceleration_rate;
+		feedrate_steps_remaining = current_block->accelerate_until - steps_in;
+		feedrate_target = current_block->nominal_rate;
+		feedrate_changerate = current_block->acceleration_rate;
 		
 		// leave it ready to setup plateau and deceleration
 		feedrate_being_setup = 1;
@@ -324,23 +324,23 @@ bool currentBlockChanged(const planner::Block *block_check) {
 		// We do the rest after the last else below
 	}
 	// B- We are still in plateau. (The plateau speed won't change, and won't get shorter.)
-	else if (temp_changerate == 0) {
-		feedrate_steps_remaining = local_decelerate_after - steps_in;
-		feedrate_target = local_nominal_rate;
+	else if (temp_changerate == 0 && current_block->decelerate_after > current_block->accelerate_until) {
+		feedrate_steps_remaining = current_block->decelerate_after - steps_in;
+		feedrate_target = current_block->nominal_rate;
 		feedrate_changerate = 0;
 		
 		// We do the rest after the last else below
 	}
-	// C- We are decelerating, and are still above local_final_rate
-	else if (feedrate > local_final_rate) {
+	// C- We are decelerating, and are still above current_block->final_rate
+	else if (feedrate > current_block->final_rate) {
 		feedrate_elements[0].steps     = INT16_MAX;
-		feedrate_elements[0].rate      = -local_acceleration_rate;
-		feedrate_elements[0].target    = local_final_rate;
+		feedrate_elements[0].rate      = -current_block->acceleration_rate;
+		feedrate_elements[0].target    = current_block->final_rate;
 
 		// 'Till the end of *time*, er, this move...
 		feedrate_steps_remaining = INT16_MAX;
-		feedrate_changerate = -local_acceleration_rate;
-		feedrate_target = local_final_rate;
+		feedrate_changerate = -current_block->acceleration_rate;
+		feedrate_target = current_block->final_rate;
 
 		return true;
 	}
@@ -352,22 +352,22 @@ bool currentBlockChanged(const planner::Block *block_check) {
 	current_feedrate_index = 0;
 	
 	// setup plateau
-	if (local_decelerate_after > local_accelerate_until) {
-		feedrate_elements[feedrate_being_setup].steps     = local_decelerate_after - local_accelerate_until;
+	if (current_block->decelerate_after > current_block->accelerate_until) {
+		feedrate_elements[feedrate_being_setup].steps     = current_block->decelerate_after - current_block->accelerate_until;
 		feedrate_elements[feedrate_being_setup].rate      = 0;
 		feedrate_elements[feedrate_being_setup].target    = current_block->nominal_rate;
 		feedrate_being_setup++;
 	}
 	
 	// setup deceleration
-	if (local_decelerate_after < current_block->step_event_count) {
+	if (current_block->decelerate_after < current_block->step_event_count) {
 		// To prevent "falling off the end" we will say we have a "bazillion" steps left...
-		feedrate_elements[feedrate_being_setup].steps     = INT32_MAX; //current_block->step_event_count - local_decelerate_after;
-		feedrate_elements[feedrate_being_setup].rate      = -local_acceleration_rate;
-		feedrate_elements[feedrate_being_setup].target    = local_final_rate;
+		feedrate_elements[feedrate_being_setup].steps     = INT16_MAX; //current_block->step_event_count - current_block->decelerate_after;
+		feedrate_elements[feedrate_being_setup].rate      = -current_block->acceleration_rate;
+		feedrate_elements[feedrate_being_setup].target    = current_block->final_rate;
 	} else {
 		// and in case there wasn't a deceleration phase, we'll do the same for whichever phase was last...
-		feedrate_elements[feedrate_being_setup-1].steps     = INT32_MAX;
+		feedrate_elements[feedrate_being_setup-1].steps     = INT16_MAX;
 		// We don't setup anything else because we limit to the target speed anyway.
 	}
 
@@ -487,7 +487,6 @@ bool doInterrupt() {
 				feedrate_changerate = 0;
 				feedrate = feedrate_target;
 			} 
-
 		}
 		DEBUG_PIN1.setValue(false);
 		return is_running;

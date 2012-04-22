@@ -35,14 +35,14 @@
 #define BLOCK_BUFFER_SIZE 16
 
 // size of command storage buffer
-#define PLANNER_BUFFER_SIZE 16
+#define PLANNER_BUFFER_SIZE 8
 
 #define TICKS_PER_ACCELERATION   5  // lower is better
 #define ACCELERATION_TICKS_PER_SECOND (1000000/(INTERVAL_IN_MICROSECONDS*TICKS_PER_ACCELERATION))
 
 // Give the processor some time to breathe and plan...
-#define MIN_MS_PER_SEGMENT_SD 20000
-#define MIN_MS_PER_SEGMENT_USB 40000
+#define MIN_MS_PER_SEGMENT_SD 10000
+#define MIN_MS_PER_SEGMENT_USB 20000
 
 
 namespace planner {
@@ -61,10 +61,10 @@ namespace planner {
 
 		// Fields used by the bresenham algorithm for tracing the line
 		Point target;                        // Final 5-axis target
-		uint32_t step_event_count;           // The number of step events required to complete this block
-		uint32_t accelerate_until;            // The index of the step event on which to stop acceleration
-		uint32_t decelerate_after;            // The index of the step event on which to start decelerating
-		uint32_t acceleration_rate;           // The acceleration rate used for acceleration calculation
+		uint16_t step_event_count;           // The number of step events required to complete this block
+		uint16_t accelerate_until;            // The index of the step event on which to stop acceleration
+		uint16_t decelerate_after;            // The index of the step event on which to start decelerating
+		int32_t acceleration_rate;           // The acceleration rate used for acceleration calculation
 		// uint8_t direction_bits;              // The direction bit set for this block
 		// uint8_t active_extruder;             // Selects the active extruder
 		
@@ -75,7 +75,7 @@ namespace planner {
 		float entry_speed;                                 // Entry speed at previous-current junction in mm/min
 		float max_entry_speed;                             // Maximum allowable junction entry speed in mm/min
 		float millimeters;                                 // The total travel of this block in mm
-		float steps_per_mm;                                // The integrated steps/mm for this move
+		// float steps_per_mm;                                // The integrated steps/mm for this move
 		float acceleration;                                // acceleration mm/sec^2
 		float stop_speed;                            // Speed to decelerate to if this is the last move
 		// uint8_t recalculate_flag;                    // Planner flag to recalculate trapezoids on entry junction
@@ -109,8 +109,7 @@ namespace planner {
 	/// Buffer a movement to the target point (in step-space), with us_per_step gaps between steps
 	/// \param[in] target New position to move to, in step-space
 	/// \param[in] us_per_step Homing speed, in us per step
-	/// \return If the move was buffered
-	bool addMoveToBuffer(const Point& target, const int32_t &us_per_step);
+	void addMoveToBuffer(const Point& target, const int32_t &us_per_step);
 
 	/// Buffer a movement to the target point (in step-space). We should avoid this, as it requires more calculation.
 	/// \param[in] target New position to move to, in step-space
@@ -118,8 +117,7 @@ namespace planner {
 	/// \param[in] relative Bitfield specifying whether each axis should
 	///                     interpret the new position as absolute or
 	///                     relative.
-	/// \return If the move was buffered
-	bool addMoveToBufferRelative(const Point& move, const int32_t &ms, const int8_t relative);
+	void addMoveToBufferRelative(const Point& move, const int32_t &ms, const int8_t relative);
 
 	/// Home one or more axes
 	/// \param[in] maximums If true, home in the positive direction
@@ -174,7 +172,7 @@ namespace planner {
 	void changeToolIndex(uint8_t tool);
 
 	void runStepperPlannerSlice();
-	bool planNextMove(const Point& target, const int32_t &us_per_step_in, const Point& steps);
+	bool planNextMove();
 	void setAccelerationOn(bool on);
 }
 

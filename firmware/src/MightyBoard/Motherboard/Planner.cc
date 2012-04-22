@@ -144,13 +144,13 @@ namespace planner {
 		
 	private:
 		volatile BufSizeType head, tail;
-		volatile bool full;
+		// volatile bool full;
 		BufSizeType size;
 		BufSizeType size_mask;
 		BufDataType* const data; /// Pointer to buffer data
 	
 	public:
-		ReusingCircularBufferTempl(BufSizeType size_in, BufDataType* buffer_in) : head(0), tail(0), full(false), size(size_in), size_mask(size_in-1), data(buffer_in) {
+		ReusingCircularBufferTempl(BufSizeType size_in, BufDataType* buffer_in) : head(0), tail(0), /*full(false),*/ size(size_in), size_mask(size_in-1), data(buffer_in) {
 			for (BufSizeType i = 0; i < size; i++) {
 				data[i] = BufDataType();
 			}
@@ -192,33 +192,33 @@ namespace planner {
 		// WARNING: no sanity checks!
 		inline void bumpHead() {
 			head = getNextIndex(head);
-			if (getNextIndex(head) == tail)
-				full = true;
+			// if (getNextIndex(head) == tail)
+			// 	full = true;
 		}
 
 		// bump the tail. cannot return anything useful, so it doesn't
 		// WARNING: no sanity checks!
 		inline void bumpTail() {
 			tail = getNextIndex(tail);
-			full = false;
+			// full = false;
 		}
 		
 		inline bool isEmpty() {
-			return !full && head == tail;
+			return head == tail;
 		}
 		
 		inline bool isFull() {
-			return full;
+			return (getNextIndex(head) == tail);
 		}
 		
 		inline BufSizeType getUsedCount() {
-			return full ? size-1 : ((head-tail+size) & size_mask);
+			return ((head-tail+size) & size_mask);
 		}
 		
 		inline void clear() {
 			head = 0;
 			tail = 0;
-			full = false;
+			// full = false;
 		}
 	};
 	
@@ -471,6 +471,7 @@ namespace planner {
 				tail_block->entry_speed = tail_block->stop_speed;
 				tail_block->flags |= Block::Recalculate | Block::PlannedFromStop;
 			}
+			force_replan_from_stopped = false;
 		}
 		do {
 			planner_reverse_pass();
@@ -609,7 +610,7 @@ namespace planner {
 	
 	// Is the move in the buffer ready to use?
 	bool isReady() {
-		return !(force_replan_from_stopped | block_buffer.isEmpty());
+		return !(force_replan_from_stopped || block_buffer.isEmpty());
 	}
 	
 	uint8_t bufferCount() {
@@ -623,7 +624,7 @@ namespace planner {
 	
 	void doneWithNextBlock() {
 		// if the previous plan was to a stop,
-		// then the next plan is to a stop
+		// then the next plan is from a stop
 		if (block_buffer.getUsedCount() > 1) {
 			Block *block = block_buffer.getTail();
 			if (block->flags & planner::Block::PlannedToStop) {
@@ -637,10 +638,11 @@ namespace planner {
 		block_buffer.bumpTail();
 	}
 	
-	bool addMoveToBufferRelative(const Point& move, const int32_t &ms, const int8_t relative)
+	void addMoveToBufferRelative(const Point& move, const int32_t &ms, const int8_t relative)
 	{
-		if(planner_buffer.isFull())
-			return false;
+		// This should have been prevented before we get here...
+		while (planner_buffer.isFull())
+			planNextMove(); // make room now!
 		
 		Point target = move + *tool_offsets;
 		int32_t max_delta = 0;
@@ -650,7 +652,7 @@ namespace planner {
 				target[i] = position[i] + move[i];
 				delta = abs(move[i]);
 			} else {
-				target[i] = move[i] + (*tool_offsets)[0];
+				target[i] = move[i] + (*tool_offsets)[i];
 				delta = abs(target[i] - position[i]);
 				
 			}
@@ -666,14 +668,14 @@ namespace planner {
 			planner_buffer.bumpHead();
 		}
 		position = target;
-		return true; 
 	}
 
 	// Buffer the move. IOW, add a new block, and recalculate the acceleration accordingly
-	bool addMoveToBuffer(const Point& target, const int32_t &us_per_step)
+	void addMoveToBuffer(const Point& target, const int32_t &us_per_step)
 	{
-		if(planner_buffer.isFull())
-			return false;
+		// This should have been prevented before we get here...
+		while (planner_buffer.isFull())
+			planNextMove(); // make room now!
 			
 		Point offset_target = target + *tool_offsets;
 			
@@ -685,16 +687,20 @@ namespace planner {
 			planner_buffer.bumpHead();
 		}
 		position = target;
-		return true;
-	
 	}
 
 
-	bool planNextMove(const Point& target, const int32_t &us_per_step_in, const Point& steps)
+	bool planNextMove()
 	{
-		if (block_buffer.isFull()) {
+		if (block_buffer.isFull() || planner_buffer.isEmpty()) {
 			return false;
 		}
+		
+		planner_move_t *move = planner_buffer.getTail();
+		const Point& target = move->target;
+		const int32_t &us_per_step_in = move->us_per_step;
+		const Point& steps = move->steps;
+		planner_buffer.bumpTail();
 		
 		Block *block = block_buffer.getHead();
 		// Mark block as not busy (Not executed by the stepper interrupt)
@@ -969,7 +975,7 @@ namespace planner {
 
 		// move locals to the block
 		block->millimeters = local_millimeters;
-		block->steps_per_mm = steps_per_mm;
+		// block->steps_per_mm = steps_per_mm;
 		block->step_event_count = local_step_event_count;
 		block->nominal_speed = local_nominal_speed;
 		block->acceleration_st = local_acceleration_st;
@@ -995,13 +1001,11 @@ namespace planner {
 			planner_recalculate();
 		
 		// Do no more than five blocks at a time
-		int8_t limiter = 50;
-		
-		while (!planner_buffer.isEmpty() && !block_buffer.isFull() && limiter-- > 0)
+		int8_t limiter = 5;
+		bool success = true;
+		while (success && limiter-- > 0)
 		{	
-			planner_move_t *move = planner_buffer.getTail();
-			planner_buffer.bumpTail();
-			planNextMove(move->target, move->us_per_step, move->steps);
+			success = planNextMove();
 		}
 	}
 	
