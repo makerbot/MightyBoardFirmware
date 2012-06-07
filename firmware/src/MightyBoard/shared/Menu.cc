@@ -1073,31 +1073,27 @@ void FilamentMenu::drawItem(uint8_t index, LiquidCrystalSerial& lcd) {
     
 	switch (index) {
         case 0:
-            lcd.writeFromPgmspace(LOAD_MSG);
             if(!singleTool){
-                lcd.setCursor(7,0);
-                lcd.writeFromPgmspace(RIGHT_MSG);
+                lcd.writeFromPgmspace(LOAD_RIGHT_MSG);
+            } else {
+                lcd.writeFromPgmspace(LOAD_MSG);
             }
             break;
         case 1:
-            lcd.writeFromPgmspace(UNLOAD_MSG);
             if(!singleTool){
-                lcd.setCursor(9,1);
-                lcd.writeFromPgmspace(RIGHT_MSG);
+                lcd.writeFromPgmspace(UNLOAD_RIGHT_MSG);
+            } else {
+                lcd.writeFromPgmspace(UNLOAD_MSG);
             }
             break;
         case 2:
             if(!singleTool){
-                lcd.writeFromPgmspace(LOAD_MSG);
-                lcd.setCursor(7,2);
-                lcd.writeFromPgmspace(LEFT_MSG); 
+                lcd.writeFromPgmspace(LOAD_LEFT_MSG);
             }
             break;
         case 3:
             if(!singleTool){
-                lcd.writeFromPgmspace(UNLOAD_MSG);
-                lcd.setCursor(9,3);
-                lcd.writeFromPgmspace(LEFT_MSG); 
+                lcd.writeFromPgmspace(UNLOAD_LEFT_MSG);
             }
             break;
 	}
