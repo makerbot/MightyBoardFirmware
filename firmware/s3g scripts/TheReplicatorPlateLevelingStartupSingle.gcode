@@ -2,7 +2,7 @@
 (**** Do not run this code on any other kind of machine! ****)
 G21 (set units to mm)
 G90 (set positioning to absolute)
-M71 (Find the 4 knobs on the botton of the   platform and tightenfour or five turns.)
+M71 (Find the 4 knobs on the bottom of the   platform and tightenfour or five turns.)
 M71 (I'm going to move   the extruder to     various positions   for adjustment.    )
 M71 (In each position,   we will need to     adjust 2 knobs at   the same time.      )
 M71 (Nozzles are at the  right height when   you can just slide asheet of paper     )
