@@ -186,7 +186,7 @@ static PROGMEM prog_uchar QTWO_MSG[] =       "de l'extrudeur ?    ";
 static PROGMEM prog_uchar LOAD_RIGHT_MSG[]  ="Mettre a droite"; 
 static PROGMEM prog_uchar LOAD_LEFT_MSG[]   ="Mettre a gauche"; 
 static PROGMEM prog_uchar LOAD_SINGLE_MSG[] ="Mettre le plastique"; 
-static PROGMEM prog_uchar UNLOAD_MSG[]      ="Retirer le plastique"; 
+static PROGMEM prog_uchar UNLOAD_SINGLE_MSG[]="Retirer le plastique"; 
 static PROGMEM prog_uchar UNLOAD_RIGHT_MSG[]="Retirer a gauche"; 
 static PROGMEM prog_uchar UNLOAD_LEFT_MSG[] ="Retirer a droite"; 
 #else // ENGLISH
@@ -195,7 +195,7 @@ static PROGMEM prog_uchar QTWO_MSG[] =       "from the nozzle?";
 static PROGMEM prog_uchar LOAD_RIGHT_MSG[] = "Load right"; 
 static PROGMEM prog_uchar LOAD_LEFT_MSG[] =  "Load left"; 
 static PROGMEM prog_uchar LOAD_SINGLE_MSG[] ="Load"; 
-static PROGMEM prog_uchar UNLOAD_MSG[] =     "Unload"; 
+static PROGMEM prog_uchar UNLOAD_SINGLE_MSG[]="Unload"; 
 static PROGMEM prog_uchar UNLOAD_RIGHT_MSG[]="Unload right"; 
 static PROGMEM prog_uchar UNLOAD_LEFT_MSG[] ="Unload left"; 
 #endif

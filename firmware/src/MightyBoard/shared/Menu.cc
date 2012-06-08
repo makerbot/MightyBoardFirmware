@@ -1079,14 +1079,14 @@ void FilamentMenu::drawItem(uint8_t index, LiquidCrystalSerial& lcd) {
             if(!singleTool){
                 lcd.writeFromPgmspace(LOAD_RIGHT_MSG);
             } else {
-                lcd.writeFromPgmspace(LOAD_MSG);
+                lcd.writeFromPgmspace(LOAD_SINGLE_MSG);
             }
             break;
         case 1:
             if(!singleTool){
                 lcd.writeFromPgmspace(UNLOAD_RIGHT_MSG);
             } else {
-                lcd.writeFromPgmspace(UNLOAD_MSG);
+                lcd.writeFromPgmspace(UNLOAD_SINGLE_MSG);
             }
             break;
         case 2:
