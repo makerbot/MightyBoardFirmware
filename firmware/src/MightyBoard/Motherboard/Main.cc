@@ -43,10 +43,10 @@ void reset(bool hard_reset) {
 			brown_out = true;
 		}
 		
-        // clear watch dog timer and re-enable
+    // clear watch dog timer and re-enable
 		if(hard_reset)
 		{ 
-            // ATODO: remove disable
+      // ATODO: remove disable
 			wdt_disable();
 			MCUSR = 0x0;
 			wdt_enable(WDTO_8S); // 8 seconds is max timeout
@@ -54,13 +54,12 @@ void reset(bool hard_reset) {
 		
 		// initialize major classes
 		Motherboard& board = Motherboard::getBoard();	
-        sdcard::reset();
+    sdcard::reset();
 		utility::reset();
-		planner::init();
-		planner::abort();
 		command::reset();
 		eeprom::init();
-		steppers::reset();
+		steppers::abort();
+    steppers::reset();
 		initThermistorTables();
 		board.reset(hard_reset);
 		

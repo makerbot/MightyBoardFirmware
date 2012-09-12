@@ -112,10 +112,8 @@
 
 #define HOST_CMD_BUILD_START_NOTIFICATION 153
 #define HOST_CMD_BUILD_END_NOTIFICATION 154
-
+#define HOST_CMD_SET_ACCELERATION_TOGGLE 156
 #define HOST_CMD_DEBUG_ECHO        0x70
-
-
 
 // These are our query commands from the host
 #define SLAVE_CMD_VERSION                0

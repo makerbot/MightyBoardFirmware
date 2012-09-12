@@ -23,12 +23,12 @@ InterfaceBoard::InterfaceBoard(ButtonArray& buttons_in,
         buttons(buttons_in),
 		waitingMask(0)
 {
-        buildScreen = buildScreen_in;
-        mainScreen = mainScreen_in;
-        messageScreen = messageScreen_in;
-        LEDs[0] = gled_in;
-        LEDs[1] = rled_in;
-        buildPercentage = 101;
+  buildScreen = buildScreen_in;
+  mainScreen = mainScreen_in;
+  messageScreen = messageScreen_in;
+  LEDs[0] = gled_in;
+  LEDs[1] = rled_in;
+  buildPercentage = 101;
 }
 
 void InterfaceBoard::init() {
@@ -42,14 +42,14 @@ void InterfaceBoard::init() {
 	LEDs[0].setDirection(true);
 	LEDs[1].setDirection(true);
 	
-    building = false;
+  building = false;
 
-    screenIndex = -1;
+  screenIndex = -1;
 	waitingMask = 0;
-    pushScreen(mainScreen);
-    screen_locked = false;
-    onboard_build = false;
-    onboard_start_idx = 1;
+  pushScreen(mainScreen);
+  screen_locked = false;
+  onboard_build = false;
+  onboard_start_idx = 1;
 }
 
 void InterfaceBoard::resetLCD() {
@@ -67,16 +67,16 @@ micros_t InterfaceBoard::getUpdateRate() {
 }
 
 /// push Error Message Screen
-void InterfaceBoard::errorMessage(char buf[]){
+void InterfaceBoard::errorMessage(const unsigned char buf[]){
 
-		messageScreen->clearMessage();
-		messageScreen->setXY(0,0);
-		messageScreen->addMessage(buf);
-		if(screenStack[screenIndex] != messageScreen){
-			pushScreen(messageScreen);
-		}else{
-			screenStack[screenIndex]->update(lcd, true);
-		}
+  messageScreen->clearMessage();
+  messageScreen->setXY(0,0);
+  messageScreen->addMessage(buf);
+  if(screenStack[screenIndex] != messageScreen){
+    pushScreen(messageScreen);
+  }else{
+    screenStack[screenIndex]->update(lcd, true);
+  }
 }
 
 /// push a local screen

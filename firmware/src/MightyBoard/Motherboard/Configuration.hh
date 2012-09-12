@@ -18,6 +18,25 @@
 #ifndef BOARDS_MBV40_CONFIGURATION_HH_
 #define BOARDS_MBV40_CONFIGURATION_HH_
 
+// --- Axis configuration ---
+// Define the number of stepper axes supported by the board.  The axes are
+// denoted by X, Y, Z, A and B.
+#define STEPPER_COUNT   5
+#define MAX_STEPPERS    5
+#define EXTRUDERS       2
+ 
+// microstepping is 1 / (1 << MICROSTEPPING)
+//  0 for 1/1
+//  1 for 1/2
+//  2 for 1/4
+//  3 for 1/8
+//  4 for 1/16
+//  5 for 1/32
+//  etc.
+#define MICROSTEPPING   4
+ 
+#ifndef SIMULATOR
+
 // This file details the pin assignments and features of the Makerbot Extended Motherboard 4.0
 
 #include "AvrPort.hh"
@@ -27,7 +46,6 @@
 // be at least eight times this large.  Reducing the interval can cause resource
 // starvation; leave this at 64uS or greater unless you know what you're doing.
 #define INTERVAL_IN_MICROSECONDS 256
-#define HOMING_INTERVAL_IN_MICROSECONDS 128
 
 // --- Power Supply Unit configuration ---
 // Define as 1 if a PSU is present; 0 if not.
@@ -63,21 +81,11 @@
 // --- Host UART configuration ---
 // The host UART is presumed to always be present on the RX/TX lines.
 
-// Random Generator Pin
-#define RANDOM_PIN  0
-
-
 // --- Piezo Buzzer configuration ---
 // Define as 1 if the piezo buzzer is present, 0 if not.
 #define HAS_BUZZER 1
 // The pin that drives the buzzer
 #define BUZZER_PIN Pin(PortG,5)  //OC0B
-
-// --- Axis configuration ---
-// Define the number of stepper axes supported by the board.  The axes are
-// denoted by X, Y, Z, A and B.
-#define STEPPER_COUNT   5
-#define MAX_STEPPERS    5
 
 // --- Stepper and endstop configuration ---
 // Pins should be defined for each axis present on the board.  They are denoted
@@ -88,60 +96,42 @@
 // if they are based on the H21LOI, they are not.
 #define DEFAULT_INVERTED_ENDSTOPS 1
 
-// The X stepper step pin (active on rising edge)
-#define X_STEP_PIN      Pin(PortF,1)
-// The X direction pin (forward on logic high)
-#define X_DIR_PIN       Pin(PortF,0)
-// The X stepper enable pin (active low)
-#define X_ENABLE_PIN    Pin(PortF,2)
+//Stepper Ports
+#define X_STEPPER_STEP          STEPPER_PORT(F,1)   //active rising edge
+#define X_STEPPER_DIR           STEPPER_PORT(F,0)   //forward on high
+#define X_STEPPER_ENABLE        STEPPER_PORT(F,2)   //active low
+#define X_STEPPER_MIN           STEPPER_PORT(L,0)   //active high
+#define X_STEPPER_MAX           STEPPER_PORT(L,1)   //active high
+ 
+#define Y_STEPPER_STEP          STEPPER_PORT(F,5)   //active rising edge
+#define Y_STEPPER_DIR           STEPPER_PORT(F,4)   //forward on high
+#define Y_STEPPER_ENABLE        STEPPER_PORT(F,6)   //active low
+#define Y_STEPPER_MIN           STEPPER_PORT(L,2)   //active high
+#define Y_STEPPER_MAX           STEPPER_PORT(L,3)   //active high
+ 
+#define Z_STEPPER_STEP          STEPPER_PORT(K,1)   //active rising edge
+#define Z_STEPPER_DIR           STEPPER_PORT(K,0)   //forward on high
+#define Z_STEPPER_ENABLE        STEPPER_PORT(K,2)   //active low
+#define Z_STEPPER_MIN           STEPPER_PORT(L,6)   //active high
+#define Z_STEPPER_MAX           STEPPER_PORT(L,7)   //active high
+ 
+#define A_STEPPER_STEP          STEPPER_PORT(A,3)   //active rising edge
+#define A_STEPPER_DIR           STEPPER_PORT(A,2)   //forward on high
+#define A_STEPPER_ENABLE        STEPPER_PORT(A,4)   //active low
+ 
+#define B_STEPPER_STEP          STEPPER_PORT(A,7)   //active rising edge
+#define B_STEPPER_DIR           STEPPER_PORT(A,6)   //forward on high
+#define B_STEPPER_ENABLE        STEPPER_PORT(G,2)   //active low
+ 
+ 
 // X stepper potentiometer pin
-#define X_POT_PIN	Pin(PortF,3)
-// The X minimum endstop pin (active high)
-#define X_MIN_PIN       Pin(PortL,0)
-// The X maximum endstop pin (active high)
-#define X_MAX_PIN       Pin(PortL,1)
-
-// The Y stepper step pin (active on rising edge)
-#define Y_STEP_PIN      Pin(PortF,5)
-// The Y direction pin (forward on logic high)
-#define Y_DIR_PIN       Pin(PortF,4)
-// The Y stepper enable pin (active low)
-#define Y_ENABLE_PIN    Pin(PortF,6)
+#define X_POT_PIN   Pin(PortF,3)
 // Y stepper potentiometer pin
-#define Y_POT_PIN	Pin(PortF,7)
-// The Y minimum endstop pin (active high)
-#define Y_MIN_PIN       Pin(PortL,2)
-// The Y maximum endstop pin (active high)
-#define Y_MAX_PIN       Pin(PortL,3)
-
-// The Z stepper step pin (active on rising edge)
-#define Z_STEP_PIN      Pin(PortK,1)
-// The Z direction pin (forward on logic high)
-#define Z_DIR_PIN       Pin(PortK,0)
-// The Z stepper enable pin (active low)
-#define Z_ENABLE_PIN    Pin(PortK,2)
+#define Y_POT_PIN   Pin(PortF,7)
 // Z stepper potentiometer pin
-#define Z_POT_PIN	Pin(PortK,3)
-// The Z minimum endstop pin (active high)
-#define Z_MIN_PIN       Pin(PortL,6)
-// The Z maximum endstop pin (active high)
-#define Z_MAX_PIN       Pin(PortL,7)
-
-// The A stepper step pin (active on rising edge)
-#define A_STEP_PIN      Pin(PortA,3)
-// The A direction pin (forward on logic high)
-#define A_DIR_PIN       Pin(PortA,2)
-// The A stepper enable pin (active low)
-#define A_ENABLE_PIN    Pin(PortA,4)
+#define Z_POT_PIN   Pin(PortK,3)
 // A stepper potentiometer pin
-#define A_POT_PIN	Pin(PortA,5)
-
-// The B stepper step pin (active on rising edge)
-#define B_STEP_PIN      Pin(PortA,7)
-// The B direction pin (forward on logic high)
-#define B_DIR_PIN       Pin(PortA,6)
-// The B stepper enable pin (active low)
-#define B_ENABLE_PIN    Pin(PortG,2)
+#define A_POT_PIN   Pin(PortA,5)
 // B stepper potentiometer pin
 #define B_POT_PIN       Pin(PortJ,6)
 
@@ -248,5 +238,87 @@
 #define ASTEPS_PER_MM          96.2752018f
 #define BSTEPS_PER_MM          96.2752018f
 
+//If defined, the planner is constrained to a pipeline size of 1,
+//this means that acceleration still happens, but only on a per block basis,
+//there's no speeding up between blocks.
+//#define PLANNER_OFF
+ 
+//If defined provides 2 debugging variables for on screen display during build
+//Variables are floats:  debug_onscreen1, debug_onscreen2 and can be found in Steppers.hh
+//#define DEBUG_ONSCREEN
+ 
+//If defined, the stack is painted with a value and the free sram reported in
+//in the Version menu.  This enables debugging to see if the SRAM was ever exhausted
+//which would lead to stack corruption.
+#define STACK_PAINT
+ 
+//If defined, stores the square root lookup table in PROGMEM instead of SRAM.
+//Saves 772 bytes of SRAM, costs 48 bytes of program space
+//It's a bit slower reading from PROGMEM than SRAM
+#define SQRT_TABLE_IN_PROGMEM
+ 
+//Oversample the dda to provide less jitter.
+//To switch off oversampling, comment out
+//2 is the number of bits, as in a bit shift.  So << 2 = multiply by 4
+//= 4 times oversampling
+//Obviously because of this oversampling is always a power of 2.
+//Don't make it too large, as it will kill performance and can overflow int32_t
+//#define OVERSAMPLED_DDA 2
+ 
+//Keep the dda "phase" between line segments
+//If false, each new line segment is started as if it was a new line segment, i.e. no prior history
+//If true, each new line segment takes into account the phase of the last segment
+#define DDA_KEEP_PHASE  false
+
+#endif //!SIMULATOR
+
+#define JKN_ADVANCE
+ 
+//Minimum time in seconds that a movement needs to take if the planning pipeline command buffer is
+//emptied. Increase this number if you see blobs while printing high speed & high detail. It will
+//slowdown on the detailed stuff.
+#define ACCELERATION_MIN_SEGMENT_TIME 0.0200
+ 
+//Minimum planner junction speed (mm/sec). Sets the default minimum speed the planner plans for at 
+//the end of the buffer and all stops. This should not be much greater than zero and should only be 
+//changed if unwanted behavior is observed on a user's machine when running at very slow speeds. 
+//2mm/sec is the recommended value.
+#define ACCELERATION_MIN_PLANNER_SPEED 2
+ 
+//Slowdown limit specifies what to do when the pipeline command buffer starts to empty.
+//The pipeline command buffer is 16 commands in length, and Slowdown Limit can be set 
+//between 0 - 8 (half the buffer size).
+//
+//When Commands Left <= Slowdown Limit, the feed rate is progressively slowed down as the buffer 
+//becomes more empty.
+//
+//By slowing down the feed rate, you reduce the possibility of running out of commands, and creating 
+//a blob due to the stopped movement.
+//
+//Possible values are:
+//
+//0 - Disabled - Never Slowdown
+//1 - DON'T USE
+//2 - DON'T USE
+//3,4,5,6,7,8 - The higher the number, the earlier the start of the slowdown
+#define ACCELERATION_SLOWDOWN_LIMIT 4
+ 
+//ACCELERATION_EXTRUDER_WHEN_NEGATIVE specifies the direction of extruder.
+//If negative steps cause an extruder to extrude material, then set this to true.
+//If positive steps cause an extruder to extrude material, then set this to false.
+//Note: Although a Replicator can have 2 extruders rotating in opposite directions,
+//both extruders require negative steps to extrude material.
+//This setting effects "Advance" and "Extruder Deprime".
+#define ACCELERATION_EXTRUDE_WHEN_NEGATIVE_A true
+#define ACCELERATION_EXTRUDE_WHEN_NEGATIVE_B true
+ 
+// If defined, overlapping stepper interrupts don't cause clunking
+// The ideal solution it to adjust calc_timer, but this is just a safeguard
+#define ANTI_CLUNK_PROTECTION
+ 
+//If defined, speed is drastically reducing to crawling
+//Very useful for watching acceleration and locating any bugs visually
+//Only slows down when acceleration is also set on.
+//#define DEBUG_SLOW_MOTION
 
 #endif // BOARDS_MBV40_CONFIGURATION_HH_

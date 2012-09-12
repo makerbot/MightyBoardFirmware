@@ -40,7 +40,7 @@
 // beta: 4066
 // max adc: 1023
 
-TempTable default_therm_table PROGMEM = {
+const TempTable default_therm_table PROGMEM = {
   {1, 841},
   {54, 255},
   {107, 209},

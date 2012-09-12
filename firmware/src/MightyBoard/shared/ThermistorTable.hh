@@ -42,6 +42,6 @@ typedef struct {
 
 typedef Entry TempTable[NUMTEMPS];
 
-extern TempTable default_therm_table;
+extern const TempTable default_therm_table;
 
 #endif // THERMISTOR_TABLE

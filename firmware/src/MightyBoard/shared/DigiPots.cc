@@ -39,7 +39,8 @@ void DigiPots::resetPots()
 {
     SoftI2cManager i2cPots = SoftI2cManager::getI2cManager();
     i2cPots.start(0b01011110 | I2C_WRITE, pot_pin);
-    i2cPots.write(eeprom::getEeprom8(eeprom_base + eeprom_pot_offset, 0), pot_pin);
+    potValue = eeprom::getEeprom8(eeprom_base + eeprom_pot_offset, 0);
+    i2cPots.write(potValue, pot_pin);
     i2cPots.stop();
 }
 
@@ -47,6 +48,12 @@ void DigiPots::setPotValue(const uint8_t val)
 {
     SoftI2cManager i2cPots = SoftI2cManager::getI2cManager();
     i2cPots.start(0b01011110 | I2C_WRITE, pot_pin);
-    i2cPots.write(val > DIGI_POT_MAX ? DIGI_POT_MAX : val, pot_pin);
+    potValue = val > DIGI_POT_MAX ? DIGI_POT_MAX : val;
+    i2cPots.write(potValue, pot_pin);    
     i2cPots.stop(); 
+}
+
+/// returns the last pot value set
+uint8_t DigiPots::getPotValue() {
+    return potValue;
 }

@@ -50,6 +50,10 @@ public:
 
 	/// set i2c pot to specified value (0-127 valid)
 	void setPotValue(const uint8_t val);
+  uint8_t getPotValue(); 
+
+private:
+  uint8_t potValue;
 
 };
 

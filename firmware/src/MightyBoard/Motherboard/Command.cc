@@ -23,6 +23,7 @@
 #include "CircularBuffer.hh"
 #include <util/atomic.h>
 #include <avr/eeprom.h>
+#include "Eeprom.hh"
 #include "EepromMap.hh"
 #include "SDCard.hh"
 #include "Pin.hh"
@@ -31,7 +32,6 @@
 #include "RGB_LED.hh"
 #include "Interface.hh"
 #include "UtilityScripts.hh"
-#include "Planner.hh"
 #include "stdio.h"
 #include "Menu_locales.hh"
 
@@ -118,7 +118,7 @@ int32_t pop32() {
 	return shared.a;
 }
 
-enum {
+enum CommandState{
 	READY,
 	MOVING,
 	DELAY,
@@ -196,13 +196,13 @@ Point sleep_position;
 void startSleep(){
 
 	// record current position
-	sleep_position = steppers::getPosition();
+	sleep_position = steppers::getPlannerPosition();
 	
 	Motherboard &board = Motherboard::getBoard();
 	
 	// retract
 	Point retract = Point(sleep_position[0], sleep_position[1], sleep_position[2], sleep_position[3] + ASTEPS_PER_MM, sleep_position[4] + BSTEPS_PER_MM);
-	planner::addMoveToBuffer(retract, ab_mm_per_second_20);
+	steppers::setTarget(retract, ab_mm_per_second_20);
 	
 	// record heater state
 	extruder_temp[0] = board.getExtruderBoard(0).getExtruderHeater().get_set_temperature();
@@ -223,22 +223,22 @@ void startSleep(){
 	wait_pos[X_AXIS] = -110.5*XSTEPS_PER_MM;
 	wait_pos[Y_AXIS] = -74*YSTEPS_PER_MM;
 	
-	planner::addMoveToBuffer(z_pos, z_mm_per_second_18);
-	planner::addMoveToBuffer(wait_pos, xy_mm_per_second_80);
+	steppers::setTarget(z_pos, z_mm_per_second_18);
+	steppers::setTarget(wait_pos, xy_mm_per_second_80);
 }
 
 void stopSleep(){
 	// move to build position
-	Point z_pos = Point(steppers::getPosition());
+	Point z_pos = Point(steppers::getPlannerPosition());
 	/// set filament position to sleep_position
 	z_pos[A_AXIS] = sleep_position[A_AXIS];
 	z_pos[B_AXIS] = sleep_position[B_AXIS];
-	planner::definePosition(z_pos);
+	steppers::definePosition(z_pos);
 	/// move z_axis first
 	z_pos[Z_AXIS] = sleep_position[Z_AXIS];
-	planner::addMoveToBuffer(z_pos, z_mm_per_second_18);
+	steppers::setTarget(z_pos, z_mm_per_second_18);
 	/// move back to paused position
-	planner::addMoveToBuffer(sleep_position, xy_mm_per_second_80);	
+	steppers::setTarget(sleep_position, xy_mm_per_second_80);	
 }
 
 void sleepReheat(){
@@ -298,14 +298,8 @@ void ActivePause(bool on, SleepType type){
 	}	
 }
 
-
-
-// Handle movement comands -- called from a few places
 static void handleMovementCommand(const uint8_t &command) {
-	// if we're already moving, check to make sure the buffer isn't full
-	if (/*mode == MOVING && */planner::isBufferFull()) {
-		return; // we'll be back!
-	}
+
 	if (command == HOST_CMD_QUEUE_POINT_EXT) {
 		// check for completion
 		if (command_buffer.getLength() >= 25) {
@@ -322,7 +316,7 @@ static void handleMovementCommand(const uint8_t &command) {
 
 			line_number++;
 		
-			planner::addMoveToBuffer(Point(x,y,z,a,b), dda);
+			steppers::setTarget(Point(x,y,z,a,b), dda);
 		}
 	}
 	 else if (command == HOST_CMD_QUEUE_POINT_NEW) {
@@ -342,19 +336,19 @@ static void handleMovementCommand(const uint8_t &command) {
 
 			line_number++;
 			
-			planner::addMoveToBufferRelative(Point(x,y,z,a,b), us, relative);
+			steppers::setTargetNew(Point(x,y,z,a,b), us, relative);
 		}
 	}
 	
 }
 
 bool processExtruderCommandPacket() {
-	Motherboard& board = Motherboard::getBoard();
-        uint8_t	id = pop8();
-		uint8_t command = pop8();
-		uint8_t length = pop8();
+  Motherboard& board = Motherboard::getBoard();
+  uint8_t	id = pop8();
+  uint8_t command = pop8();
+  pop8(); //uint8_t length = pop8();
 
-		switch (command) {
+  switch (command) {
 		case SLAVE_CMD_SET_TEMP:
 			board.getExtruderBoard(id).getExtruderHeater().set_target_temperature(pop16());
 			/// if platform is actively heating and extruder is not cooling down, pause extruder
@@ -424,7 +418,7 @@ bool processExtruderCommandPacket() {
 		case SLAVE_CMD_SET_SERVO_2_POS:
 			pop8();
 			return true;
-		}
+  }
 	return false;
 }
 
@@ -480,14 +474,15 @@ void runCommandSlice() {
 		if (!steppers::isRunning()) {
 			mode = READY;
 		} else if (homing_timeout.hasElapsed()) {
-			planner::abort();
+			steppers::abort();
 			mode = READY;
 		}
 	}
 	if (mode == MOVING) {
 		if (!steppers::isRunning()) {
 			mode = READY;
-		} else {
+		} 
+    /*else {
 			if (command_buffer.getLength() > 0 && !active_paused) {
 				Motherboard::getBoard().resetUserInputTimeout();
 				uint8_t command = command_buffer[0];
@@ -501,7 +496,7 @@ void runCommandSlice() {
 						}
 				}
 			}
-		}
+		}*/
 	}
 	if (mode == DELAY) {
 		// check timers
@@ -511,7 +506,7 @@ void runCommandSlice() {
 	}
 	if (mode == WAIT_ON_TOOL) {
 		if(tool_wait_timeout.hasElapsed()){
-			Motherboard::getBoard().errorResponse("I timed out while   attempting to heat  my extruder."); 
+			Motherboard::getBoard().errorResponse(ERROR_HEATING_TIMEOUT);
 			mode = READY;		
 		}
 		else if(!Motherboard::getBoard().getExtruderBoard(currentToolIndex).getExtruderHeater().isHeating()){
@@ -523,7 +518,7 @@ void runCommandSlice() {
 	}
 	if (mode == WAIT_ON_PLATFORM) {
 		if(tool_wait_timeout.hasElapsed()){
-			Motherboard::getBoard().errorResponse("I timed out while   attempting to heat  my platform."); 
+			Motherboard::getBoard().errorResponse(ERROR_PLATFORM_HEATING_TIMEOUT);
 			mode = READY;		
 		} else if (!Motherboard::getBoard().getPlatformHeater().isHeating()){
 			mode = READY;
@@ -621,17 +616,32 @@ void runCommandSlice() {
 		if ((command_buffer.getLength() > 0)){
 			Motherboard::getBoard().resetUserInputTimeout();
 			
-			uint8_t command = command_buffer[0];
+	  uint8_t command = command_buffer[0];
+
+    //If we're running acceleration, we want to populate the pipeline buffer,
+    //but we also need to sync (wait for the pipeline buffer to clear) on certain
+    //commands, we do that here
+    //If we're not pipeline'able command, then we sync here,
+    //by waiting for the pipeline buffer to empty before continuing
+    if ((command != HOST_CMD_QUEUE_POINT_EXT) &&
+        (command != HOST_CMD_QUEUE_POINT_NEW) &&
+        (command != HOST_CMD_ENABLE_AXES ) &&
+        (command != HOST_CMD_SET_BUILD_PERCENT ) &&
+        (command != HOST_CMD_CHANGE_TOOL ) &&
+        (command != HOST_CMD_SET_POSITION_EXT) &&
+        (command != HOST_CMD_SET_ACCELERATION_TOGGLE)) {
+           if ( ! st_empty() )     return;
+    }
 
 		if (command == HOST_CMD_QUEUE_POINT_EXT || command == HOST_CMD_QUEUE_POINT_NEW) {
 					handleMovementCommand(command);
 			}  else if (command == HOST_CMD_CHANGE_TOOL) {
 				if (command_buffer.getLength() >= 2) {
 					pop8(); // remove the command code
-                    currentToolIndex = pop8();
-                    line_number++;
-                    
-                    planner::changeToolIndex(currentToolIndex);
+          currentToolIndex = pop8();
+          line_number++;
+          
+          steppers::changeToolIndex(currentToolIndex);
 				}
 			} else if (command == HOST_CMD_ENABLE_AXES) {
 				if (command_buffer.getLength() >= 2) {
@@ -642,7 +652,12 @@ void runCommandSlice() {
 					bool enable = (axes & 0x80) != 0;
 					for (int i = 0; i < STEPPER_COUNT; i++) {
 						if ((axes & _BV(i)) != 0) {
-							steppers::enableAxis(i, enable);
+              //If we're issuing a disable for an extruder axis, and the planner pipeline is not
+              //empty, then we drop it, otherwise we action it.
+              //This is needed because RepG sends errant Enable/Disable commands constantly during the print.
+              if (! (( i >= A_AXIS ) && ( ! enable ) &&  ( ! st_empty() ))){
+							  steppers::enableAxis(i, enable);
+              }
 						}
 					}
 				}
@@ -657,7 +672,7 @@ void runCommandSlice() {
 					int32_t b = pop32();
 					line_number++;
 					
-					planner::definePosition(Point(x,y,z,a,b));
+					steppers::definePosition(Point(x,y,z,a,b));
 				}
 			} else if (command == HOST_CMD_DELAY) {
 				if (command_buffer.getLength() >= 5) {
@@ -742,7 +757,6 @@ void runCommandSlice() {
 					uint16_t timeout_s = pop16();
 					line_number++;
 					
-					bool direction = command == HOST_CMD_FIND_AXES_MAXIMUM;
 					mode = HOMING;
 					homing_timeout.start(timeout_s * 1000L * 1000L);
 					steppers::startHoming(command==HOST_CMD_FIND_AXES_MAXIMUM,
@@ -754,7 +768,7 @@ void runCommandSlice() {
 					mode = WAIT_ON_TOOL;
 					pop8();
 					currentToolIndex = pop8();
-					uint16_t toolPingDelay = (uint16_t)pop16();
+					pop16(); //uint16_t toolPingDelay = (uint16_t)pop16();
 					uint16_t toolTimeout = (uint16_t)pop16();
 					line_number++;
 					
@@ -767,8 +781,8 @@ void runCommandSlice() {
 				if (command_buffer.getLength() >= 6) {
 					mode = WAIT_ON_PLATFORM;
 					pop8();
-					uint8_t currentToolIndex = pop8();
-					uint16_t toolPingDelay = (uint16_t)pop16();
+					currentToolIndex = pop8();
+					pop16(); //uint16_t toolPingDelay = (uint16_t)pop16();
 					uint16_t toolTimeout = (uint16_t)pop16();
 					line_number++;
 					
@@ -789,7 +803,7 @@ void runCommandSlice() {
 					for (uint8_t i = 0; i < STEPPER_COUNT; i++) {
 						if ( axes & (1 << i) ) {
 							uint16_t offset = eeprom_offsets::AXIS_HOME_POSITIONS_STEPS + 4*i;
-							uint32_t position = steppers::getPosition()[i];
+							uint32_t position = steppers::getPlannerPosition()[i];
 							cli();
 							eeprom_write_block(&position, (void*) offset, 4);
 							sei();
@@ -803,7 +817,7 @@ void runCommandSlice() {
 					uint8_t axes = pop8();
 					line_number++;
 
-					Point newPoint = steppers::getPosition();
+					Point newPoint = steppers::getPlannerPosition();
 
 					for (uint8_t i = 0; i < STEPPER_COUNT; i++) {
 						if ( axes & (1 << i) ) {
@@ -814,7 +828,7 @@ void runCommandSlice() {
 						}
 					}
 
-					planner::definePosition(newPoint);
+					steppers::definePosition(newPoint);
 				}
 
 			}else if (command == HOST_CMD_SET_POT_VALUE){
@@ -834,10 +848,10 @@ void runCommandSlice() {
 					uint8_t blue = pop8();
 					uint8_t blink_rate = pop8();
 
-                    uint8_t effect = pop8();
-                    line_number++;
-                    RGB_LED::setLEDBlink(blink_rate);
-                    RGB_LED::setCustomColor(red, green, blue);
+          pop8(); //uint8_t effect = pop8();
+          line_number++;
+          RGB_LED::setLEDBlink(blink_rate);
+          RGB_LED::setCustomColor(red, green, blue);
 
 				}
 			}else if (command == HOST_CMD_SET_BEEP){
@@ -845,14 +859,14 @@ void runCommandSlice() {
 					pop8(); // remove the command code
 					uint16_t frequency= pop16();
 					uint16_t beep_length = pop16();
-					uint8_t effect = pop8();
+					pop8(); //uint8_t effect = pop8();
 					line_number++;
-                    Piezo::setTone(frequency, beep_length);
+          Piezo::setTone(frequency, beep_length);
 
 				}			
 			}else if (command == HOST_CMD_TOOL_COMMAND) {
 				if (command_buffer.getLength() >= 4) { // needs a payload
-					uint8_t payload_length = command_buffer[3];
+					int8_t payload_length = command_buffer[3];
 					if (command_buffer.getLength() >= 4+payload_length) {
 							pop8(); // remove the command code
 							line_number++;
@@ -863,7 +877,7 @@ void runCommandSlice() {
 				if (command_buffer.getLength() >= 3){
 					pop8(); // remove the command code
 					uint8_t percent = pop8();
-					uint8_t ignore = pop8(); // remove the reserved byte
+					pop8(); // remove the reserved byte
 					line_number++;
 					interface::setBuildPercentage(percent);
 				}
@@ -888,7 +902,7 @@ void runCommandSlice() {
 				/// reset EEPROM settings to the factory value. Reboot bot.
 				if (command_buffer.getLength() >= 2){
 				pop8(); // remove the command code
-				uint8_t options = pop8();
+				pop8(); //uint8_t options = pop8();
 				line_number++;
 				eeprom::factoryResetEEPROM();
 				Motherboard::getBoard().reset(false);
@@ -896,18 +910,23 @@ void runCommandSlice() {
 			} else if ( command == HOST_CMD_BUILD_START_NOTIFICATION) {
 				if (command_buffer.getLength() >= 5){
 					pop8(); // remove the command code
-					int buildSteps = pop32();
+					pop32(); //int buildSteps = pop32();
 					line_number++;
 					host::handleBuildStartNotification(command_buffer);		
 				}
-			 } else if ( command == HOST_CMD_BUILD_END_NOTIFICATION) {
+			} else if ( command == HOST_CMD_BUILD_END_NOTIFICATION) {
 				if (command_buffer.getLength() >= 2){
 					pop8(); // remove the command code
 					uint8_t flags = pop8();
 					line_number++;
 					host::handleBuildStopNotification(flags);
-				}
-			
+        }
+			} else if ( command == HOST_CMD_SET_ACCELERATION_TOGGLE) {
+        if (command_buffer.getLength() >= 2){
+          pop8(); // remove the command code
+          uint8_t status = pop8();
+          steppers::setSegmentAccelState(status == 1);
+        } 
 			} else {
 			}
 		}

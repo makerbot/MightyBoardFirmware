@@ -141,22 +141,22 @@ public:
 	bool buttonPushed();
 	
 	/// push Error Message Screen
-	void errorMessage(char buf[]);
+	void errorMessage(const unsigned char buf[]);
     
-    /// lock screen so that no pushes/pops can occur
-    /// used in the case of heater failure to force restart
-    void lock(){ screen_locked = true;}
-    
-    /// re-initialize LCD
-    void resetLCD();
-    
-    /// push a local screen
-    void queueScreen(ScreenType screen);
-    
-    /// record screen stack index when onboard script is started so we can return there on finish
-    void RecordOnboardStartIdx();
-    
-    /// pop screen without refreshing the new head screen
+  /// lock screen so that no pushes/pops can occur
+  /// used in the case of heater failure to force restart
+  void lock(){ screen_locked = true;}
+  
+  /// re-initialize LCD
+  void resetLCD();
+  
+  /// push a local screen
+  void queueScreen(ScreenType screen);
+  
+  /// record screen stack index when onboard script is started so we can return there on finish
+  void RecordOnboardStartIdx();
+  
+  /// pop screen without refreshing the new head screen
 	void popScreenQuick();
 };
 

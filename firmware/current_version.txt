@@ -1,3 +1,5 @@
+5.06.08
+ * internal release Sept 12, 2102
 5.05.07
  * internal release July 31, 2012 updated interface features
 5.05.04

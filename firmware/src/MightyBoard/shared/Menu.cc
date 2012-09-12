@@ -20,7 +20,6 @@
 #include "Eeprom.hh"
 #include <avr/eeprom.h>
 #include "RGB_LED.hh"
-#include "Planner.hh"
 #include "stdio.h"
 #include "Menu_locales.hh"
 
@@ -57,7 +56,7 @@ InfoMenu info;
 #define FILAMENT_HEAT_TEMP 220
 
 bool ready_fail = false;
-bool cancel_process = true;
+bool cancel_process = false;
 
 enum sucessState{
 	SUCCESS,
@@ -296,87 +295,82 @@ void HeaterPreheat::handleSelect(uint8_t index) {
 
 void WelcomeScreen::update(LiquidCrystalSerial& lcd, bool forceRedraw) {
     
-    if(cancel_process == true){
+  DEBUG_PIN5.setValue(true);
+  DEBUG_PIN6.setValue(cancel_process);
+  if(cancel_process == true){
 		welcomeState = WELCOME_DONE;
 		cancel_process = false;
+    DEBUG_PIN2.setValue(true);
 	}
     
 	if (forceRedraw || needsRedraw) {
 		Motherboard::getBoard().setBoardStatus(Motherboard::STATUS_ONBOARD_PROCESS, true);
 		lcd.setCursor(0,0);
-        switch (welcomeState){
-            case WELCOME_START:
-                lcd.writeFromPgmspace(START_MSG);
-               // _delay_us(1000000);
-                Motherboard::getBoard().interfaceBlink(25,15);
-                
-                 break;
-            case WELCOME_BUTTONS1:
-				lcd.writeFromPgmspace(BUTTONS1_MSG);
-				//_delay_us(1000000);
-                Motherboard::getBoard().interfaceBlink(25,15);
-
-                 break;
-            case WELCOME_BUTTONS2:
-				lcd.writeFromPgmspace(BUTTONS2_MSG);
-				//_delay_us(1000000);
-                Motherboard::getBoard().interfaceBlink(25,15);
-                
-                 break;
-			case WELCOME_EXPLAIN:
-                lcd.writeFromPgmspace(EXPLAIN_MSG);
-                //_delay_us(1000000);
-                Motherboard::getBoard().interfaceBlink(25,15);
-
-                break;
-            case WELCOME_LEVEL:
-                lcd.writeFromPgmspace(LEVEL_MSG);
-                Motherboard::getBoard().interfaceBlink(25,15);
-                //_delay_us(1000000);
-                eeprom_write_byte((uint8_t*)eeprom_offsets::FIRST_BOOT_FLAG, 1);
-
-                break;
-            case WELCOME_LEVEL_OK:
-			//	waiting = false;
-				interface::pushScreen(&levelOK);
-				_delay_us(1000000);
-				welcomeState++;
-				break;
-            case WELCOME_LOAD_PLASTIC:
-				if(levelSuccess == SUCCESS){
-					lcd.writeFromPgmspace(BETTER_MSG);
-				} else if(levelSuccess == FAIL){
-					lcd.writeFromPgmspace(TRYAGAIN_MSG);
-					welcomeState = WELCOME_LEVEL;
-				} else if(levelSuccess == SECOND_FAIL){
-					lcd.writeFromPgmspace(GO_ON_MSG);
-				}
-				_delay_us(500000);
-                Motherboard::getBoard().interfaceBlink(25,15);            
-                break;
-            case WELCOME_READY:
-                interface::pushScreen(&ready);
+    switch (welcomeState){
+        case WELCOME_START:
+            lcd.writeFromPgmspace(START_MSG);
+            Motherboard::getBoard().interfaceBlink(25,15);
+             break;
+        case WELCOME_BUTTONS1:
+            lcd.writeFromPgmspace(BUTTONS1_MSG);
+            Motherboard::getBoard().interfaceBlink(25,15);
+             break;
+        case WELCOME_BUTTONS2:
+            lcd.writeFromPgmspace(BUTTONS2_MSG);
+            Motherboard::getBoard().interfaceBlink(25,15);
+             break;
+        case WELCOME_EXPLAIN:
+            lcd.writeFromPgmspace(EXPLAIN_MSG);
+            Motherboard::getBoard().interfaceBlink(25,15);
+            break;
+        case WELCOME_LEVEL:
+            lcd.writeFromPgmspace(LEVEL_MSG);
+            Motherboard::getBoard().interfaceBlink(25,15);
+            eeprom_write_byte((uint8_t*)eeprom_offsets::FIRST_BOOT_FLAG, 1);
+            break;
+        case WELCOME_LEVEL_OK:
+            interface::pushScreen(&levelOK);
+            _delay_us(1000000);
+            welcomeState++;
+            break;
+        case WELCOME_LOAD_PLASTIC:
+            if(levelSuccess == SUCCESS){
+              lcd.writeFromPgmspace(BETTER_MSG);
+            } else if(levelSuccess == FAIL){
+              lcd.writeFromPgmspace(TRYAGAIN_MSG);
+              welcomeState = WELCOME_LEVEL;
+            } else if(levelSuccess == SECOND_FAIL){
+              lcd.writeFromPgmspace(GO_ON_MSG);
+            }
+            _delay_us(500000);
+            Motherboard::getBoard().interfaceBlink(25,15);            
+            break;
+        case WELCOME_READY:
+            interface::pushScreen(&ready);
+            welcomeState++;
+            break;
+        case WELCOME_LOAD_SD:
+            if(ready_fail){
+                lcd.writeFromPgmspace(FAIL_MSG);
                 welcomeState++;
-                break;
-            case WELCOME_LOAD_SD:
-                if(ready_fail){
-                    lcd.writeFromPgmspace(FAIL_MSG);
-                    welcomeState++;
-                }
-                else
-                 lcd.writeFromPgmspace(SD_MENU_MSG);
-                 //_delay_us(1000000);
-                 Motherboard::getBoard().interfaceBlink(25,15);
-                
-                break;
-            case WELCOME_DONE:
-				host::stopBuild();
-                interface::popScreen();
-                break;
-            
+            }
+            else
+             lcd.writeFromPgmspace(SD_MENU_MSG);
+             Motherboard::getBoard().interfaceBlink(25,15);
+            break;
+        case WELCOME_DONE:
+            host::stopBuild();
+            interface::popScreen();
+            DEBUG_PIN3.setValue(true);
+            break;
         }
-        needsRedraw = false;
+      needsRedraw = false;
 	}
+
+  DEBUG_PIN3.setValue(false);
+  DEBUG_PIN2.setValue(false);
+  DEBUG_PIN5.setValue(false);
+  DEBUG_PIN6.setValue(false);
 }
 
 void WelcomeScreen::notifyButtonPressed(ButtonArray::ButtonName button) {
@@ -386,27 +380,27 @@ void WelcomeScreen::notifyButtonPressed(ButtonArray::ButtonName button) {
 	switch (button) {
 		case ButtonArray::CENTER:
            welcomeState++;
-            switch (welcomeState){
+           switch (welcomeState){
                 case WELCOME_LEVEL_ACTION:
-					Motherboard::getBoard().interfaceBlink(0,0);
+                    Motherboard::getBoard().interfaceBlink(0,0);
                     welcomeState++; 
-					if(levelSuccess == FAIL)
-						host::startOnboardBuild(utility::LEVEL_PLATE_SECOND);
-					else
-						host::startOnboardBuild(utility::LEVEL_PLATE_STARTUP);
+                    if(levelSuccess == FAIL)
+                      host::startOnboardBuild(utility::LEVEL_PLATE_SECOND);
+                    else
+                      host::startOnboardBuild(utility::LEVEL_PLATE_STARTUP);
                     break;
                 case WELCOME_LOAD_ACTION:
-                     Motherboard::getBoard().interfaceBlink(0,0);
+                    Motherboard::getBoard().interfaceBlink(0,0);
                     welcomeState++;
                     if(eeprom::getEeprom8(eeprom_offsets::TOOL_COUNT, 1) == 1)
                         filamentScreen.setScript(FILAMENT_STARTUP_SINGLE);
-					else
+                    else
                         filamentScreen.setScript(FILAMENT_STARTUP_DUAL);
-					interface::pushScreen(&filamentScreen);
+                    interface::pushScreen(&filamentScreen);
                     break;
                 case WELCOME_PRINT_FROM_SD:
-                     Motherboard::getBoard().interfaceBlink(0,0);
-                     Motherboard::getBoard().setBoardStatus(Motherboard::STATUS_ONBOARD_PROCESS, false);
+                    Motherboard::getBoard().interfaceBlink(0,0);
+                    Motherboard::getBoard().setBoardStatus(Motherboard::STATUS_ONBOARD_PROCESS, false);
                     welcomeState++;
                     interface::pushScreen(&sdmenu);
                     break;
@@ -414,52 +408,53 @@ void WelcomeScreen::notifyButtonPressed(ButtonArray::ButtonName button) {
                     needsRedraw = true;
                     break;
             }
-			break;
-        case ButtonArray::LEFT:
+			      break;
+   case ButtonArray::LEFT:
 			welcomeState--;
 			if(welcomeState < WELCOME_START){
 				welcomeState = WELCOME_START;
 			}
 			switch (welcomeState){
-                case WELCOME_LEVEL_ACTION:
-					Motherboard::getBoard().interfaceBlink(0,0);
-                    welcomeState++; 
-                    if(levelSuccess == FAIL)
-						host::startOnboardBuild(utility::LEVEL_PLATE_SECOND);
-					else
-						host::startOnboardBuild(utility::LEVEL_PLATE_STARTUP);
-                    break;
-                case WELCOME_LOAD_ACTION:
-                     Motherboard::getBoard().interfaceBlink(0,0);
-                    welcomeState++;
+        case WELCOME_LEVEL_ACTION:
+					  Motherboard::getBoard().interfaceBlink(0,0);
+            welcomeState++; 
+            if(levelSuccess == FAIL)
+              host::startOnboardBuild(utility::LEVEL_PLATE_SECOND);
+            else
+              host::startOnboardBuild(utility::LEVEL_PLATE_STARTUP);
+            break;
+        case WELCOME_LOAD_ACTION:
+            Motherboard::getBoard().interfaceBlink(0,0);
+            welcomeState++;
                     
-                    if(eeprom::getEeprom8(eeprom_offsets::TOOL_COUNT, 1) == 1)
-                        filamentScreen.setScript(FILAMENT_STARTUP_SINGLE);
-					else
-                        filamentScreen.setScript(FILAMENT_STARTUP_DUAL);
-					interface::pushScreen(&filamentScreen);
-                    break;
-                case WELCOME_PRINT_FROM_SD:
-                     Motherboard::getBoard().interfaceBlink(0,0);
-                     Motherboard::getBoard().setBoardStatus(Motherboard::STATUS_ONBOARD_PROCESS, false);
-                    welcomeState++;
-                    interface::pushScreen(&sdmenu);
-                    break;
-                default:
-                    needsRedraw = true;
-                    break;
-            }
+            if(eeprom::getEeprom8(eeprom_offsets::TOOL_COUNT, 1) == 1)
+                filamentScreen.setScript(FILAMENT_STARTUP_SINGLE);
+					  else
+                filamentScreen.setScript(FILAMENT_STARTUP_DUAL);
+					  interface::pushScreen(&filamentScreen);
+            break;
+        case WELCOME_PRINT_FROM_SD:
+            Motherboard::getBoard().interfaceBlink(0,0);
+            Motherboard::getBoard().setBoardStatus(Motherboard::STATUS_ONBOARD_PROCESS, false);
+            welcomeState++;
+            interface::pushScreen(&sdmenu);
+            break;
+        default:
+            needsRedraw = true;
+            break;
+      }
 			break;
 			
-        case ButtonArray::RIGHT:
-        case ButtonArray::DOWN:
-        case ButtonArray::UP:
+      case ButtonArray::RIGHT:
+      case ButtonArray::DOWN:
+      case ButtonArray::UP:
 			break;
 
 	}
 }
 
 void WelcomeScreen::reset() {
+    DEBUG_PIN4.setValue(true);
     needsRedraw = false;
     Motherboard::getBoard().interfaceBlink(25,15);
     welcomeState=WELCOME_START;
@@ -467,6 +462,7 @@ void WelcomeScreen::reset() {
     levelSuccess = SUCCESS;
     level_offset = 0;
     cancel_process = false;
+    DEBUG_PIN4.setValue(false);
 }
 
 void NozzleCalibrationScreen::update(LiquidCrystalSerial& lcd, bool forceRedraw) {
@@ -658,15 +654,15 @@ void FilamentScreen::startMotor(){
     Point target = Point(0,0,0,0,0);
     target[axisID] = steps;
     
-    planner::abort();
-    planner::setAccelerationOn(false);
-    planner::addMoveToBufferRelative(target, interval, 0x1f);
+    steppers::abort();
+    steppers::setSegmentAccelState(false);
+    steppers::setTargetNew(target, interval, 0x1f);
     filamentTimer.clear();
     filamentTimer.start(300000000); //5 minutes
 }
 void FilamentScreen::stopMotor(){
     
-    planner::abort();
+    steppers::abort();
     // disable motors if we are not in the middle of a build
     if(host::getHostState() == host::HOST_STATE_READY){
 		for(int i = 0; i < STEPPER_COUNT; i++)
@@ -681,7 +677,7 @@ void FilamentScreen::update(LiquidCrystalSerial& lcd, bool forceRedraw) {
     Point target = Point(0,0,0, 0,0);
     int32_t interval;
 
-    if(cancel_process == true){
+  if(cancel_process == true){
 		filamentState = FILAMENT_EXIT;
 		cancel_process = false;
 	}
@@ -696,7 +692,7 @@ void FilamentScreen::update(LiquidCrystalSerial& lcd, bool forceRedraw) {
 			if(setTemp < FILAMENT_HEAT_TEMP){
 				Motherboard::getBoard().StopProgressBar();
 				interface::popScreen();
-				Motherboard::getBoard().errorResponse("My temperature was  changed externally. Reselect filament   menu to try again.");
+				Motherboard::getBoard().errorResponse(ERROR_TEMP_RESET_EXTERNALLY);
 				return;
 			}
 			
@@ -723,7 +719,7 @@ void FilamentScreen::update(LiquidCrystalSerial& lcd, bool forceRedraw) {
 			if(setTemp < FILAMENT_HEAT_TEMP){
 				Motherboard::getBoard().StopProgressBar();
 				interface::popScreen();
-				Motherboard::getBoard().errorResponse("My temperature was  changed externally. Reselect filament   menu to try again.");
+				Motherboard::getBoard().errorResponse(ERROR_TEMP_RESET_EXTERNALLY);
 				return;
 			}
 		}
@@ -802,11 +798,11 @@ void FilamentScreen::update(LiquidCrystalSerial& lcd, bool forceRedraw) {
 				lcd.writeFromPgmspace(EXPLAIN_FOUR_MSG);			
 				//_delay_us(1000000);
 				// if z stage is at zero, move z stage down
-				target = planner::getPosition();
+				target = steppers::getStepperPosition();
 				if(target[2] < 1000){
 					target[2] = 60000;
 					interval = 9000000;
-					planner::addMoveToBufferRelative(target, interval, 0x1f);
+					steppers::setTargetNew(target, interval, 0x1f);
 				}
 				_delay_us(1000000);
 				Motherboard::getBoard().interfaceBlink(25,15);
@@ -1249,9 +1245,9 @@ void MessageScreen::addMessage(CircularBuffer& buf) {
 }
 
 
-void MessageScreen::addMessage(char msg[]) {
+void MessageScreen::addMessage(const unsigned char msg[]) {
 
-	char* letter = msg;
+	unsigned char* letter = (unsigned char *)msg;
 	while (*letter != 0) {
 		message[cursor++] = *letter;
 		letter++;
@@ -1386,8 +1382,8 @@ void JogMode::update(LiquidCrystalSerial& lcd, bool forceRedraw) {
 }
 
 void JogMode::jog(ButtonArray::ButtonName direction) {
-	planner::abort();
-	Point position = planner::getPosition();	
+	steppers::abort();
+	Point position = steppers::getStepperPosition();	
 
 	int32_t interval = 1000;
 	int32_t steps;
@@ -1452,23 +1448,23 @@ void JogMode::jog(ButtonArray::ButtonName direction) {
 		}
 	}
 
-	planner::addMoveToBuffer(position, interval);
+	steppers::setTarget(position, interval);
 }
 
 void JogMode::notifyButtonPressed(ButtonArray::ButtonName button) {
 	switch (button) {
 		case ButtonArray::CENTER:
-           interface::popScreen();
-           Motherboard::getBoard().setBoardStatus(Motherboard::STATUS_MANUAL_MODE, false);
-           for(int i = 0; i < STEPPER_COUNT; i++)
-			steppers::enableAxis(i, false);
-		break;
-        case ButtonArray::LEFT:
-        case ButtonArray::RIGHT:
-        case ButtonArray::DOWN:
-        case ButtonArray::UP:
-		jog(button);
-		break;
+      interface::popScreen();
+      Motherboard::getBoard().setBoardStatus(Motherboard::STATUS_MANUAL_MODE, false);
+      for(int i = 0; i < STEPPER_COUNT; i++)
+        steppers::enableAxis(i, false);
+      break;
+    case ButtonArray::LEFT:
+    case ButtonArray::RIGHT:
+    case ButtonArray::DOWN:
+    case ButtonArray::UP:
+      jog(button);
+      break;
 	}
 }
 
@@ -1607,7 +1603,6 @@ void MonitorMode::setBuildPercentage(uint8_t percent){
 	buildPercentage = percent;
 }
 
-#define abs(X) ((X) < 0 ? -(X) : (X)) 
 
 void MonitorMode::update(LiquidCrystalSerial& lcd, bool forceRedraw) {
     
@@ -2065,8 +2060,8 @@ void PreheatSettingsMenu::handleCounterUpdate(uint8_t index, bool up){
             if(counterRight > 260){
                 counterRight = 260;
             } if(counterRight < 0){
-				counterRight == 0;
-			}
+              counterRight = 0;
+            }
             break;
         case 2:
             if(singleTool){
@@ -2078,8 +2073,8 @@ void PreheatSettingsMenu::handleCounterUpdate(uint8_t index, bool up){
                 if(counterRight > 260){
                     counterRight = 260; 
                 }if(counterRight < 0){
-					counterRight == 0;
-			} 
+                  counterRight = 0;
+                } 
             }else{
                 // update left counter
                 if(up)
@@ -2089,8 +2084,8 @@ void PreheatSettingsMenu::handleCounterUpdate(uint8_t index, bool up){
                 if(counterLeft > 260){
                     counterLeft = 260;
                 }if(counterLeft < 0){
-					counterLeft == 0;
-			}
+                  counterLeft = 0;
+                }
             }
             break;
         case 3:
@@ -2102,8 +2097,8 @@ void PreheatSettingsMenu::handleCounterUpdate(uint8_t index, bool up){
             if(counterPlatform > 120){
                 counterPlatform = 120;
             } if(counterPlatform < 0){
-				counterPlatform == 0;
-			}
+                counterPlatform = 0;
+            }
             break;
 	}
     
@@ -2535,18 +2530,18 @@ void CancelBuildMenu::drawItem(uint8_t index, LiquidCrystalSerial& lcd, uint8_t 
     host::HostState state = host::getHostState();
      
     switch (index) {
-	case 0:
-		if(((state == host::HOST_STATE_BUILDING) ||
-            (state == host::HOST_STATE_BUILDING_FROM_SD)) &&
-            !(Motherboard::getBoard().GetBoardStatus() & Motherboard::STATUS_ONBOARD_PROCESS)){
+    case 0:
+        if(((state == host::HOST_STATE_BUILDING) ||
+          (state == host::HOST_STATE_BUILDING_FROM_SD)) &&
+          !(Motherboard::getBoard().GetBoardStatus() & Motherboard::STATUS_ONBOARD_PROCESS)){
             lcd.writeFromPgmspace(CANCEL_MSG);
         }else{
-			host::pauseBuild(true);
+            host::pauseBuild(true);
             lcd.writeFromPgmspace(CANCEL_PROCESS_MSG);
-		}
-		break;
+        }
+        break;
     case 2:
-		lcd.writeFromPgmspace(NO_MSG);
+        lcd.writeFromPgmspace(NO_MSG);
         break;
     case 3:
         lcd.writeFromPgmspace(YES_MSG);
@@ -2560,19 +2555,22 @@ void CancelBuildMenu::pop(void){
 void CancelBuildMenu::handleSelect(uint8_t index) {
     
 	switch (index) {
-        case 2:
-			interface::popScreen();
-            break;
-        case 3:
-			if(Motherboard::getBoard().GetBoardStatus() & Motherboard::STATUS_ONBOARD_PROCESS){
-				cancel_process = true;
-				interface::popScreen();
-			}else{
-				// Cancel build
-				host::stopBuild();
-			}
-            break;
+      case 2:
+        interface::popScreen();
+        break;
+      case 3:
+        if((Motherboard::getBoard().GetBoardStatus() & Motherboard::STATUS_ONBOARD_PROCESS)
+          && (!host::getHostState() == host::HOST_STATE_BUILDING_ONBOARD)){
+            DEBUG_PIN1.setValue(true);
+            cancel_process = true;
+            interface::popScreen();
+        }else{
+            // Cancel build
+            host::stopBuild();
+			  }
+        break;
 	}
+  DEBUG_PIN1.setValue(false);
 }
 
 
@@ -3106,7 +3104,7 @@ bool SDMenu::getFilename(uint8_t index, char buffer[], uint8_t buffer_size) {
                       return false;
 			}
 			
-		} while ((e == sdcard::SD_SUCCESS) && ((fnbuf[0] == '.')) || 
+		} while (((e == sdcard::SD_SUCCESS) && ((fnbuf[0] == '.'))) || 
 			!((fnbuf[idx-3] == 's') && (fnbuf[idx-2] == '3') && (fnbuf[idx-1] == 'g')));
 			
 		if (e != sdcard::SD_SUCCESS) {
@@ -3123,8 +3121,8 @@ bool SDMenu::getFilename(uint8_t index, char buffer[], uint8_t buffer_size) {
 void SDMenu::drawItem(uint8_t index, LiquidCrystalSerial& lcd, uint8_t line_number) {
        
        // print error message if no SD card found;
-       if(cardNotFound == true) {
-            lcd.writeFromPgmspace(NOCARD_MSG);
+    if(cardNotFound == true) {
+      lcd.writeFromPgmspace(NOCARD_MSG);
 			return;
 		}else if (cardReadError){
 			lcd.writeFromPgmspace(CARDERROR_MSG);
@@ -3137,8 +3135,8 @@ void SDMenu::drawItem(uint8_t index, LiquidCrystalSerial& lcd, uint8_t line_numb
 			return;
 		}
 		// print last line for SD card - an exit option
-       if (index >= itemCount - 1) {
-               lcd.writeFromPgmspace(EXIT_MSG);
+    if (index >= itemCount - 1) {
+      lcd.writeFromPgmspace(EXIT_MSG);
 			return;
 		}
 
@@ -3147,7 +3145,7 @@ void SDMenu::drawItem(uint8_t index, LiquidCrystalSerial& lcd, uint8_t line_numb
 
     if ( !getFilename(index, fnbuf, maxFileLength)) {
         interface::popScreen();
-        Motherboard::getBoard().errorResponse(" SD card read error");
+        Motherboard::getBoard().errorResponse(ERROR_SD_CARD_GENERIC);
         return;
 	}
 
@@ -3166,24 +3164,24 @@ void SDMenu::handleSelect(uint8_t index) {
 		return;
 	}
 	if (host::getHostState() != host::HOST_STATE_READY) {
-		Motherboard::getBoard().errorResponse(" I'm already building");
+		Motherboard::getBoard().errorResponse(ERROR_SD_CARD_BUILDING);
 		return;
 	}
 		
 	char* buildName = host::getBuildName();
 
-    if ( !getFilename(index, buildName, host::MAX_FILE_LEN) ) {
-        interface::popScreen();
-		Motherboard::getBoard().errorResponse(" SD card read error");
+  if ( !getFilename(index, buildName, host::MAX_FILE_LEN) ) {
+    interface::popScreen();
+    Motherboard::getBoard().errorResponse(ERROR_SD_CARD_GENERIC);
 		return;
 	}
 
-    sdcard::SdErrorCode e;
+  sdcard::SdErrorCode e;
 	e = host::startBuildFromSD();
 	
 	if (e != sdcard::SD_SUCCESS) {
-        interface::popScreen();
-		Motherboard::getBoard().errorResponse(" SD card read error");
+    interface::popScreen();
+    Motherboard::getBoard().errorResponse(ERROR_SD_CARD_GENERIC);
 		return;
 	}
 }

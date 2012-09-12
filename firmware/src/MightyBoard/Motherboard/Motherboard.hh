@@ -151,7 +151,7 @@ public:
 	void interfaceBlink(int on_time, int off_time);
 
 	/// Perform the timer interrupt routine.
-	void doInterrupt();
+	void doStepperInterrupt();
 	
 	bool isUsingPlatform() { return using_platform; }
 	void setUsingPlatform(bool is_using);
@@ -166,7 +166,7 @@ public:
 	void startButtonWait();
 	void heaterFail(HeaterFailMode mode);
 	/// push an error screen, and wait until button 
-	void errorResponse(char msg[], bool reset = false);
+	void errorResponse(const unsigned char msg[], bool reset = false);
 	
 	/// return board_status byte
 	uint8_t GetBoardStatus(){ return board_status;}
