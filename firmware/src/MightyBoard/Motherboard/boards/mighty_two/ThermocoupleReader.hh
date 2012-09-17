@@ -46,7 +46,7 @@
 #define SAMPLE_FREQ_128 0x0080	
 #define SAMPLE_FREQ_64	0x0060	
 #define	SAMPLE_FREQ_32  0x0040
-#define SAMPLE_FREQ_64  0x0020
+#define SAMPLE_FREQ_16  0x0020
 
 /// single sample vs continous conversion
 #define SINGLE_MODE		0x0100

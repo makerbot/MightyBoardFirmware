@@ -21,7 +21,7 @@ void Pin::setDirection(bool out) const {
 	SREG = oldSREG;
 }
 
-/*
+
 bool Pin::getValue() const {
 	if (is_null)
 		return false; // null pin is always low ... ?
@@ -32,7 +32,7 @@ void Pin::setValue(bool on) const {
 	// if (is_null)
 	// 	return;
 	uint8_t oldSREG = SREG;
-               cli();
+  cli();
 	if (on) {
 		PORTx |= pin_mask;
 	} else {
@@ -40,4 +40,3 @@ void Pin::setValue(bool on) const {
 	}
 	SREG = oldSREG;
 }
-*/

@@ -36,7 +36,7 @@
 // beta: 4066
 // max adc: 1023
 
-TempTable default_therm_table PROGMEM = {
+const TempTable default_therm_table PROGMEM = {
   {1, 841},
   {54, 255},
   {107, 209},
@@ -59,7 +59,7 @@ TempTable default_therm_table PROGMEM = {
   {1008, 3}
 };
 
-static Entry thermocouple_lookup[] PROGMEM = {
+const static Entry thermocouple_lookup[] PROGMEM = {
 {-304, -64},
 {-232, -48},
 {-157, -32},
@@ -93,7 +93,7 @@ static Entry thermocouple_lookup[] PROGMEM = {
 
 
 /// cold temperature lookup table provided by ADS1118 data sheet
-static Entry cold_temp_lookup[] PROGMEM = {
+const static Entry cold_temp_lookup[] PROGMEM = {
 	{ 	0x3920, -55 },
 	{  	0x3CE0, -25},
 	{	0x3FF8, -0.25},

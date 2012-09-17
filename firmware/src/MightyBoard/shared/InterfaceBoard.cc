@@ -58,7 +58,7 @@ micros_t InterfaceBoard::getUpdateRate() {
 }
 
 /// push Error Message Screen
-void InterfaceBoard::errorMessage(char buf[]){
+void InterfaceBoard::errorMessage(const unsigned char buf[]){
 
 		messageScreen.clearMessage();
 		messageScreen.setXY(0,0);
@@ -68,7 +68,7 @@ void InterfaceBoard::errorMessage(char buf[]){
 			pushScreen(&messageScreen);
 		}else{
 			screenStack[screenIndex]->update(lcd, true);
-		}
+	  }
 }
 
 MessageScreen * InterfaceBoard::GetMessageScreen(){

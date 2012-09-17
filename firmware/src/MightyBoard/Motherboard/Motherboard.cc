@@ -22,7 +22,6 @@
 #include "Motherboard.hh"
 #include "Configuration.hh"
 #include "Steppers.hh"
-#include "Planner.hh"
 #include "Command.hh"
 #include "Interface.hh"
 #include "Commands.hh"
@@ -36,6 +35,10 @@
 #include <util/delay.h>
 #include "Menu_locales.hh"
 #include "TemperatureTable.hh"
+
+#ifndef JKN_ADVANCE
+    #warning "Release: JKN_ADVANCE disabled in Configuration.hh"
+#endif
 
 /// Instantiate static motherboard instance
 Motherboard Motherboard::motherboard;
@@ -59,6 +62,14 @@ Motherboard::Motherboard() :
 {
 }
 
+ 
+#define ENABLE_TIMER_INTERRUPTS     TIMSK2 |= (1<<OCIE2A); \
+                            TIMSK3 |= (1<<OCIE3A)
+ 
+#define DISABLE_TIMER_INTERRUPTS    TIMSK2 &= ~(1<<OCIE2A); \
+                            TIMSK3 &= ~(1<<OCIE3A)
+ 
+
 void Motherboard::initClocks(){
 
   // set up piezo timer
@@ -67,15 +78,15 @@ void Motherboard::initClocks(){
 	// Reset and configure timer 5,  stepper
 	// interrupt timer.
 	TCCR5A = 0x00;
-	TCCR5B = 0x09; // no prescaling
+	TCCR5B = 0x0A; // no prescaling
 	TCCR5C = 0x00;
-	OCR5A = INTERVAL_IN_MICROSECONDS * 16;
+	OCR5A = 0x2000; //INTERVAL_IN_MICROSECONDS * 16;
 	TIMSK5 = 0x02; // turn on OCR5A match interrupt
 	
-	// Reset and configure timer 2, the microsecond timer and debug LED flasher timer.
-	TCCR2A = 0x00;  
-	TCCR2B = 0x0A; /// prescaler at 1/8
-	OCR2A = INTERVAL_IN_MICROSECONDS;  // TODO: update PWM settings to make overflowtime adjustable if desired : currently interupting on overflow
+	// Reset and configure timer 2, the microsecond timer, advance_timer and debug LED flasher timer.
+	TCCR2A = 0x02; //CTC  //0x00;  
+	TCCR2B = 0x04; //prescaler at 1/64  //0x0A; /// prescaler at 1/8
+	OCR2A = 25; //Generate interrupts 16MHz / 64 / 25 = 10KHz  //INTERVAL_IN_MICROSECONDS;  // TODO: update PWM settings to make overflowtime adjustable if desired : currently interupting on overflow
 	OCR2B = 0;
 	TIMSK2 = 0x02; // turn on OCR5A match interrupt
 
@@ -193,14 +204,9 @@ void Motherboard::reset(bool hard_reset) {
 	// turn off the active cooling fan
 	setExtra(false);  
 #else
+  cutoff.init();
   extruder_manage_timeout.start(SAMPLE_INTERVAL_MICROS_THERMOCOUPLE);
 #endif
-  
-  // initialize the extruders
-  Extruder_One.reset();
-  Extruder_Two.reset();
-    
-	HBP_HEAT.setDirection(true);
 	platform_thermistor.init();
 	platform_heater.reset();
     
@@ -237,14 +243,39 @@ micros_t Motherboard::getCurrentMicros() {
 }
 
 /// Run the motherboard interrupt
-void Motherboard::doInterrupt() {
+void Motherboard::doStepperInterrupt() {
 
-	//micros += INTERVAL_IN_MICROSECONDS;
-	// Do not move steppers if the board is in a paused state
-	if (command::isPaused()) return;
-	steppers::doInterrupt();
-	
+  //TODO: we have pause implemented here - make sure things stil work
+  //We never ignore interrupts on pause, because when paused, we might 
+  //extrude filament to change it or fix jams
+
+  if(command::isPaused()) return;
+
+  DISABLE_TIMER_INTERRUPTS;
+  sei();
+  
+  steppers::doStepperInterrupt();
+  
+  cli();
+  ENABLE_TIMER_INTERRUPTS;
+ 
+#ifdef ANTI_CLUNK_PROTECTION
+  //Because it's possible another stepper interrupt became due whilst
+  //we were processing the last interrupt, and had stepper interrupts
+  //disabled, we compare the counter to the requested interrupt time
+  //to see if it overflowed.  If it did, then we reset the counter, and
+  //schedule another interrupt for very shortly into the future.
+  if ( TCNT3 >= OCR3A ) {
+      OCR3A = 0x01;   //We set the next interrupt to 1 interval, because this will cause the interrupt to  fire again
+              //on the next chance it has after exiting this interrupt, i.e. it gets queued.
+
+      TCNT3 = 0;  //Reset the timer counter
+
+      //debug_onscreen1 ++;
+  }
+#endif
 }
+
 bool connectionsErrorTriggered = false;
 void Motherboard::heaterFail(HeaterFailMode mode){
 
@@ -281,7 +312,7 @@ void Motherboard::startButtonWait(){
 }
 
 // set an error message on the interface and wait for user button press
-void Motherboard::errorResponse(char msg[], bool reset){
+void Motherboard::errorResponse(const unsigned char msg[], bool reset){
 	interfaceBoard.errorMessage(msg);
 	startButtonWait();
   Piezo::playTune(TUNE_ERROR);
@@ -519,7 +550,7 @@ void Motherboard::runMotherboardSlice() {
 		// disable command processing and steppers
 		host::heatShutdown();
 		command::heatShutdown();
-		planner::abort();
+		steppers::abort();
     for(int i = 0; i < STEPPER_COUNT; i++)
 			steppers::enableAxis(i, false);
 	}
@@ -563,17 +594,18 @@ void Motherboard::resetUserInputTimeout(){
 	user_input_timeout.start(USER_INPUT_TIMEOUT);
 }
 
-#define MICROS_INTERVAL 128
+//Frequency of Timer 2
+//100 = (1.0 / ( 16MHz / 64 / 25 = 10KHz)) * 1000000
+#define MICROS_INTERVAL 100
 
 void Motherboard::UpdateMicros(){
 	micros += MICROS_INTERVAL;//_IN_MICROSECONDS;
 
 }
 
-
 /// Timer three comparator match interrupt
 ISR(TIMER5_COMPA_vect) {
-	Motherboard::getBoard().doInterrupt();
+	Motherboard::getBoard().doStepperInterrupt();
 }
 
 
@@ -646,14 +678,20 @@ int blinked_so_far = 0;
 /// Number of overflows remaining on the current overflow blink cycle
 int interface_ovfs_remaining = 0;
 
-uint16_t blink_overflow_counter = 0;
+uint8_t blink_overflow_counter = 0;
+
+volatile micros_t m2;
 
 /// Timer 2 overflow interrupt
 ISR(TIMER2_COMPA_vect) {
 	
 	Motherboard::getBoard().UpdateMicros();
+
+#ifdef JKN_ADVANCE
+  steppers::doExtruderInterrupt();
+#endif
 	
-	if(blink_overflow_counter++ <= 0x080)
+	if(blink_overflow_counter++ <= 0xA4)
 			return;
 	
 	blink_overflow_counter = 0;
@@ -700,17 +738,15 @@ ISR(TIMER2_COMPA_vect) {
 
 }
 
-
 void Motherboard::setUsingPlatform(bool is_using) {
   using_platform = is_using;
 }
 
 void Motherboard::setExtra(bool on) {
   	ATOMIC_BLOCK(ATOMIC_RESTORESTATE) {
-      //setUsingPlatform(false);
-      //pwmHBP_On(false);
-      EX_FAN.setDirection(true);
-      EX_FAN.setValue(on);
+    //setUsingPlatform(false);
+    EX_FAN.setDirection(true);
+    EX_FAN.setValue(on);
 	}
 }
 

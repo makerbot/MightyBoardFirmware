@@ -1,3 +1,5 @@
+6.0.21
+ * this is a merge of the jetty acceleration (more better!)
 6.0.20
  * same as 5.05.20 with major version number bumped to 6.0
 5.05.20
@@ -18,6 +20,8 @@
  * internal release August 17, 2012 with nozzle offsets updated
 5.05.09
  * internal release August 13, 2012 no z-clipping version for engineering.
+5.06.08
+ * internal release Sept 12, 2102
 5.05.07
  * internal release July 31, 2012 interface feature updates
 5.05.06
