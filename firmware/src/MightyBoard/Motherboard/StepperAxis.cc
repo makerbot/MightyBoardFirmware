@@ -26,6 +26,7 @@
 #include "EepromMap.hh"
 #include "Eeprom.hh"
 
+#ifndef SIMULATOR
 //Optimize this better, maybe load defaults from progmem, x_min/max could combine invert_endstop/invert_axis into 1
 //110 bytes
 struct StepperAxisPorts stepperAxisPorts[STEPPER_COUNT] = {
@@ -35,6 +36,7 @@ struct StepperAxisPorts stepperAxisPorts[STEPPER_COUNT] = {
 	{ A_STEPPER_STEP, A_STEPPER_DIR, A_STEPPER_ENABLE, STEPPER_NULL,  STEPPER_NULL	},
 	{ B_STEPPER_STEP, B_STEPPER_DIR, B_STEPPER_ENABLE, STEPPER_NULL,  STEPPER_NULL	}
 };
+#endif
 
 struct StepperAxis stepperAxis[STEPPER_COUNT];
 
@@ -48,7 +50,7 @@ volatile uint8_t axesHardwareEnabled;		//Hardware axis enabled
 
 /// Initialize a stepper axis
 void stepperAxisInit(bool hard_reset) {
-	uint8_t axes_invert, endstops_invert;
+	uint8_t axes_invert = 0, endstops_invert = 0;
 
 	if ( hard_reset ) {
 		//Load the defaults
@@ -75,28 +77,28 @@ void stepperAxisInit(bool hard_reset) {
                                                                    		 replicator_axis_max_feedrates::axis_max_feedrates[i]) / 60.0;
 
 			//Read the axis lengths in
-      int32_t length = (int32_t)eeprom::getEeprom32(eeprom_offsets::AXIS_LENGTHS + i * sizeof(uint32_t), replicator_axis_lengths::axis_lengths[i]);
-      int32_t *axisMin = &stepperAxis[i].min_axis_steps_limit;
-      int32_t *axisMax = &stepperAxis[i].max_axis_steps_limit;
+                	int32_t length = (int32_t)eeprom::getEeprom32(eeprom_offsets::AXIS_LENGTHS + i * sizeof(uint32_t), replicator_axis_lengths::axis_lengths[i]);
+                	int32_t *axisMin = &stepperAxis[i].min_axis_steps_limit;
+                	int32_t *axisMax = &stepperAxis[i].max_axis_steps_limit;
 
-      switch(i) {
-              case X_AXIS:
-              case Y_AXIS:
-                      //Half the axis in either direction around the center point
-                      *axisMax = length / 2;
-                      *axisMin = - (*axisMax);
-                      break;
-              case Z_AXIS:
-                      //Z is special, as 0 as at the top, so min is 0, and max = length - Z Home Offset
-                      *axisMax = length - (int32_t)eeprom::getEeprom32(eeprom_offsets::AXIS_HOME_POSITIONS_STEPS + i * sizeof(uint32_t), 0);
-                      *axisMin = 0;
-                      break;
-              case A_AXIS:
-              case B_AXIS:
-                      *axisMax = length;
-                      *axisMin = - length;
-                      break;
-      }
+                	switch(i) {
+                       		case X_AXIS:
+                        	case Y_AXIS:
+                               		//Half the axis in either direction around the center point
+                                	*axisMax = length / 2;
+                                	*axisMin = - (*axisMax);
+                                	break;
+                        	case Z_AXIS:
+                                	//Z is special, as 0 as at the top, so min is 0, and max = length - Z Home Offset
+                                	*axisMax = length - (int32_t)eeprom::getEeprom32(eeprom_offsets::AXIS_HOME_POSITIONS_STEPS + i * sizeof(uint32_t), 0);
+                                	*axisMin = 0;
+                                	break;
+                        	case A_AXIS:
+                        	case B_AXIS:
+                               		*axisMax = length;
+                                	*axisMin = - length;
+                                	break;
+                	}
 
 			//Setup the pins
 			STEPPER_IOPORT_SET_DIRECTION(stepperAxisPorts[i].dir, true);

@@ -19,7 +19,7 @@
 
   This module has been heavily modified from the original Marlin (https://github.com/ErikZalm).
   JKN Advance, YAJ (Yet Another Jerk), Advance Pressure Relax and modifications originate from
-  Jetty Firmware (https://github.com/jetty840/G3Firmware34).  These modifications and features are
+  Jetty Firmware (https://github.com/jetty840/G3Firmware).  These modifications and features are
   copyrighted and authored by Dan Newman and Jetty under GPL.  Copyright (c) 2012.
 */
 
@@ -34,23 +34,23 @@
 #include "Configuration.hh"
 
 #ifdef SIMULATOR
-#include "Simulator.hh"
+	#include "Simulator.hh"
 #endif
 
 #ifndef FORCE_INLINE
-#ifdef SIMULATOR
-#define FORCE_INLINE inline
-#else
-#define FORCE_INLINE __attribute__((always_inline)) inline
-#endif
+	#ifdef SIMULATOR
+		#define FORCE_INLINE inline
+	#else
+		#define FORCE_INLINE __attribute__((always_inline)) inline
+	#endif
 #endif
 
 #ifndef NOFIXED
-#define FIXED
+	#define FIXED
 #else
-#ifdef FIXED
-#undef FIXED
-#endif
+	#ifdef FIXED
+		#undef FIXED
+	#endif
 #endif
 
 //Drop ceil/floor calculations.  Making this available as a #define so we can test timing later
@@ -76,42 +76,41 @@
 	#define KCONSTANT_1000		65536000	//ftok(1000.0)
         #define KCONSTANT_1000000_LSR_16 1000000        //ftok(1000000.0) >> 16
 
-#ifndef SIMULATOR
-	//Type Conversions
-	#define FPTOI(x)		ktoli(x)	//FPTYPE  -> int32_t
-	#define FPTOI16(x)		ktoi(x)		//FPTYPE  -> int16_t
-	#define ITOFP(x)		itok(x)		//int32_t -> FPTYPE
-	#define FTOFP(x)		ftok(x)		//float   -> FPTYPE
-	#define FPTOF(x)		ktof(x)		//FPTYPE  -> float
+	#ifndef SIMULATOR
+		//Type Conversions
+		#define FPTOI(x)		ktoli(x)	//FPTYPE  -> int32_t
+		#define FPTOI16(x)		ktoi(x)		//FPTYPE  -> int16_t
+		#define ITOFP(x)		itok(x)		//int32_t -> FPTYPE
+		#define FTOFP(x)		ftok(x)		//float   -> FPTYPE
+		#define FPTOF(x)		ktof(x)		//FPTYPE  -> float
 
-	//Arithmetic
-	#define FPSQUARE(x)		mulk(x,x)
-	#define FPMULT2(x,y)		mulk(x,y)
-	#define FPMULT3(x,y,a)		mulk(mulk(x,y),a)
-	#define FPMULT4(x,y,a,b)	mulk(mulk(mulk(x,y),a),b)
-	#define FPDIV(x,y)		divk(x,y)
-	#define FPSQRT(x)		sqrtk(x)
-	#define FPABS(x)		absk(x)
-	#define FPSCALE2(x)		((x) << 1)
-#else
-	//Type Conversions
-	#define FPTOI(x)		ktoli(x)	//FPTYPE  -> int32_t
-	#define FPTOI16(x)		ktoi(x)		//FPTYPE  -> int16_t
-	#define FPTOF(x)		ktof(x)		//FPTYPE  -> float
-	#define ITOFP(x)                itofpS((x),__LINE__,__FILE__)  //int32_t -> FPTYPE
-	#define FTOFP(x)		ftofpS((x),__LINE__,__FILE__) //float   -> FPTYPE
+		//Arithmetic
+		#define FPSQUARE(x)		mulk(x,x)
+		#define FPMULT2(x,y)		mulk(x,y)
+		#define FPMULT3(x,y,a)		mulk(mulk(x,y),a)
+		#define FPMULT4(x,y,a,b)	mulk(mulk(mulk(x,y),a),b)
+		#define FPDIV(x,y)		divk(x,y)
+		#define FPSQRT(x)		sqrtk(x)
+		#define FPABS(x)		absk(x)
+		#define FPSCALE2(x)		((x) << 1)
+	#else
+		//Type Conversions
+		#define FPTOI(x)		ktoli(x)	//FPTYPE  -> int32_t
+		#define FPTOI16(x)		ktoi(x)		//FPTYPE  -> int16_t
+		#define FPTOF(x)		ktof(x)		//FPTYPE  -> float
+		#define ITOFP(x)                itofpS((x),__LINE__,__FILE__)  //int32_t -> FPTYPE
+		#define FTOFP(x)		ftofpS((x),__LINE__,__FILE__) //float   -> FPTYPE
 
-	//Arithmetic
-	#define FPSQUARE(x)		fpsquareS((x),__LINE__,__FILE__)
-	#define FPMULT2(x,y)		fpmult2S((x),(y),__LINE__,__FILE__)
-	#define FPMULT3(x,y,a)		fpmult3S((x),(y),(a),__LINE__,__FILE__)
-	#define FPMULT4(x,y,a,b)	fpmult4S((x),(y),(a),(b),__LINE__,__FILE__)
-	#define FPDIV(x,y)		fpdivS((x),(y),__LINE__,__FILE__)
-	#define FPSQRT(x)		sqrtk(x)
-	#define FPABS(x)		absk(x)
-	#define FPSCALE2(x)		fpscale2S((x),,__LINE__,__FILE__)
-
-#endif		
+		//Arithmetic
+		#define FPSQUARE(x)		fpsquareS((x),__LINE__,__FILE__)
+		#define FPMULT2(x,y)		fpmult2S((x),(y),__LINE__,__FILE__)
+		#define FPMULT3(x,y,a)		fpmult3S((x),(y),(a),__LINE__,__FILE__)
+		#define FPMULT4(x,y,a,b)	fpmult4S((x),(y),(a),(b),__LINE__,__FILE__)
+		#define FPDIV(x,y)		fpdivS((x),(y),__LINE__,__FILE__)
+		#define FPSQRT(x)		sqrtk(x)
+		#define FPABS(x)		absk(x)
+		#define FPSCALE2(x)		fpscale2S((x),,__LINE__,__FILE__)
+	#endif		
 
 	#ifndef NO_CEIL
 		#define FPCEIL(x)	roundk(x + KCONSTANT_0_5, 3)
@@ -156,7 +155,6 @@
 	#ifndef NO_CEIL
 		#define FPCEIL(x)	ceil(x)
 	#endif
-
 #endif
 
 #ifdef NO_CEIL
@@ -182,6 +180,7 @@
 
 // The number of linear motions that can be in the plan at any give time.
 // THE BLOCK_BUFFER_SIZE NEEDS TO BE A POWER OF 2, i.g. 8,16,32 because shifts and ors are used to do the ringbuffering.
+// Values less than 16 would not be wise
 #define BLOCK_BUFFER_SIZE 16 // maximize block buffer
 
 // When SAVE_SPACE is defined, the code doesn't take some optimizations which
@@ -191,145 +190,144 @@
 // This struct is used when buffering the setup for each linear movement "nominal" values are as specified in 
 // the source g-code and may never actually be reached if acceleration management is active.
 typedef struct {
-  // Fields used by the bresenham algorithm for tracing the line
-  int32_t steps[STEPPER_COUNT];		// Step count along each axis
-  uint32_t step_event_count;           // The number of step events required to complete this block
-  int32_t starting_position[STEPPER_COUNT];
-  int32_t accelerate_until;                    // The index of the step event on which to stop acceleration
-  int32_t decelerate_after;                    // The index of the step event on which to start decelerating
-  int32_t acceleration_rate;                   // The acceleration rate used for acceleration calculation
-  unsigned char direction_bits;             // The direction bit set for this block (refers to *_DIRECTION_BIT in config.h)
-  unsigned char active_extruder;            // Selects the active extruder
-  #ifdef JKN_ADVANCE
-      bool    use_advance_lead;
-      int16_t advance_lead_entry;
-      int16_t advance_lead_exit;
-      int32_t advance_pressure_relax;	//Decel phase only
-      int16_t advance_lead_prime;
-      int16_t advance_lead_deprime;
-  #endif
+	// Fields used by the bresenham algorithm for tracing the line
+	int32_t		steps[STEPPER_COUNT];			// Step count along each axis
+	uint32_t	step_event_count;			// The number of step events required to complete this block
+	int32_t		starting_position[STEPPER_COUNT];
+	int32_t		accelerate_until;			// The index of the step event on which to stop acceleration
+	int32_t		decelerate_after;			// The index of the step event on which to start decelerating
+	int32_t		acceleration_rate;			// The acceleration rate used for acceleration calculation
+	unsigned char	direction_bits;				// The direction bit set for this block (refers to *_DIRECTION_BIT in config.h)
+	unsigned char	active_extruder;			// Selects the active extruder
+	uint8_t		active_toolhead;			// The toolhead currently active.  Note this isn't the same as active extruder
+	#ifdef JKN_ADVANCE
+		bool	use_advance_lead;
+		int16_t	advance_lead_entry;
+		int16_t	advance_lead_exit;
+		int32_t	advance_pressure_relax;			//Decel phase only
+		int16_t	advance_lead_prime;
+		int16_t	advance_lead_deprime;
+	#endif
 
-  // Fields used by the motion planner to manage acceleration
-  // FPTYPE speed_x, speed_y, speed_z, speed_e;       // Nominal mm/minute for each axis
-  FPTYPE nominal_speed;                               // The nominal speed for this block in mm/min  
-  FPTYPE entry_speed;                                 // Entry speed at previous-current junction in mm/min
-  FPTYPE max_entry_speed;                             // Maximum allowable junction entry speed in mm/min
-  FPTYPE millimeters;                                 // The total travel of this block in mm
-  FPTYPE acceleration;                                // acceleration mm/sec^2
-  unsigned char recalculate_flag;                    // Planner flag to recalculate trapezoids on entry junction
-  unsigned char nominal_length_flag;                 // Planner flag for nominal speed always reached
+	// Fields used by the motion planner to manage acceleration
+	FPTYPE		nominal_speed;				// The nominal speed for this block in mm/min  
+	FPTYPE		entry_speed;				// Entry speed at previous-current junction in mm/min
+	FPTYPE		max_entry_speed;			// Maximum allowable junction entry speed in mm/min
+	FPTYPE		millimeters;				// The total travel of this block in mm
+	FPTYPE		acceleration;				// acceleration mm/sec^2
+	unsigned char	recalculate_flag;			// Planner flag to recalculate trapezoids on entry junction
+	unsigned char	nominal_length_flag;			// Planner flag for nominal speed always reached
 
-  // Settings for the trapezoid generator
-  uint32_t nominal_rate;                        // The nominal step rate for this block in step_events/sec 
-  int32_t  nominal_rate_sq;                     // nominal_rate * nominal_rate
-  uint32_t initial_rate;                        // The jerk-adjusted step rate at start of block  
-  uint32_t final_rate;                          // The minimal rate at exit
-  uint32_t acceleration_st;                     // acceleration steps/sec^2
-  char     use_accel;                           // Use acceleration when true
-  char     speed_changed;                       // Entry speed has changed
-  volatile char busy;
+	// Settings for the trapezoid generator
+	uint32_t	nominal_rate;				// The nominal step rate for this block in step_events/sec 
+	int32_t		nominal_rate_sq;			// nominal_rate * nominal_rate
+	uint32_t	initial_rate;				// The jerk-adjusted step rate at start of block  
+	uint32_t	final_rate;				// The minimal rate at exit
+	uint32_t	acceleration_st;			// acceleration steps/sec^2
+	char		use_accel;				// Use acceleration when true
+	char		speed_changed;				// Entry speed has changed
+	volatile char	busy;
 
-#ifdef SIMULATOR
-  FPTYPE feed_rate;     // Original feed rate before being modified for nomimal_speed
-  int    planned;       // Count of the number of times the block was passed to caclulate_trapezoid_for_block()
-  char   message[1024];
-#endif
+	#ifdef SIMULATOR
+		FPTYPE	feed_rate;				// Original feed rate before being modified for nomimal_speed
+		int	planned;				// Count of the number of times the block was passed to caclulate_trapezoid_for_block()
+		char	message[1024];
+	#endif
 
-#ifdef DEBUG_BLOCK_BY_MOVE_INDEX
-  uint32_t move_index;
-#endif
+	#ifdef DEBUG_BLOCK_BY_MOVE_INDEX
+		uint32_t move_index;
+	#endif
 
-   uint8_t dda_master_axis_index;
-   uint8_t axesEnabled;
+	uint8_t		dda_master_axis_index;
+	uint8_t		axesEnabled;
 } block_t;
 
 // Initialize the motion plan subsystem      
 void plan_init(FPTYPE extruderAdvanceK, FPTYPE extruderAdvanceK2, bool zhold);
 
 // Add a new linear movement to the buffer.
-void plan_buffer_line(FPTYPE feed_rate, const uint32_t &dda_rate, const uint8_t &extruder, bool use_accel=true);
+void plan_buffer_line(FPTYPE feed_rate, const uint32_t &dda_rate, const uint8_t &extruder, bool use_accel, uint8_t active_toolhead);
 
 // Set position. Used for G92 instructions.
 void plan_set_position(const int32_t &x, const int32_t &y, const int32_t &z, const int32_t &a, const int32_t &b);
 void plan_set_e_position(const int32_t &a, const int32_t &b);
 
 
-
-#ifdef DEBUG_BLOCK_BY_MOVE_INDEX
-  extern uint32_t current_move_index;
+#ifndef SIMULATOR
+	#define SIMULATOR_RECORD(x...)
+#else
+	#include "SimulatorRecord.hh"
 #endif
 
-extern uint32_t minsegmenttime;
-extern uint32_t max_acceleration_units_per_sq_second[STEPPER_COUNT]; // Use M201 to override by software
-extern uint32_t p_acceleration;         // Normal acceleration mm/s^2  THIS IS THE DEFAULT ACCELERATION for all moves. M204 SXXXX
-extern uint32_t p_retract_acceleration; //  mm/s^2   filament pull-pack and push-forward  while standing still in the other axis M204 TXXXX
-extern FPTYPE max_speed_change[STEPPER_COUNT]; //The speed between junctions in the planner, reduces blobbing
-extern FPTYPE smallest_max_speed_change;
+#ifdef DEBUG_BLOCK_BY_MOVE_INDEX
+	extern uint32_t	current_move_index;
+#endif
 
-extern FPTYPE minimumSegmentTime;
-extern uint32_t axis_steps_per_sqr_second[STEPPER_COUNT];
-extern bool acceleration_zhold;
-extern FPTYPE delta_mm[STEPPER_COUNT];
-extern FPTYPE planner_distance;
-extern FPTYPE minimumPlannerSpeed;
-extern uint32_t planner_master_steps;
-extern uint8_t planner_master_steps_index;
-extern int32_t planner_steps[STEPPER_COUNT];
-extern int slowdown_limit;
-extern int32_t planner_position[STEPPER_COUNT];
-extern int32_t planner_target[STEPPER_COUNT];
-extern uint32_t axis_accel_step_cutoff[STEPPER_COUNT];
+extern uint32_t		minsegmenttime;
+extern uint32_t		max_acceleration_units_per_sq_second[STEPPER_COUNT];	// Use M201 to override by software
+extern uint32_t		p_acceleration;						// Normal acceleration mm/s^2  THIS IS THE DEFAULT ACCELERATION for all moves. M204 SXXXX
+extern uint32_t		p_retract_acceleration;					//  mm/s^2   filament pull-pack and push-forward  while standing still in the other axis M204 TXXXX
+extern FPTYPE		max_speed_change[STEPPER_COUNT];			//The speed between junctions in the planner, reduces blobbing
+extern FPTYPE		smallest_max_speed_change;
 
-extern block_t block_buffer[BLOCK_BUFFER_SIZE];            // A ring buffer for motion instfructions
-extern volatile unsigned char block_buffer_head;           // Index of the next block to be pushed
-extern volatile unsigned char block_buffer_tail; 
+extern FPTYPE		minimumSegmentTime;
+extern uint32_t		axis_steps_per_sqr_second[STEPPER_COUNT];
+extern bool		acceleration_zhold;
+extern FPTYPE		delta_mm[STEPPER_COUNT];
+extern FPTYPE		planner_distance;
+extern FPTYPE		minimumPlannerSpeed;
+extern uint32_t		planner_master_steps;
+extern uint8_t		planner_master_steps_index;
+extern int32_t		planner_steps[STEPPER_COUNT];
+extern int		slowdown_limit;
+extern int32_t		planner_position[STEPPER_COUNT];
+extern int32_t		planner_target[STEPPER_COUNT];
+extern uint32_t		axis_accel_step_cutoff[STEPPER_COUNT];
 
-//Returns the number of moves in the planning buffer
-FORCE_INLINE uint8_t movesplanned()
-{
- return (block_buffer_head-block_buffer_tail + BLOCK_BUFFER_SIZE) & (BLOCK_BUFFER_SIZE - 1);
-}
+extern block_t		block_buffer[BLOCK_BUFFER_SIZE];			// A ring buffer for motion instfructions
+
+extern volatile unsigned char	block_buffer_head;				// Index of the next block to be pushed
+extern volatile unsigned char	block_buffer_tail; 
+
+#ifdef ACCEL_STATS
+	extern void accelStatsGet(float *minSpeed, float *avgSpeed, float *maxSpeed);
+#endif
+
 
 // Called when the current block is no longer needed. Discards the block and makes the memory
 // availible for new blocks.    
 FORCE_INLINE void plan_discard_current_block()  
 {
-  if (block_buffer_head != block_buffer_tail) {
-    block_buffer_tail = (block_buffer_tail + 1) & (BLOCK_BUFFER_SIZE - 1);  
-  }
+	if (block_buffer_head != block_buffer_tail) {
+		block_buffer_tail = (block_buffer_tail + 1) & (BLOCK_BUFFER_SIZE - 1);  
+	}
 }
 
 // Gets the current block. Returns NULL if buffer empty
 FORCE_INLINE block_t *plan_get_current_block() 
 {
-  if (block_buffer_head == block_buffer_tail) { 
-    return(NULL); 
-  }
-  block_t *block = &block_buffer[block_buffer_tail];
-  block->busy = true;
-  return(block);
+	if (block_buffer_head == block_buffer_tail) { 
+		return(NULL); 
+	}
+	block_t *block = &block_buffer[block_buffer_tail];
+	block->busy = true;
+
+	return(block);
 }
 
 // Gets the current block. Returns NULL if buffer empty
 FORCE_INLINE bool blocks_queued() 
 {
-  if (block_buffer_head == block_buffer_tail) { 
-    return false; 
-  }
-  else
-    return true;
+	if (block_buffer_head == block_buffer_tail) { 
+		return false; 
+	}
+	else	return true;
 }
 
-#ifdef ACCEL_STATS
-
-extern void accelStatsGet(float *minSpeed, float *avgSpeed, float *maxSpeed);
-
-#endif
-
-#ifndef SIMULATOR
-#define SIMULATOR_RECORD(x...)
-#else
-#include "SimulatorRecord.hh"
-#endif
+//Returns the number of moves in the planning buffer
+FORCE_INLINE uint8_t movesplanned()
+{
+	return (block_buffer_head-block_buffer_tail + BLOCK_BUFFER_SIZE) & (BLOCK_BUFFER_SIZE - 1);
+}
 
 #endif

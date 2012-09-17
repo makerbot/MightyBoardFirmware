@@ -121,6 +121,9 @@ namespace steppers {
     /// \param[in] index Index of the axis to enable or disable
     /// \param[in] enable If true, enable the axis. If false, disable.
     void enableAxis(uint8_t index, bool enable);
+
+    /// Returns a bit mask for all axes enabled
+    uint8_t allAxesEnabled(void);
     
     /// Set digial potentiometer value for the axis
     /// \param[in] index Index of the axis 
@@ -162,8 +165,9 @@ namespace steppers {
     /// Handle the interrupt to extrude material
     void doExtruderInterrupt();
 
-    /// check if axis is enabled
-    bool isEnabled(uint8_t index);
+    /// check if any of the stepper axes are enabled
+    bool isEnabled(uint8_t axis);
+
 };
 
 #endif // STEPPERS_HH_

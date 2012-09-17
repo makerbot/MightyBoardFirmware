@@ -26,6 +26,9 @@
 #define STEPPER_AXIS_HH_
 
 #include "Configuration.hh"
+#ifdef SIMULATOR
+#include "Simulator.hh"
+#endif
 
 enum AxisEnum {
         X_AXIS=0,
@@ -35,16 +38,7 @@ enum AxisEnum {
         B_AXIS
 };
 
-#ifdef SIMULATOR
-
-#ifndef FORCE_INLINE
-#define FORCE_INLINE inline
-#endif
-
-#define stepperAxis_clip_to_min(a,t) (t)
-#define stepperAxis_clip_to_max(a,t) (t)
-
-#else
+#ifndef SIMULATOR
 
 #define  FORCE_INLINE __attribute__((always_inline)) inline
 
@@ -78,6 +72,16 @@ enum AxisEnum {
 /// True if port is not defined
 #define STEPPER_IOPORT_NULL(IOPORT)		(IOPORT.port == 0)
 
+#else
+
+#define STEPPER_IOPORT_WRITE(IOPORT, v)
+#define STEPPER_IOPORT_READ(IOPORT) (uint8_t)0x00
+#define	STEPPER_IOPORT_SET_DIRECTION(IOPORT, v)
+#define	STEPPER_IOPORT_SET_INPUT(IOPORT)
+#define	STEPPER_IOPORT_SET_OUTPUT(IOPORT)
+#define STEPPER_IOPORT_NULL(IOPORT) (true)
+
+#endif
 
 struct StepperIOPort {
 	uint16_t port;
@@ -146,6 +150,12 @@ FORCE_INLINE void stepperAxisStep(uint8_t axis, bool value) {
 }
 
 /// The A3982 steper driver chip has an inverted enable
+FORCE_INLINE bool stepperAxisGetEnabled(uint8_t axis) {
+
+	return !STEPPER_IOPORT_READ(stepperAxisPorts[axis].enable);
+}
+
+/// The A3982 steper driver chip has an inverted enable
 FORCE_INLINE void stepperAxisSetHardwareEnabled(uint8_t axis, bool enabled ) {
 	if (enabled)	axesHardwareEnabled |=  _BV(axis);
 	else		axesHardwareEnabled &= ~_BV(axis);
@@ -161,10 +171,6 @@ FORCE_INLINE void stepperAxisSetHardwareEnabledToMatch(uint8_t desiredAxesEnable
 		if (( desiredAxesEnabled & bitMask ) != ( axesHardwareEnabled & bitMask ))
 			stepperAxisSetHardwareEnabled(i, (bool)(desiredAxesEnabled & bitMask));
 	}
-}
-
-FORCE_INLINE bool stepperAxisIsEnabled(uint8_t axis){
-  return STEPPER_IOPORT_READ(stepperAxisPorts[axis].enable);
 }
 
 //Because the planner is populated before the enable axis needs to happen, we
@@ -199,22 +205,13 @@ FORCE_INLINE void stepperAxisStepWithEndstopCheck(uint8_t axis, bool direction) 
 
 #define DDA_IND stepperAxis[ind].dda
 
-FORCE_INLINE void stepperAxis_dda_reset(uint8_t ind, bool master, int32_t master_steps, bool direction, int32_t steps, bool keepPhase)
+FORCE_INLINE void stepperAxis_dda_reset(uint8_t ind, bool master, int32_t master_steps, bool direction, int32_t steps)
 {
 	DDA_IND.enabled		      = (steps != 0 );
 
-        if (( keepPhase ) && ( ind >= A_AXIS ))
-        {
-                //Calculate the phase of the new move, keeping the phase of the last move
-                DDA_IND.counter += DDA_IND.master_steps >> 1;
-                DDA_IND.counter = (DDA_IND.counter * master_steps) / (DDA_IND.master_steps << 1);
-        }
-        else
-	{
-		if ( ! DDA_IND.enabled ) return;	//If we're not enabled, we don't calculate the rest.
+	if ( ! DDA_IND.enabled ) return;	//If we're not enabled, we don't calculate the rest.
 
-		DDA_IND.counter  = master_steps >> 1;
-	}
+	DDA_IND.counter  = master_steps >> 1;
 
 #ifdef OVERSAMPLED_DDA
         DDA_IND.counter  = - (DDA_IND.counter << OVERSAMPLED_DDA);
@@ -253,7 +250,6 @@ FORCE_INLINE void stepperAxis_dda_shift_phase32(uint8_t ind, int32_t phase)
 #endif
 }
 
-#pragma GCC diagnostic ignored "-Warray-bounds"
 FORCE_INLINE void stepperAxis_dda_step(uint8_t ind)
 {
 	if ( ! DDA_IND.enabled )	return;
@@ -265,10 +261,17 @@ FORCE_INLINE void stepperAxis_dda_step(uint8_t ind)
 
 #ifdef JKN_ADVANCE
                	if ( DDA_IND.eAxis ) {
+#ifndef SIMULATOR
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Warray-bounds"
+#endif
 			//This generates a warning: array subscript is below array bounds [-Warray-bounds]
 			//However we override this warning because anything below A_AXIS can never be
 			//an eAxis, and to test would require extra cycles and we don't need to
 			e_steps[ind-A_AXIS] += DDA_IND.direction;
+#ifndef SIMULATOR
+#pragma GCC diagnostic pop
+#endif
 		}
 		else
 		{
@@ -304,5 +307,4 @@ extern float stepperAxisStepsPerMM(uint8_t axis);
 extern float stepperAxisStepsToMM(int32_t steps, uint8_t axis);
 extern int32_t stepperAxisMMToSteps(float mm, uint8_t axis);
 
-#endif // !SIMULATOR
 #endif // STEPPER_AXIS_HH_

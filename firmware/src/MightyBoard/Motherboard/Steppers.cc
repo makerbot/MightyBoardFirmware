@@ -31,6 +31,7 @@
 #else
 
 #include "Steppers.hh"
+#include "StepperAxis.hh"
 #include <stdint.h>
 #include "Eeprom.hh"
 #include "EepromMap.hh"
@@ -45,14 +46,6 @@
 #endif
 #define labs(x) abs(x)
 
-#ifndef _BV
-#define _BV(x) (1 << (x))
-#endif
-
-#define stepperAxisInit(v)
-#define stepperAxisSetEnabled(x,y)
-#define stepperAxisIsAtMaximum(x) 0
-#define stepperAxisIsAtMinimum(x) 0
 #define st_init()
 #define st_interrupt() false
 #define st_extruder_interrupt()
@@ -60,9 +53,6 @@
 #define DEBUG_TIMER_TCTIMER_USI 0
 #define DEBUG_TIMER_START
 #define DEBUG_TIMER_FINISH
-#define stepperAxisIsEnabled(x) false
-
-static bool axis_homing[STEPPER_COUNT];
 
 #endif
 
@@ -177,6 +167,7 @@ void reset() {
         acceleration = accel & 0x01;
 
 	setSegmentAccelState(acceleration);
+	deprimeEnable(true);
 
 	//Here's more documentation on the various settings / features
 	//http://wiki.ultimaker.com/Marlin_firmware_for_the_Ultimaker
@@ -185,16 +176,8 @@ void reset() {
 	//http://reprap.org/pipermail/reprap-dev/2011-May/003323.html
 	//http://www.brokentoaster.com/blog/?p=358
 
-#warning "We should be using the following axis_steps_per_unit"
-//	axis_steps_per_unit[A_AXIS] = 8.8;
-//	axis_steps_per_unit[B_AXIS] = 8.8;
-
 	for ( uint8_t i = 0; i < STEPPER_COUNT; i ++ )
-#ifndef SIMULATOR
 		axis_steps_per_unit_inverse[i] = FTOFP(1.0 / stepperAxisStepsPerMM(i));
-#else
-	  axis_steps_per_unit_inverse[i] = FTOFP(1000000.0f / (float)replicator_axis_steps_per_mm::axis_steps_per_mm[i]);
-#endif
 
 	//Macros to clean things up a bit
 	#define NAC2(LOCATION) eeprom_offsets::ACCELERATION2_SETTINGS + acceleration_eeprom_offsets::LOCATION
@@ -212,16 +195,9 @@ void reset() {
 	for (uint8_t i = 0; i < STEPPER_COUNT; i ++) {
 		// Limit the max accelerations so that the calculation of block->acceleration & JKN Advance K2
 		// can be performed without overflow issues
-#ifndef SIMULATOR
 		if (max_acceleration_units_per_sq_second[i] > (uint32_t)((float)0xFFFFF / stepperAxisStepsPerMM(i)))
 		     max_acceleration_units_per_sq_second[i] = (uint32_t)((float)0xFFFFF / stepperAxisStepsPerMM(i));
 		axis_steps_per_sqr_second[i] = (uint32_t)((float)max_acceleration_units_per_sq_second[i] * stepperAxisStepsPerMM(i));
-#else
-		float foo = replicator_axis_steps_per_mm::axis_steps_per_mm[i] / 1000000.0f;
-		if (max_acceleration_units_per_sq_second[i] > (uint32_t)((float)0xFFFFF / foo))
-		     max_acceleration_units_per_sq_second[i] = (uint32_t)((float)0xFFFFF / foo);
-		axis_steps_per_sqr_second[i] = (uint32_t)((float)max_acceleration_units_per_sq_second[i] * foo);
-#endif
 		axis_accel_step_cutoff[i] = (uint32_t)0xffffffff / axis_steps_per_sqr_second[i];
 	}
 
@@ -300,13 +276,8 @@ void reset() {
 	//The values are obtained via the RepG xml and are updated on connection
 	//with RepG if they're different than stored.  These values are in mm per
 	//min, we divide by 60 here to get mm / sec.
-#ifdef SIMULATOR
-	extruder_only_max_feedrate[0] = replicator_axis_max_feedrates::axis_max_feedrates[3];
-	extruder_only_max_feedrate[1] = replicator_axis_max_feedrates::axis_max_feedrates[4];
-#else
 	extruder_only_max_feedrate[0] = stepperAxis[A_AXIS].max_feedrate;
 	extruder_only_max_feedrate[1] = stepperAxis[B_AXIS].max_feedrate;
-#endif
 
 #ifdef PLANNER_OFF
 	plannerMaxBufferSize = 1;
@@ -339,23 +310,29 @@ void abort() {
 	//after stopping
 	quickStop();
 
-  is_running = false;
-  is_homing = false;
+        is_running = false;
+        is_homing = false;
 	
 	stepperAxisInit(false);
 
 	setSegmentAccelState(acceleration);
+	deprimeEnable(true);
 }
 
 /// Define current position as given point
 void definePosition(const Point& position_in) {
-#ifndef SIMULATOR
-	for ( uint8_t i = 0; i < STEPPER_COUNT; i ++ )
-		stepperAxis[i].hasDefinePosition = true;
-#endif
+	Point position_offset = position_in;
 
-	plan_set_position(position_in[X_AXIS], position_in[Y_AXIS], position_in[Z_AXIS], position_in[A_AXIS], position_in[B_AXIS]);
+	for ( uint8_t i = 0; i < STEPPER_COUNT; i ++ ) {
+		stepperAxis[i].hasDefinePosition = true;
+
+		//Add the toolhead offset
+		position_offset[i] += (*tool_offsets)[i];
+	}
+
+	plan_set_position(position_offset[X_AXIS], position_offset[Y_AXIS], position_offset[Z_AXIS], position_offset[A_AXIS], position_offset[B_AXIS]);
 }
+
 
 /// Get the last position of the planner
 /// This is also the target position of the last command that was sent with
@@ -368,6 +345,10 @@ const Point getPlannerPosition() {
 	ATOMIC_BLOCK(ATOMIC_RESTORESTATE){
 		p = Point(planner_position[X_AXIS], planner_position[Y_AXIS], planner_position[Z_AXIS],
 			  planner_position[A_AXIS], planner_position[B_AXIS] );
+
+		//Subtract out the toolhead offset
+		for ( uint8_t i = 0; i < STEPPER_COUNT; i ++ )
+			p[i] -= (*tool_offsets)[i];
 	}
 	return p;
 }
@@ -378,9 +359,26 @@ const Point getPlannerPosition() {
 #ifndef SIMULATOR
 
 const Point getStepperPosition() {
-	int32_t x, y, z, a, b;
-	st_get_position(&x, &y, &z, &a, &b);
-	Point p = Point(x, y, z, a, b);
+	uint8_t active_toolhead;
+	int32_t position[STEPPER_COUNT];
+
+	st_get_position(&position[X_AXIS], &position[Y_AXIS], &position[Z_AXIS], &position[A_AXIS], &position[B_AXIS], &active_toolhead);
+
+	active_toolhead %= 2;	//Safeguard, shouldn't be needed
+
+	//Because all targets have a toolhead offset added to them, we need to undo that here.
+	//Also, because the toollhead can change, we need to use the active_toolhead from the hardware position
+	//and can't use toolIndex
+	Point *gp_tool_offsets;
+
+	if ( active_toolhead == 1 )	gp_tool_offsets = &tolerance_offset_T1;
+	else				gp_tool_offsets = &tolerance_offset_T0;
+
+	//Subtract out the toolhead offset
+	for ( uint8_t i = 0; i < STEPPER_COUNT; i ++ )
+		position[i] -= (*gp_tool_offsets)[i];
+
+	Point p = Point(position[X_AXIS], position[Y_AXIS], position[Z_AXIS], position[A_AXIS], position[B_AXIS]);
 	return p;
 }
 
@@ -400,7 +398,6 @@ void setHoldZ(bool holdZ_in) {
 
 
 void setTarget(const Point& target, int32_t dda_interval) {
-
 	//Add on the tool offsets
 	for ( uint8_t i = 0; i < STEPPER_COUNT; i ++ )
 		planner_target[i] = target[i] + (*tool_offsets)[i];
@@ -414,26 +411,17 @@ void setTarget(const Point& target, int32_t dda_interval) {
 	//Also calculate the step deltas (planner_steps[i]) at the same time.
 	int32_t max_delta = 0;
 	planner_master_steps_index = 0;
-  for (int i = 0; i < STEPPER_COUNT; i++) {
-    planner_steps[i] = planner_target[i] - planner_position[i];
-    int32_t abs_planner_steps = labs(planner_steps[i]);
-    if (abs_planner_steps <= 0x7fff)
-      delta_mm[i] = FPMULT2(ITOFP(planner_steps[i]), axis_steps_per_unit_inverse[i]);
-    else
-      // This typically only happens for LONG Z axis moves
-      // As such it typically happens three times per print
-      delta_mm[i] = FTOFP((float)planner_steps[i] * FPTOF(axis_steps_per_unit_inverse[i]));
-    planner_steps[i] = abs_planner_steps;
+	for (int i = 0; i < STEPPER_COUNT; i++) {
+		planner_steps[i] = labs(planner_target[i] - planner_position[i]);
 
-    if ( planner_steps[i] > max_delta) {
-      planner_distance = delta_mm[i];
-      planner_master_steps_index = i;
-      max_delta = planner_steps[i];
-    }
-  }
-  planner_master_steps = (uint32_t)max_delta;
+		if ( planner_steps[i] > max_delta) {
+			planner_master_steps_index = i;
+			max_delta = planner_steps[i];
+		}
+	}
+	planner_master_steps = (uint32_t)max_delta;
 
-  if (( planner_master_steps == 0 ) || ( planner_distance == 0.0 )) {
+	if ( planner_master_steps == 0 ) {
 #ifdef DEBUG_BLOCK_BY_MOVE_INDEX
 		//To keep in sync with the simulator
 		current_move_index ++;
@@ -443,19 +431,8 @@ void setTarget(const Point& target, int32_t dda_interval) {
 
 	//dda_rate is the number of dda steps per second for the master axis
 	uint32_t dda_rate = (uint32_t)(1000000 / dda_interval);
-  FPTYPE feedrate = 0;
-  if(max_delta <= 0x7FFF){
-    feedrate = FPMULT2( ITOFP(dda_rate),  axis_steps_per_unit_inverse[planner_master_steps_index]);
-  }else{
-    // This typically only happens for LONG Z axis moves
-    // As such it typically happens three times per print
-    //feedrate = FTOFP((float)(dda_rate) * FPTOF(axis_steps_per_unit_inverse[planner_master_steps_index]));
-  }
-#ifdef SIMULATOR
-  printf("feedrate: %d, dda_rate: %d, ITOFP(dda_rate): %d, inverse steps_per_mm: %d \n", feedrate, dda_rate, ITOFP(dda_rate), axis_steps_per_unit_inverse[planner_master_steps_index]);
-#endif
-  
-	plan_buffer_line(feedrate, dda_rate, toolIndex, acceleration && segmentAccelState);
+
+	plan_buffer_line(0, dda_rate, toolIndex, false, toolIndex);
 
 	if ( movesplanned() >=  plannerMaxBufferSize) is_running = true;
 	else                                          is_running = false;
@@ -463,7 +440,6 @@ void setTarget(const Point& target, int32_t dda_interval) {
 
 
 void setTargetNew(const Point& target, int32_t us, uint8_t relative) {
-  
 	//Add on the tool offsets and convert relative moves into absolute moves
 	for ( uint8_t i = 0; i < STEPPER_COUNT; i ++ ) {
 		planner_target[i] = target[i] + (*tool_offsets)[i];
@@ -478,30 +454,21 @@ void setTargetNew(const Point& target, int32_t us, uint8_t relative) {
 	//It has a G1 Z155 command that was slamming the platform into the floor.  
 	planner_target[Z_AXIS] = stepperAxis_clip_to_max(Z_AXIS, planner_target[Z_AXIS]);
 
-  //Calculate the maximum steps of any axis and store in planner_master_steps
-  //Also calculate the step deltas (planner_steps[i]) at the same time.
-  int32_t max_delta = 0;
+        //Calculate the maximum steps of any axis and store in planner_master_steps
+        //Also calculate the step deltas (planner_steps[i]) at the same time.
+        int32_t max_delta = 0;
 	planner_master_steps_index = 0;
-  for (int i = 0; i < STEPPER_COUNT; i++) {
-    planner_steps[i] = planner_target[i] - planner_position[i];
-    int32_t abs_planner_steps = labs(planner_steps[i]);
-    if (abs_planner_steps <= 0x7fff)
-      delta_mm[i] = FPMULT2(ITOFP(planner_steps[i]), axis_steps_per_unit_inverse[i]);
-    else
-      // This typically only happens for LONG Z axis moves
-      // As such it typically happens three times per print
-      delta_mm[i] = FTOFP((float)planner_steps[i] * FPTOF(axis_steps_per_unit_inverse[i]));
-    planner_steps[i] = abs_planner_steps;
+        for (int i = 0; i < STEPPER_COUNT; i++) {
+                planner_steps[i] = labs(planner_target[i] - planner_position[i]);
 
-    if ( planner_steps[i] > max_delta) {
-      planner_distance = delta_mm[i];
-      planner_master_steps_index = i;
-      max_delta = planner_steps[i];
-    }
-  }
-  planner_master_steps = (uint32_t)max_delta;
+                if ( planner_steps[i] > max_delta) {
+			planner_master_steps_index = i;
+                        max_delta = planner_steps[i];
+		}
+        }
+        planner_master_steps = (uint32_t)max_delta;
 
-  if (( planner_master_steps == 0 ) || ( planner_distance == 0.0 )) {
+	if ( planner_master_steps == 0 ) {
 #ifdef DEBUG_BLOCK_BY_MOVE_INDEX
 		//To keep in sync with the simulator
 		current_move_index ++;
@@ -513,18 +480,8 @@ void setTargetNew(const Point& target, int32_t us, uint8_t relative) {
 
 	//dda_rate is the number of dda steps per second for the master axis
 	uint32_t dda_rate	= (uint32_t)(1000000 / dda_interval);
-  FPTYPE feedrate = 0;
-  if(max_delta <= 0x7FFF){
-    feedrate = FPMULT2( ITOFP(dda_rate),  axis_steps_per_unit_inverse[planner_master_steps_index]);
-  }else{
-    // This typically only happens for LONG Z axis moves
-    // As such it typically happens three times per print
-    //feedrate = FTOFP((float)(dda_rate) * FPTOF(axis_steps_per_unit_inverse[planner_master_steps_index]));
-  }
-#ifdef SIMULATOR
-  printf("feedrate: %d, dda_rate: %d, ITOFP(dda_rate): %d, inverse steps_per_mm: %d \n", feedrate, dda_rate, ITOFP(dda_rate), axis_steps_per_unit_inverse[planner_master_steps_index]);
-#endif
-	plan_buffer_line(feedrate, dda_rate, toolIndex, acceleration && segmentAccelState);
+
+	plan_buffer_line(0, dda_rate, toolIndex, false, toolIndex);
 
 	if ( movesplanned() >=  plannerMaxBufferSize)      is_running = true;
 	else                                               is_running = false;
@@ -534,7 +491,6 @@ void setTargetNew(const Point& target, int32_t us, uint8_t relative) {
 //Dda_rate is the number of dda steps per second for the master axis
 
 void setTargetNewExt(const Point& target, int32_t dda_rate, uint8_t relative, float distance, int16_t feedrateMult64) {
-  
 	//Add on the tool offsets and convert relative moves into absolute moves
 	for ( uint8_t i = 0; i < STEPPER_COUNT; i ++ ) {
 		planner_target[i] = target[i] + (*tool_offsets)[i];
@@ -542,38 +498,38 @@ void setTargetNewExt(const Point& target, int32_t dda_rate, uint8_t relative, fl
 		if ((relative & (1 << i)) != 0) {
 			planner_target[i] = planner_position[i] + planner_target[i];
 		}
-  }
+	}
 
 	//Clip the Z axis so that it can't move outside the build area.
 	//Addresses a specific issue with old start.gcode for the replicator.
 	//It has a G1 Z155 command that was slamming the platform into the floor.  
 	planner_target[Z_AXIS] = stepperAxis_clip_to_max(Z_AXIS, planner_target[Z_AXIS]);
 
-  //Calculate the maximum steps of any axis and store in planner_master_steps
-  //Also calculate the step deltas (planner_steps[i]) at the same time.
-  int32_t max_delta = 0;
-  planner_master_steps_index = 0;
-  for (int i = 0; i < STEPPER_COUNT; i++) {
-    planner_steps[i] = planner_target[i] - planner_position[i];
-    int32_t abs_planner_steps = labs(planner_steps[i]);
-    if (abs_planner_steps <= 0x7fff)
-      delta_mm[i] = FPMULT2(ITOFP(planner_steps[i]), axis_steps_per_unit_inverse[i]);
-    else
-      // This typically only happens for LONG Z axis moves
-      // As such it typically happens three times per print
-      delta_mm[i] = FTOFP((float)planner_steps[i] * FPTOF(axis_steps_per_unit_inverse[i]));
-    planner_steps[i] = abs_planner_steps;
+        //Calculate the maximum steps of any axis and store in planner_master_steps
+        //Also calculate the step deltas (planner_steps[i]) at the same time.
+        int32_t max_delta = 0;
+        planner_master_steps_index = 0;
+        for (int i = 0; i < STEPPER_COUNT; i++) {
+                planner_steps[i] = planner_target[i] - planner_position[i];
+		int32_t abs_planner_steps = labs(planner_steps[i]);
+		if (abs_planner_steps <= 0x7fff)
+		     delta_mm[i] = FPMULT2(ITOFP(planner_steps[i]), axis_steps_per_unit_inverse[i]);
+		else
+		      // This typically only happens for LONG Z axis moves
+		      // As such it typically happens three times per print
+		     delta_mm[i] = FTOFP((float)planner_steps[i] * FPTOF(axis_steps_per_unit_inverse[i]));
+                planner_steps[i] = abs_planner_steps;
 
-    if ( planner_steps[i] > max_delta) {
-      planner_master_steps_index = i;
-      max_delta = planner_steps[i];
-    }
-  }
-  planner_master_steps = (uint32_t)max_delta;
+                if ( planner_steps[i] > max_delta) {
+			planner_master_steps_index = i;
+                        max_delta = planner_steps[i];
+		}
+        }
+        planner_master_steps = (uint32_t)max_delta;
 
-  if (( planner_master_steps == 0 ) || ( distance == 0.0 )) {
+	if (( planner_master_steps == 0 ) || ( distance == 0.0 )) {
 #ifdef DEBUG_BLOCK_BY_MOVE_INDEX
-  //To keep in sync with the simulator
+		//To keep in sync with the simulator
 		current_move_index ++;
 #endif
 		return;
@@ -595,11 +551,8 @@ void setTargetNewExt(const Point& target, int32_t dda_rate, uint8_t relative, fl
 			feedrate /= 64.0;
 #endif
 	}
-#ifdef SIMULATOR
-  printf("feedrate: %d, dda_rate: %d, ITOFP(dda_rate): %d, inverse steps_per_mm: %d\n", feedrate, dda_rate, ITOFP(dda_rate), axis_steps_per_unit_inverse[planner_master_steps_index]);
-#endif
-  
-	plan_buffer_line(feedrate, dda_rate, toolIndex, acceleration && segmentAccelState);
+
+	plan_buffer_line(feedrate, dda_rate, toolIndex, acceleration && segmentAccelState, toolIndex);
 
 	if ( movesplanned() >=  plannerMaxBufferSize)      is_running = true;
 	else                                               is_running = false;
@@ -618,34 +571,35 @@ void startHoming(const bool maximums, const uint8_t axes_enabled, const uint32_t
 
 	Point target = getStepperPosition();
 
-  for (uint8_t i = 0; i < STEPPER_COUNT; i++) {
-    if ((axes_enabled & (1<<i)) == 0) {
+        for (uint8_t i = 0; i < STEPPER_COUNT; i++) {
+                if ((axes_enabled & (1<<i)) == 0) {
 			axis_homing[i] = false;
-	  } else {
-	    target[i] = (maximums) ? POSITIVE_HOME_POSITION : NEGATIVE_HOME_POSITION;
-	    axis_homing[i] = true;
-#ifndef SIMULATOR
-		  stepperAxis[i].hasHomed = true;
-#endif
-    }
-  }
+		} else {
+	 		target[i] = (maximums) ? POSITIVE_HOME_POSITION : NEGATIVE_HOME_POSITION;
+			axis_homing[i] = true;
+			stepperAxis[i].hasHomed = true;
+                }
+        }
 
 	setTarget(target, us_per_step);
 
-  is_homing = true;
+        is_homing = true;
 }
 
 
 /// Enable/disable the given axis.
 void enableAxis(uint8_t index, bool enable) {
-  if (index < STEPPER_COUNT) {
+        if (index < STEPPER_COUNT) {
 		stepperAxisSetEnabled(index, enable);
-  }
+        }
 }
 
-bool isEnabled(uint8_t index){
-  return stepperAxisIsEnabled(index);
+
+/// Returns a bit mask for all axes enabled
+uint8_t allAxesEnabled(void) {
+	return axesEnabled;
 }
+
 
 /// set digital potentiometer for stepper axis
 void setAxisPotValue(uint8_t index, uint8_t value){
@@ -710,9 +664,10 @@ uint8_t getEndstopStatus() {
 
 
 // Enables and disables deprime
+// Deprime is always disabled if acceleration is switch off in the eeprom
 
 void deprimeEnable(bool enable) {
-	st_deprime_enable(enable);
+	st_deprime_enable(acceleration && enable);
 }
 
 
@@ -778,6 +733,10 @@ void doStepperInterrupt() {
 
 void doExtruderInterrupt() {
 	st_extruder_interrupt();
+}
+
+bool isEnabled(uint8_t axis){
+  stepperAxisGetEnabled(axis);
 }
 
 }

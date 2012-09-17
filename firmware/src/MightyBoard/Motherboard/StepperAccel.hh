@@ -19,7 +19,7 @@
 
   This module has been heavily modified from the original Marlin (https://github.com/ErikZalm).
   JKN Advance, YAJ (Yet Another Jerk), Advance Pressure Relax and modifications originate from
-  Jetty Firmware (https://github.com/jetty840/G3Firmware34).  These modifications and features are
+  Jetty Firmware (https://github.com/jetty840/G3Firmware).  These modifications and features are
   copyrighted and authored by Dan Newman and Jetty under GPL.  Copyright (c) 2012.
 */
 
@@ -63,19 +63,16 @@
 // Don't use the lookup table when simulating -- simulator doesn't
 // bother to provide a pgm mem library emulator
 #ifndef SIMULATOR
-#define LOOKUP_TABLE_TIMER
+	#define LOOKUP_TABLE_TIMER
 #endif
 
 #ifndef CRITICAL_SECTION_START
-  #define CRITICAL_SECTION_START  unsigned char _sreg = SREG; cli();
-  #define CRITICAL_SECTION_END    SREG = _sreg;
+	#define CRITICAL_SECTION_START  unsigned char _sreg = SREG; cli();
+	#define CRITICAL_SECTION_END    SREG = _sreg;
 #endif //CRITICAL_SECTION_START
 
 // Initialize and start the stepper motor subsystem
 void st_init();
-
-//Enables and disables deprime
-extern void st_deprime_enable(bool enable);
 
 // Returns true is there are no buffered steps to be executed
 bool st_empty();
@@ -85,19 +82,22 @@ void st_set_position(const int32_t &x, const int32_t &y, const int32_t &z, const
 void st_set_e_position(const int32_t &a, const int32_t &b);
 
 // Get current position in steps
-void st_get_position(int32_t *x, int32_t *y, int32_t *z, int32_t *a, int32_t *b);
+void st_get_position(int32_t *x, int32_t *y, int32_t *z, int32_t *a, int32_t *b, uint8_t *active_toolhead);
 
 // Returns true if we deleted an item in the pipeline buffer
 bool st_interrupt();
 
 void st_extruder_interrupt();
-  
-extern block_t *current_block;  // A pointer to the block currently being traced
-
-extern int16_t extruder_deprime_steps[EXTRUDERS];
-extern bool extrude_when_negative[EXTRUDERS];
-extern float extruder_only_max_feedrate[EXTRUDERS];
 
 void quickStop();
+  
+
+extern block_t	*current_block;  // A pointer to the block currently being traced
+extern int16_t	extruder_deprime_steps[EXTRUDERS];
+extern bool	extrude_when_negative[EXTRUDERS];
+extern float	extruder_only_max_feedrate[EXTRUDERS];
+
+//Enables and disables deprime
+extern void st_deprime_enable(bool enable);
 
 #endif

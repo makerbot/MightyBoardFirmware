@@ -338,8 +338,29 @@ static void handleMovementCommand(const uint8_t &command) {
 			
 			steppers::setTargetNew(Point(x,y,z,a,b), us, relative);
 		}
-	}
-	
+	}else if (command == HOST_CMD_QUEUE_POINT_NEW_EXT ) {
+        // check for completion
+        if (command_buffer.getLength() >= 32) {
+            Motherboard::getBoard().resetUserInputTimeout();
+            pop8(); // remove the command code
+            mode = MOVING;
+ 
+            int32_t x = pop32();
+            int32_t y = pop32();
+            int32_t z = pop32();
+            int32_t a = pop32();
+            int32_t b = pop32();
+            int32_t dda_rate = pop32();
+            uint8_t relative = pop8();
+            int32_t distanceInt32 = pop32();
+            float *distance = (float *)&distanceInt32;
+            int16_t feedrateMult64 = pop16();
+ 
+            line_number++;
+            
+            steppers::setTargetNewExt(Point(x,y,z,a,b), dda_rate, relative, *distance, feedrateMult64);
+        }  
+   }
 }
 
 bool processExtruderCommandPacket() {
@@ -625,6 +646,7 @@ void runCommandSlice() {
     //by waiting for the pipeline buffer to empty before continuing
     if ((command != HOST_CMD_QUEUE_POINT_EXT) &&
         (command != HOST_CMD_QUEUE_POINT_NEW) &&
+        (command != HOST_CMD_QUEUE_POINT_NEW_EXT) &&
         (command != HOST_CMD_ENABLE_AXES ) &&
         (command != HOST_CMD_SET_BUILD_PERCENT ) &&
         (command != HOST_CMD_CHANGE_TOOL ) &&
@@ -633,7 +655,8 @@ void runCommandSlice() {
            if ( ! st_empty() )     return;
     }
 
-		if (command == HOST_CMD_QUEUE_POINT_EXT || command == HOST_CMD_QUEUE_POINT_NEW) {
+		if (command == HOST_CMD_QUEUE_POINT_EXT || command == HOST_CMD_QUEUE_POINT_NEW ||
+        command == HOST_CMD_QUEUE_POINT_NEW_EXT) {
 					handleMovementCommand(command);
 			}  else if (command == HOST_CMD_CHANGE_TOOL) {
 				if (command_buffer.getLength() >= 2) {
@@ -866,8 +889,8 @@ void runCommandSlice() {
 				}			
 			}else if (command == HOST_CMD_TOOL_COMMAND) {
 				if (command_buffer.getLength() >= 4) { // needs a payload
-					int8_t payload_length = command_buffer[3];
-					if (command_buffer.getLength() >= 4+payload_length) {
+					uint8_t payload_length = command_buffer[3];
+					if (command_buffer.getLength() >= 4U+payload_length) {
 							pop8(); // remove the command code
 							line_number++;
 							processExtruderCommandPacket();
