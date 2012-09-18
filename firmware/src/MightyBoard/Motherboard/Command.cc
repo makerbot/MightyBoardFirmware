@@ -851,7 +851,7 @@ void runCommandSlice() {
 					for (uint8_t i = 0; i < STEPPER_COUNT; i++) {
 						if ( axes & (1 << i) ) {
 							uint16_t offset = eeprom_offsets::AXIS_HOME_POSITIONS_STEPS + 4*i;
-							uint32_t position = steppers::getPlannerPosition()[i];
+							uint32_t position = steppers::getStepperPosition()[i];
 							cli();
 							eeprom_write_block(&position, (void*) offset, 4);
 							sei();
@@ -865,7 +865,7 @@ void runCommandSlice() {
 					uint8_t axes = pop8();
 					line_number++;
 
-					Point newPoint = steppers::getPlannerPosition();
+					Point newPoint = steppers::getStepperPosition();
 
 					for (uint8_t i = 0; i < STEPPER_COUNT; i++) {
 						if ( axes & (1 << i) ) {

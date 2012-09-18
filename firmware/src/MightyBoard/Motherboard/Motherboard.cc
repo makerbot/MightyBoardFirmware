@@ -265,11 +265,11 @@ void Motherboard::doStepperInterrupt() {
   //disabled, we compare the counter to the requested interrupt time
   //to see if it overflowed.  If it did, then we reset the counter, and
   //schedule another interrupt for very shortly into the future.
-  if ( TCNT3 >= OCR3A ) {
-      OCR3A = 0x01;   //We set the next interrupt to 1 interval, because this will cause the interrupt to  fire again
+  if ( TCNT5 >= OCR5A ) {
+      OCR5A = 0x01;   //We set the next interrupt to 1 interval, because this will cause the interrupt to  fire again
               //on the next chance it has after exiting this interrupt, i.e. it gets queued.
 
-      TCNT3 = 0;  //Reset the timer counter
+      TCNT5 = 0;  //Reset the timer counter
 
       //debug_onscreen1 ++;
   }

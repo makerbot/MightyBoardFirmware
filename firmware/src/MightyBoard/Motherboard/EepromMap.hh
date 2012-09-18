@@ -70,7 +70,7 @@ namespace replicator_axis_lengths{
 #ifdef MODEL_REPLICATOR2
 	const static uint32_t axis_lengths[5] = {227L*XSTEPS_PER_MM, 148L*YSTEPS_PER_MM, 160L*ZSTEPS_PER_MM, 1000L*ASTEPS_PER_MM, 1000L*BSTEPS_PER_MM};
 #else
-	const static uint32_t axis_lengths[5] = {227L*XSTEPS_PER_MM, 148L*YSTEPS_PER_MM, 150L*ZSTEPS_PER_MM, 1000L*ASTEPS_PER_MM, 1000L*BSTEPS_PER_MM};
+	const static uint32_t axis_lengths[5] = {285L*XSTEPS_PER_MM, 150L*YSTEPS_PER_MM, 150L*ZSTEPS_PER_MM, 1000L*ASTEPS_PER_MM, 1000L*BSTEPS_PER_MM};
 #endif
 	
 	/// Footnote:
