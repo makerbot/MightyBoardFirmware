@@ -1641,7 +1641,7 @@ void MonitorMode::update(LiquidCrystalSerial& lcd, bool forceRedraw) {
             case host::HOST_STATE_BUILDING:
             case host::HOST_STATE_BUILDING_FROM_SD:
                 name = host::getBuildName();
-                uint8_t name_length;
+                int8_t name_length;
                 //limit name length to 19, which is 15+'.s3g' 
                 // we remove the .s3g and we should only print 15 characters of the name
                 name_length = strlen(name);
@@ -1650,7 +1650,7 @@ void MonitorMode::update(LiquidCrystalSerial& lcd, bool forceRedraw) {
                 while(name_length-- > 4)
                     lcd.write(*name++);
                 if(!((name[0] == '.') && (name[1] == 's') && (name[2] == '3') && (name[3] == 'g'))){
-                    while(name_length-- > 0)
+                    while(name_length-- >= 0)
                       lcd.write(*name++);
                 }
                     
@@ -1702,7 +1702,7 @@ void MonitorMode::update(LiquidCrystalSerial& lcd, bool forceRedraw) {
                 case host::HOST_STATE_BUILDING:
                 case host::HOST_STATE_BUILDING_FROM_SD:
                     name = host::getBuildName();
-                    uint8_t name_length;
+                    int8_t name_length;
                     //limit name length to 19, which is 15+'.s3g' 
                     // we remove the .s3g and we should only print 15 characters of the name
                     name_length = strlen(name);
@@ -1711,7 +1711,7 @@ void MonitorMode::update(LiquidCrystalSerial& lcd, bool forceRedraw) {
                     while(name_length-- > 4)
                         lcd.write(*name++);
                     if(!((name[0] == '.') && (name[1] == 's') && (name[2] == '3') && (name[3] == 'g'))){
-                        while(name_length-- > 0)
+                        while(name_length-- >= 0)
                           lcd.write(*name++);
                     }
                     
