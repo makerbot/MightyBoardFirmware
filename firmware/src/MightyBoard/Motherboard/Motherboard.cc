@@ -64,10 +64,10 @@ Motherboard::Motherboard() :
 
  
 #define ENABLE_TIMER_INTERRUPTS     TIMSK2 |= (1<<OCIE2A); \
-                            TIMSK3 |= (1<<OCIE3A)
+                            TIMSK5 |= (1<<OCIE5A)
  
 #define DISABLE_TIMER_INTERRUPTS    TIMSK2 &= ~(1<<OCIE2A); \
-                            TIMSK3 &= ~(1<<OCIE3A)
+                            TIMSK5 &= ~(1<<OCIE5A)
  
 
 void Motherboard::initClocks(){
@@ -88,7 +88,7 @@ void Motherboard::initClocks(){
 	TCCR2B = 0x04; //prescaler at 1/64  //0x0A; /// prescaler at 1/8
 	OCR2A = 25; //Generate interrupts 16MHz / 64 / 25 = 10KHz  //INTERVAL_IN_MICROSECONDS;  // TODO: update PWM settings to make overflowtime adjustable if desired : currently interupting on overflow
 	OCR2B = 0;
-	TIMSK2 = 0x02; // turn on OCR5A match interrupt
+	TIMSK2 = 0x02; // turn on OCR2A match interrupt
 
 #ifdef MODEL_REPLICATOR2
 	// reset and configure timer 3, the Extruders timer
@@ -197,7 +197,6 @@ void Motherboard::reset(bool hard_reset) {
   } 	
   
   board_status = STATUS_NONE;
- 
 #ifdef MODEL_REPLICATOR2 
   therm_sensor.init();
 	therm_sensor_timeout.start(THERMOCOUPLE_UPDATE_RATE);
@@ -230,6 +229,7 @@ void Motherboard::reset(bool hard_reset) {
   progress_line = 0;
   progress_start_char = 0;
   progress_end_char = 0;
+
 }
 
 /// Get the number of microseconds that have passed since
@@ -252,11 +252,11 @@ void Motherboard::doStepperInterrupt() {
   if(command::isPaused()) return;
 
   DISABLE_TIMER_INTERRUPTS;
-  sei();
+  cli();
   
   steppers::doStepperInterrupt();
   
-  cli();
+  sei();
   ENABLE_TIMER_INTERRUPTS;
  
 #ifdef ANTI_CLUNK_PROTECTION
@@ -266,6 +266,7 @@ void Motherboard::doStepperInterrupt() {
   //to see if it overflowed.  If it did, then we reset the counter, and
   //schedule another interrupt for very shortly into the future.
   if ( TCNT5 >= OCR5A ) {
+
       OCR5A = 0x01;   //We set the next interrupt to 1 interval, because this will cause the interrupt to  fire again
               //on the next chance it has after exiting this interrupt, i.e. it gets queued.
 
@@ -735,7 +736,6 @@ ISR(TIMER2_COMPA_vect) {
 			interface::setLEDs(false);
 		} 
 	} 
-
 }
 
 void Motherboard::setUsingPlatform(bool is_using) {

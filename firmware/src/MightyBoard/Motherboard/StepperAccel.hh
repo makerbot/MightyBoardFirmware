@@ -39,7 +39,7 @@
 //	DEBUG_TIMER_FINISH;
 //	debug_onscreen1 = DEBUG_TIMER_TCTIMER_CYCLES;
 
-#define DEBUG_TIMER
+//#define DEBUG_TIMER
 
 #if  defined(DEBUG_TIMER) && defined(TCCR5A)
 	#define DEBUG_TIMER_START TCCR5A = 0x00;TCCR5B=0x01;TCNT5 = 0

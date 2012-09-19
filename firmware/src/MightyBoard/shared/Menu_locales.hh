@@ -11,6 +11,8 @@
 #define PROGMEM __attribute__((section(".progmem.data"))) 
 #endif
 
+#pragma GCC diagnostic ignored "-Wunused-variable"
+
 static PROGMEM unsigned char ON_MSG[] =      "ON ";
 static PROGMEM unsigned char OFF_MSG[] =     "OFF";
 static PROGMEM unsigned char NA2_MSG[] = 	  "NA ";

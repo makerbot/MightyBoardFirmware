@@ -162,8 +162,8 @@ static uint8_t		last_active_toolhead = 0;
 
 // Some useful constants
 
-#define ENABLE_STEPPER_DRIVER_INTERRUPT()	TIMSK3 |= (1<<OCIE3A)
-#define DISABLE_STEPPER_DRIVER_INTERRUPT()	TIMSK3 &= ~(1<<OCIE3A)
+#define ENABLE_STEPPER_DRIVER_INTERRUPT()	TIMSK5 |= (1<<OCIE5A)
+#define DISABLE_STEPPER_DRIVER_INTERRUPT()	TIMSK5 &= ~(1<<OCIE5A)
 
 
 //         __________________________
@@ -561,7 +561,6 @@ bool st_interrupt() {
 
 	//DEBUG_TIMER_FINISH;
 	//debug_onscreen2 = DEBUG_TIMER_TCTIMER_CYCLES;
-
 	return block_deleted;
 }
 

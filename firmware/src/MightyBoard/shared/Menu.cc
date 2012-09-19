@@ -47,6 +47,7 @@ SelectAlignmentMenu align;
 FilamentOKMenu filamentOK;
 InfoMenu info;
 
+#pragma GCC diagnostic ignored "-Wswitch"
 
 //#define HOST_PACKET_TIMEOUT_MS 20
 //#define HOST_PACKET_TIMEOUT_MICROS (1000L*HOST_PACKET_TIMEOUT_MS)
@@ -3287,4 +3288,5 @@ void SDMenu::handleSelect(uint8_t index) {
   }
 }
 
+#pragma GCC diagnostic pop
 #endif

@@ -94,7 +94,7 @@ ExtruderHeatingElement::ExtruderHeatingElement(uint8_t id):
 void ExtruderHeatingElement::setHeatingElement(uint8_t value) {
 	
 	
-  	ATOMIC_BLOCK(ATOMIC_RESTORESTATE) {
+ 	ATOMIC_BLOCK(ATOMIC_RESTORESTATE) {
 	  if(heater_id == 0)
 	   { 
      		if (value == 0 || value == 255) {
@@ -121,6 +121,7 @@ void ExtruderHeatingElement::setHeatingElement(uint8_t value) {
 			}
 		}
 	}
+
 }
 
 
