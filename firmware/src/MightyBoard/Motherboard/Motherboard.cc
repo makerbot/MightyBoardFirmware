@@ -46,7 +46,7 @@ Motherboard Motherboard::motherboard;
 /// Create motherboard object
 Motherboard::Motherboard() :
       lcd(LCD_STROBE, LCD_DATA, LCD_CLK),
-      interfaceBoard(buttonArray, lcd, INTERFACE_LED_ONE, INTERFACE_LED_TWO),
+      interfaceBoard(buttonArray, lcd),
       platform_thermistor(PLATFORM_PIN, TemperatureTable::table_thermistor),
 			platform_heater(platform_thermistor,platform_element,SAMPLE_INTERVAL_MICROS_THERMISTOR,
      	eeprom_offsets::T0_DATA_BASE + toolhead_eeprom_offsets::HBP_PID_BASE, false), //TRICKY: HBP is only and anways on T0 for this machine
@@ -154,20 +154,25 @@ void Motherboard::reset(bool hard_reset) {
 		// Make sure our interface board is initialized
         interfaceBoard.init();
 
+        INTERFACE_LED_ONE.setDirection(true);
+        INTERFACE_LED_TWO.setDirection(true);
+
+        INTERFACE_LED_ONE.setValue(true);
+        INTERFACE_LED_TWO.setValue(true);
+
         // start with welcome script if the first boot flag is not set
         if(eeprom::getEeprom8(eeprom_offsets::FIRST_BOOT_FLAG, 0) == 0)
-            interfaceBoard.pushScreen(&welcomeScreen);
+            interfaceBoard.queueScreen(InterfaceBoard::WELCOME_SCREEN);
         else
             // otherwise start with the splash screen.
-            interfaceBoard.pushScreen(&splashScreen);
+            interfaceBoard.queueScreen(InterfaceBoard::SPLASH_SCREEN);
         
         
         if(hard_reset)
           _delay_us(3000000);
 
-
         // Finally, set up the interface
-        interface::init(&interfaceBoard, &lcd);
+        interface::init(&interfaceBoard);
 
         interface_update_timeout.start(interfaceBoard.getUpdateRate());
   }
@@ -203,7 +208,7 @@ void Motherboard::reset(bool hard_reset) {
 	// turn off the active cooling fan
 	setExtra(false);  
 #else
-  cutoff.init();
+  //cutoff.init();
   extruder_manage_timeout.start(SAMPLE_INTERVAL_MICROS_THERMOCOUPLE);
 #endif
   
@@ -235,6 +240,10 @@ void Motherboard::reset(bool hard_reset) {
   progress_line = 0;
   progress_start_char = 0;
   progress_end_char = 0;
+
+  if(hasInterfaceBoard){
+    interface::popScreen();  
+  }
 
 }
 
@@ -654,10 +663,12 @@ void Motherboard::interfaceBlink(int on_time, int off_time){
 	
 	if(off_time == 0){
 		interface_blink_state = BLINK_NONE;
-		interface::setLEDs(true);
+		INTERFACE_LED_ONE.setValue(true);
+    INTERFACE_LED_TWO.setValue(true);
 	}else if(on_time == 0){
 		interface_blink_state = BLINK_NONE;
-		interface::setLEDs(false);
+		INTERFACE_LED_ONE.setValue(false);
+    INTERFACE_LED_TWO.setValue(false);
 	} else{
 		interface_on_time = on_time;
 		interface_off_time = off_time;
@@ -735,11 +746,13 @@ ISR(TIMER2_COMPA_vect) {
 		if (interface_blink_state == BLINK_ON) {
 			interface_blink_state = BLINK_OFF;
 			interface_ovfs_remaining = interface_on_time;
-			interface::setLEDs(true);
+      INTERFACE_LED_ONE.setValue(true);
+      INTERFACE_LED_TWO.setValue(true);
 		} else if (interface_blink_state == BLINK_OFF) {
 			interface_blink_state = BLINK_ON;
 			interface_ovfs_remaining = interface_off_time;
-			interface::setLEDs(false);
+      INTERFACE_LED_ONE.setValue(false);
+      INTERFACE_LED_TWO.setValue(false);
 		} 
 	} 
 }

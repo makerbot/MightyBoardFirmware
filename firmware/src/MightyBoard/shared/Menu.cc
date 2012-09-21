@@ -23,6 +23,7 @@
 #include "stdio.h"
 #include "Menu_locales.hh"
 #include "Piezo.hh"
+#include "Main.hh"
 
 CancelBuildMenu cancel_build_menu;
 BuildStats build_stats_screen;
@@ -31,16 +32,13 @@ SDMenu sdmenu;
 ReadyMenu ready;
 LevelOKMenu levelOK;
 ActiveBuildMenu active_build_menu;
-MonitorMode monitorMode;
 JogMode jogger;
-WelcomeScreen welcome;
 BotStats bot_stats;
 SettingsMenu set;
 PreheatSettingsMenu preheatSettings;
 ResetSettingsMenu reset_settings;
 FilamentMenu filamentMenu;
 NozzleCalibrationScreen alignment;
-SplashScreen splash;
 HeaterPreheat preheat;
 UtilitiesMenu utils;
 SelectAlignmentMenu align;
@@ -69,9 +67,6 @@ enum sucessState{
 uint8_t levelSuccess;
 uint8_t filamentSuccess;
 
-SplashScreen::SplashScreen(){
-  hold_on = false;
-}
 
 void SplashScreen::update(LiquidCrystalSerial& lcd, bool forceRedraw) {
 
@@ -108,15 +103,8 @@ void SplashScreen::update(LiquidCrystalSerial& lcd, bool forceRedraw) {
     lcd.setCursor(19,3);
     lcd.writeInt(minor_digit, 1);
   }
-  else if (!hold_on) {
-  //   The machine has started, so we're done!
-                interface::popScreen();
-    }
 }
 
-void SplashScreen::SetHold(bool on){
-  hold_on = on;
-}
 
 void SplashScreen::notifyButtonPressed(ButtonArray::ButtonName button) {
   // We can't really do anything, since the machine is still loading, so ignore.
@@ -268,7 +256,7 @@ void HeaterPreheat::handleSelect(uint8_t index) {
                 Motherboard::getBoard().setBoardStatus(Motherboard::STATUS_PREHEATING, false);
             }
             interface::popScreen();
-            interface::pushScreen(&monitorMode);
+            interface::queueScreen(InterfaceBoard::BUILD_SCREEN);
             //needsRedraw = true;
       break;
     case 1:
@@ -2318,10 +2306,6 @@ void ActiveBuildMenu::drawItem(uint8_t index, LiquidCrystalSerial& lcd, uint8_t 
   }
 }
 
-void ActiveBuildMenu::pop(void){
-  host::pauseBuild(false);
-}
-
 void ActiveBuildMenu::handleCounterUpdate(uint8_t index, bool up){
   
   switch (index){
@@ -2367,6 +2351,7 @@ void ActiveBuildMenu::handleSelect(uint8_t index){
         for (int i = 3; i < STEPPER_COUNT; i++) 
           steppers::enableAxis(i, false); 
       }else{
+        host::pauseBuild(false);
         interface::popScreen();
       }
       lineUpdate = true;
@@ -2398,6 +2383,7 @@ void ActiveBuildMenu::handleSelect(uint8_t index){
 #else
     case 6:
 #endif
+      host::pauseBuild(false);
       interface::popScreen();
       break;
        
@@ -2429,10 +2415,6 @@ void BuildFinished::update(LiquidCrystalSerial& lcd, bool forceRedraw){
 
 void BuildFinished::reset(){
   waiting = false;
-}
-
-bool BuildFinished::screenWaiting(){
-  return waiting;
 }
 
 void BuildFinished::notifyButtonPressed(ButtonArray::ButtonName button){
@@ -2500,6 +2482,14 @@ void BuildStats::update(LiquidCrystalSerial& lcd, bool forceRedraw){
         lcd.writeInt(line_number, digits);
       }
       break;
+
+    case 2:
+#ifdef STACK_PAINT
+			lcd.setCursor(0,1);
+      lcd.writeString((char *)"Free SRAM ");
+      lcd.writeFloat((float)StackCount(), 0, LCD_SCREEN_WIDTH);
+#endif
+      break;
     default:
       break;
   }
@@ -2563,6 +2553,13 @@ void BotStats::update(LiquidCrystalSerial& lcd, bool forceRedraw){
       
     lcd.setCursor(17,2);
     lcd.writeInt(build_minutes,2);
+
+    
+#ifdef STACK_PAINT
+    lcd.setCursor(0,3);
+    lcd.writeString((char *)"Free SRAM ");
+    lcd.writeFloat((float)StackCount(), 0, LCD_SCREEN_WIDTH);
+#endif
   }
 }
 
@@ -2768,7 +2765,7 @@ void UtilitiesMenu::handleSelect(uint8_t index) {
   switch (index) {
     case 0:
       // Show monitor build screen
-            interface::pushScreen(&monitorMode);
+            interface::queueScreen(InterfaceBoard::BUILD_SCREEN);
       break;
     case 1:
       // load filament script
@@ -2788,7 +2785,7 @@ void UtilitiesMenu::handleSelect(uint8_t index) {
       break;
     case 5:
       // startup wizard script
-            interface::pushScreen(&welcome);
+            interface::queueScreen(InterfaceBoard::WELCOME_SCREEN);
       break;
     case 6:
       for (int i = 0; i < STEPPER_COUNT; i++) 
@@ -2863,14 +2860,13 @@ void InfoMenu::handleSelect(uint8_t index) {
       break;
     case 1:
       // settings menu
-            interface::pushScreen(&set);
+      interface::pushScreen(&set);
       break;
     case 2:
       interface::pushScreen(&preheatSettings);
       break;
     case 3:
-      splash.SetHold(true);
-      interface::pushScreen(&splash);
+      interface::queueScreen(InterfaceBoard::SPLASH_SCREEN);
       break;
     case 4:
       // restore defaults

@@ -32,9 +32,9 @@
 #include "HeatingElement.hh"
 #include "Heater.hh"
 #include "ExtruderBoard.hh"
-#ifdef MODEL_REPLICATOR
-#include "Cutoff.hh"
-#endif
+//#ifdef MODEL_REPLICATOR
+//#include "Cutoff.hh"
+//#endif
 
 /// Build platform heating element on v34 Extruder controller
 /// \ingroup ECv34
@@ -89,7 +89,7 @@ private:
 	Timeout therm_sensor_timeout;
 	ThermocoupleReader therm_sensor;
 #else
-  Cutoff cutoff; //we're not using the safety cutoff, but we need to disable the circuit
+//  Cutoff cutoff; //we're not using the safety cutoff, but we need to disable the circuit
 #endif
 
   /// True if we have an interface board attached
@@ -104,9 +104,6 @@ private:
 	LiquidCrystalSerial lcd;
 	InterfaceBoard interfaceBoard;
 	
-	SplashScreen splashScreen;      ///< Displayed at startup
-	WelcomeScreen welcomeScreen;	///< Displayed on Startup for the first time
-    
 	Thermistor platform_thermistor;
 	BuildPlatformHeatingElement platform_element;
 	Heater platform_heater;

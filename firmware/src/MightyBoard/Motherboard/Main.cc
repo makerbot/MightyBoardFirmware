@@ -33,6 +33,66 @@
 #include "UtilityScripts.hh"
 #include "Piezo.hh"
 
+#define DEBUG_SRAM_MONITOR
+#if defined(STACK_PAINT) && defined(DEBUG_SRAM_MONITOR)
+	bool stackAlertLockout = false;
+	uint16_t stackAlertCounter = 0;
+#endif
+
+#ifdef STACK_PAINT
+
+        //Stack checking
+        //http://www.avrfreaks.net/index.php?name=PNphpBB2&file=viewtopic&t=52249
+        extern uint8_t _end;
+        extern uint8_t __stack;
+
+        #define STACK_CANARY 0xc5
+
+        void StackPaint(void) __attribute__ ((naked)) __attribute__ ((section (".init1")));
+
+        void StackPaint(void)
+        {
+                #if 0
+                        uint8_t *p = &_end;
+
+                        while(p <= &__stack)
+                        {
+                                *p = STACK_CANARY;
+                                p++;
+                        }
+                #else
+                        __asm volatile ("    ldi r30,lo8(_end)\n"
+                                        "    ldi r31,hi8(_end)\n"
+                                        "    ldi r24,lo8(0xc5)\n" /* STACK_CANARY = 0xc5 */
+                                        "    ldi r25,hi8(__stack)\n"
+                                        "    rjmp .cmp\n"
+                                        ".loop:\n"
+                                        "    st Z+,r24\n"
+                                        ".cmp:\n"
+                                        "    cpi r30,lo8(__stack)\n"
+                                        "    cpc r31,r25\n"
+                                        "    brlo .loop\n"
+                                        "    breq .loop"::);
+                #endif
+        }
+
+
+        uint16_t StackCount(void)
+        {
+                const uint8_t *p = &_end;
+                uint16_t       c = 0;
+
+                while(*p == STACK_CANARY && p <= &__stack)
+                {
+                        p++;
+                        c++;
+                }
+
+                return c;
+        }
+
+#endif
+
 void reset(bool hard_reset) {
 	ATOMIC_BLOCK(ATOMIC_FORCEON) {
 		
@@ -91,8 +151,22 @@ int main() {
 		command::runCommandSlice();
 		// Motherboard slice
 		board.runMotherboardSlice();
+		//Alert if SRAM/stack has been corrupted by running out of SRAM
+#if defined(STACK_PAINT) && defined(DEBUG_SRAM_MONITOR)
+		stackAlertCounter ++;
+		//if ( stackAlertCounter >= 5000 ) {
+			if (( StackCount() == 0 )) {  //( ! stackAlertLockout ) && 
+        DEBUG_PIN6.setValue(true);
+				//stackAlertLockout = true;
+				//Piezo::playTune(TUNE_ERROR);
+			}
+			stackAlertCounter = 0;
+	//	}
+#endif
     // check for new tones
     Piezo::runPiezoSlice();
+    DEBUG_PIN6.setValue(false);
+
     // reset the watch dog timer
 		wdt_reset();
 

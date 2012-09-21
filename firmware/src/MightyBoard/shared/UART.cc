@@ -177,7 +177,6 @@ UART::UART(uint8_t index, communication_mode mode) :
 void UART::beginSend() {
         if (!enabled_) { return; }
 
-        DEBUG_PIN6.setValue(true);
         if (mode_ == RS485) {
                 speak();
                 _delay_us(10);
@@ -185,7 +184,6 @@ void UART::beginSend() {
         }
 
         send_byte(out.getNextByteToSend());
-        DEBUG_PIN6.setValue(false);
 }
 
 void UART::enable(bool enabled) {

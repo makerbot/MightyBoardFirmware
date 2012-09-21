@@ -18,8 +18,11 @@
 #ifndef MAIN_HH_
 #define MAIN_HH_
 
+#include <avr/interrupt.h>
+
 /// Reset the machine.
 /// \param[in] hard_reset Pass in true if this is a power-up reset
 void reset(bool hard_reset);
+extern uint16_t StackCount(void);
 
 #endif // MAIN_HH_

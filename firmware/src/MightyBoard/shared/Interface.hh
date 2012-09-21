@@ -30,7 +30,7 @@ namespace interface {
 
 /// Set the current interface board and lcd. This *must* be called before using
 /// any of the functions in this interface.
-void init(InterfaceBoard* board_in, LiquidCrystalSerial* lcd_in);
+void init(InterfaceBoard* board_in);
 
 /// Returns true if the interface board is connected
 bool isConnected();
@@ -63,13 +63,11 @@ void doUpdate();
 /// much impact.
 micros_t getUpdateRate();
 
-/// Set Interface board LEDS
-void setLEDs(bool on);
-
 /// set build percentage to be displayed in monitor mode
 void setBuildPercentage(uint8_t percent);
 
-
+/// queue a screen member of InterfaceBoard
+void queueScreen(InterfaceBoard::ScreenType screen);
 
 }
 

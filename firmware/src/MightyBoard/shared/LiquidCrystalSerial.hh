@@ -73,6 +73,7 @@ public:
 
   void createChar(uint8_t, uint8_t[]);
   void setCursor(uint8_t, uint8_t); 
+  void setCursorExt(int8_t col, int8_t row);
   virtual void write(uint8_t);
 
   /** Added by MakerBot Industries to support storing strings in flash **/
@@ -80,6 +81,7 @@ public:
   void writeInt32(uint32_t value, uint8_t digits);
 
   void writeString(char message[]);
+  void writeFloat(float value, uint8_t decimalPlaces, uint8_t rightJustifyToCol);
 
   /** Display the given line until a newline or null is encountered.
    * Returns a pointer to the first character not displayed.
