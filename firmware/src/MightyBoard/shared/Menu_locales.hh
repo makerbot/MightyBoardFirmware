@@ -240,7 +240,6 @@ static PROGMEM unsigned char HEATER_FAIL_DROPPING_TEMP_MSG[] = "Heating Failure!
 static PROGMEM unsigned char HEATER_FAIL_NOT_PLUGGED_IN_MSG[] = "Heater Error!       " "My temperature reads" "are failing! Please " "Check my connections";
 static PROGMEM unsigned char HEATER_FAIL_READ_MSG[] =  			"Heater Error!       " "I'm reading out of  " "range temperatures. " "Check my connections";
 
-
 static PROGMEM unsigned char TOTAL_TIME_MSG[]       = "Estimated Build TimeLifetime Total:    h";
 static PROGMEM unsigned char LAST_TIME_MSG[]        = "Last Build:     h  m";
 static PROGMEM unsigned char BUILD_TIME_MSG[]	     = "Build Time:     h  m"; 
@@ -263,6 +262,7 @@ static PROGMEM unsigned char SLEEP_WAIT_MSG[] = "Preparing for sleep:I'm complet
 static PROGMEM unsigned char SLEEP_PREP_MSG[] = "Preparing for sleep:I'm cooling my      heaters and going tomy wait position.";
 static PROGMEM unsigned char RESTARTING_MSG[] = "Restarting the Build";
 
+static PROGMEM unsigned char ERROR_SRAM[] = "MY SRAM USAGE IS    OVER THE 8K LIMIT!  ";
 static PROGMEM unsigned char ERROR_SD_CARD_REMOVED[] = "SD Card Removed";
 static PROGMEM unsigned char ERROR_PLATFORM_HEATING_TIMEOUT[] = "I timed out while   attempting to heat  my platform.";
 static PROGMEM unsigned char ERROR_HEATING_TIMEOUT[] = "I timed out while   attempting to heat  my extruder.";

@@ -117,7 +117,7 @@
 #define Z_STEPPER_STEP          STEPPER_PORT(L,1)   //active rising edge
 #define Z_STEPPER_DIR           STEPPER_PORT(L,2)   //forward on high
 #define Z_STEPPER_ENABLE        STEPPER_PORT(L,0)   //active low
-#define Z_STEPPER_MIN           STEPPER_PORT(C,6)   //active high
+#define Z_STEPPER_MIN           STEPPER_PORT(C,5)   //active high
 #define Z_STEPPER_MAX           STEPPER_PORT(J,0)   //active high
 
 #define A_STEPPER_STEP          STEPPER_PORT(A,3)   //active rising edge

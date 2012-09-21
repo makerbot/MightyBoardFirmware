@@ -296,14 +296,14 @@ void LiquidCrystalSerial::writeInt32(uint32_t value, uint8_t digits) {
 //current cursor position.  If it's non-zero, it's right justified to end at rightJustifyToCol column.
 
 #define MAX_FLOAT_STR_LEN 20
-
+#ifdef STACK_PAINT
 void LiquidCrystalSerial::writeFloat(float value, uint8_t decimalPlaces, uint8_t rightJustifyToCol) {
-        // this is used to cast digits
-        int digit;
-        float tens = 0.1;
-        int tenscount = 0;
-        int i;
-        float tempfloat = value;
+  // this is used to cast digits
+  int digit;
+  float tens = 0.1;
+  int tenscount = 0;
+  int i;
+  float tempfloat = value;
 	uint8_t p = 0;
 	char str[MAX_FLOAT_STR_LEN + 1];
 
@@ -363,6 +363,7 @@ void LiquidCrystalSerial::writeFloat(float value, uint8_t decimalPlaces, uint8_t
 	}
 	writeString(str);
 }
+#endif
 
 char* LiquidCrystalSerial::writeLine(char* message) {
 	char* letter = message;

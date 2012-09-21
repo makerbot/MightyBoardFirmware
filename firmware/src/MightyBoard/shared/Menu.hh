@@ -154,7 +154,7 @@ protected:
         /// Handle the menu being cancelled. This should either remove the
         /// menu from the stack, or pop up a confirmation dialog to make sure
         /// that the menu should be removed.
-	virtual void handleCancel();
+	void handleCancel();
 	
 		/// Handle update of a menu counter item
         /// \param[in] index Index of the menu item that was selected

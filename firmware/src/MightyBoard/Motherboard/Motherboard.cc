@@ -241,8 +241,10 @@ void Motherboard::reset(bool hard_reset) {
   progress_start_char = 0;
   progress_end_char = 0;
 
+  // pop the splash screen unless we are showing the welcome script
   if(hasInterfaceBoard){
-    interface::popScreen();  
+    if(eeprom::getEeprom8(eeprom_offsets::FIRST_BOOT_FLAG, 0) != 0)
+       interface::popScreen();  
   }
 
 }

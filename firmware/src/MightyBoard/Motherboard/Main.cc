@@ -32,6 +32,7 @@
 #include <util/delay.h>
 #include "UtilityScripts.hh"
 #include "Piezo.hh"
+#include "Menu_locales.hh"
 
 #define DEBUG_SRAM_MONITOR
 #if defined(STACK_PAINT) && defined(DEBUG_SRAM_MONITOR)
@@ -154,18 +155,16 @@ int main() {
 		//Alert if SRAM/stack has been corrupted by running out of SRAM
 #if defined(STACK_PAINT) && defined(DEBUG_SRAM_MONITOR)
 		stackAlertCounter ++;
-		//if ( stackAlertCounter >= 5000 ) {
+		if ( stackAlertCounter >= 5000 ) {
 			if (( StackCount() == 0 )) {  //( ! stackAlertLockout ) && 
-        DEBUG_PIN6.setValue(true);
-				//stackAlertLockout = true;
-				//Piezo::playTune(TUNE_ERROR);
+        board.errorResponse(ERROR_SRAM);
+				stackAlertLockout = true;
 			}
 			stackAlertCounter = 0;
-	//	}
+	  }
 #endif
     // check for new tones
     Piezo::runPiezoSlice();
-    DEBUG_PIN6.setValue(false);
 
     // reset the watch dog timer
 		wdt_reset();
