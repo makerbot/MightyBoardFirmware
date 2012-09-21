@@ -206,6 +206,12 @@ void Motherboard::reset(bool hard_reset) {
   cutoff.init();
   extruder_manage_timeout.start(SAMPLE_INTERVAL_MICROS_THERMOCOUPLE);
 #endif
+  
+  // initialize the extruders
+  Extruder_One.reset();
+  Extruder_Two.reset();
+    
+  HBP_HEAT.setDirection(true);
 	platform_thermistor.init();
 	platform_heater.reset();
     

@@ -93,34 +93,57 @@ bool hard_reset = false;
 bool cancelBuild = false;
 
 void runHostSlice() {
-		
-        InPacket& in = UART::getHostUART().in;
-        OutPacket& out = UART::getHostUART().out;
+	DEBUG_PIN1.setValue(true);	
+  InPacket& in = UART::getHostUART().in;
+  OutPacket& out = UART::getHostUART().out;
 	if (out.isSending()) {
 		// still sending; wait until send is complete before reading new host packets.
+    DEBUG_PIN1.setValue(false);
 		return;
 	}
-    // soft reset the machine unless waiting to notify repG that a cancel has occured
-	if (do_host_reset && (!cancelBuild || cancel_timeout.hasElapsed()) && (!z_stage_timeout.isActive() || z_stage_timeout.hasElapsed() || !steppers::isRunning())){
-			
-		if((buildState == BUILD_RUNNING) || (buildState == BUILD_PAUSED) || (buildState == BUILD_SLEEP)){
+  if(!(!cancelBuild || cancel_timeout.hasElapsed())){
+    DEBUG_PIN2.setValue(true);
+  }else{
+    DEBUG_PIN2.setValue(false);
+  }
+  if(!(!z_stage_timeout.isActive() || z_stage_timeout.hasElapsed() || st_empty())){
+    DEBUG_PIN3.setValue(true);
+  }else{
+    DEBUG_PIN3.setValue(false);
+  }
+  if(!do_host_reset){
+    DEBUG_PIN5.setValue(true);
+  }else{
+    DEBUG_PIN5.setValue(false);
+  }
+  
+
+  // soft reset the machine unless waiting to notify repG that a cancel has occured
+	if (do_host_reset && (!cancelBuild || cancel_timeout.hasElapsed()) && (!z_stage_timeout.isActive() || z_stage_timeout.hasElapsed() || st_empty())){
+	DEBUG_PIN4.setValue(true);
+  	if((buildState == BUILD_RUNNING) || (buildState == BUILD_PAUSED) || (buildState == BUILD_SLEEP)){
 			stopBuild();
 		}
 		do_host_reset = false;
+    cancelBuild = false;
+    cancel_timeout = Timeout();
+    z_stage_timeout = Timeout();
 
 		// reset local board
 		reset(hard_reset);
 		
-        // hard_reset can be called, but is not called by any
-        // a hard reset calls the start up sound and resets heater errors
+    // hard_reset can be called, but is not called by any
+    // a hard reset calls the start up sound and resets heater errors
 		hard_reset = false;
-		packet_in_timeout.abort();
+		packet_in_timeout = Timeout();
 
 		// Clear the machine and build names
 		machineName[0] = 0;
 		buildName[0] = 0;
 		currentState = HOST_STATE_READY;
-			
+
+    DEBUG_PIN4.setValue(false);
+    DEBUG_PIN1.setValue(false);			
 		return;
 	}
     // new packet coming in
@@ -189,7 +212,7 @@ void runHostSlice() {
 			out.append8(RC_CMD_UNSUPPORTED);
 		}
 		in.reset();
-                UART::getHostUART().beginSend();
+    UART::getHostUART().beginSend();
 	}
     /// mark new state as ready if done building from SD
 	if(currentState==HOST_STATE_BUILDING_FROM_SD)
@@ -206,6 +229,8 @@ void runHostSlice() {
 		Motherboard::getBoard().setBoardStatus(Motherboard::STATUS_ONBOARD_SCRIPT, false);
 	}
 	managePrintTime();
+  DEBUG_PIN1.setValue(false);
+  
 }
 
 /** Identify a command packet, and process it.  If the packet is a command
@@ -408,7 +433,7 @@ void handleSleep(const InPacket& from_host, OutPacket& to_host) {
 void handleIsFinished(const InPacket& from_host, OutPacket& to_host) {
 	to_host.append8(RC_OK);
 	ATOMIC_BLOCK(ATOMIC_FORCEON) {
-		bool done = !steppers::isRunning() && command::isEmpty();
+		bool done = st_empty() && command::isEmpty();
 		to_host.append8(done?1:0);
 	}
 }
@@ -668,9 +693,7 @@ sdcard::SdErrorCode startBuildFromSD() {
 	steppers::reset();
 	steppers::abort();
 	Motherboard::getBoard().reset(false);
-
 	currentState = HOST_STATE_BUILDING_FROM_SD;
-
 	return e;
 }
     // start build from utility script
@@ -705,7 +728,7 @@ void stopBuild() {
 		/// lower the z stage if a build is canceled
 		/// ensure that we have homed all axes before attempting this
     uint8_t z_home = steppers::isZHomed();   
-    if(z_home){
+    if(z_home > 0){
       Point target = steppers::getStepperPosition();
       if(z_home == 1) {target[2] = 58000;}
       else {target[2] = 60000;}
@@ -714,10 +737,10 @@ void stopBuild() {
 			InterfaceBoard& ib = Motherboard::getBoard().getInterfaceBoard();
       ib.errorMessage(CANCEL_PLATE_MSG);
       ib.lock();
-      z_stage_timeout.start(5000000);  //5 seconds
+      z_stage_timeout.start(10000000);  //10 seconds
     }
 	}
-	
+
     // if building from repG, try to send a cancel msg to repG before reseting 
 	if(currentState == HOST_STATE_BUILDING)
 	{	

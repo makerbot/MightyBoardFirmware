@@ -196,8 +196,9 @@ Point sleep_position;
 
 void startSleep(){
 
+  //DEBUG_PIN4.setValue(true);
 	// record current position
-	sleep_position = steppers::getPlannerPosition();
+	sleep_position = steppers::getStepperPosition();
 	
 	Motherboard &board = Motherboard::getBoard();
 	
@@ -226,11 +227,12 @@ void startSleep(){
 	
 	steppers::setTarget(z_pos, z_mm_per_second_18);
 	steppers::setTarget(wait_pos, xy_mm_per_second_80);
+  //DEBUG_PIN4.setValue(false);
 }
 
 void stopSleep(){
 	// move to build position
-	Point z_pos = Point(steppers::getPlannerPosition());
+	Point z_pos = Point(steppers::getStepperPosition());
 	/// set filament position to sleep_position
 	z_pos[A_AXIS] = sleep_position[A_AXIS];
 	z_pos[B_AXIS] = sleep_position[B_AXIS];
@@ -604,7 +606,8 @@ void runCommandSlice() {
 		/// this loop executes cold heat pausing and restart
 		if(active_paused){
 			// sleep called, waiting for current stepper move to finish
-			if(sleep_mode == SLEEP_START_WAIT){
+			if((sleep_mode == SLEEP_START_WAIT) && st_empty()){
+        //DEBUG_PIN1.setValue(true);
 				if(sleep_type == SLEEP_TYPE_COLD){
 					Motherboard::getBoard().getInterfaceBoard().errorMessage(SLEEP_PREP_MSG);
 				}else if(sleep_type == SLEEP_TYPE_FILAMENT){
@@ -613,13 +616,13 @@ void runCommandSlice() {
 				startSleep();
 				sleep_mode = SLEEP_MOVING;
 			// moving to sleep waiting position
-			}else if((sleep_mode == SLEEP_MOVING) && !steppers::isRunning()){
+			}else if((sleep_mode == SLEEP_MOVING) && st_empty()){
 				interface::popScreen();
 				sleep_mode = SLEEP_ACTIVE;
 			// restart called or
 			// restart called while still moving to waiting position
 			// wait for move to wait position to finish before restarting
-			}else if(((sleep_mode == SLEEP_MOVING_WAIT) && !steppers::isRunning()) ||
+			}else if(((sleep_mode == SLEEP_MOVING_WAIT) && st_empty()) ||
 					(sleep_mode == SLEEP_RESTART)){
 				Motherboard::getBoard().getInterfaceBoard().errorMessage(RESTARTING_MSG);
 				// wait for platform to heat
@@ -649,12 +652,14 @@ void runCommandSlice() {
 				stopSleep();
 				sleep_mode = SLEEP_FINISHED;
 			// when position is reached, restart print
-			}else if((sleep_mode == SLEEP_FINISHED) && !steppers::isRunning()){
+			}else if((sleep_mode == SLEEP_FINISHED) && st_empty()){
 				sleep_mode = SLEEP_NONE;
 				interface::popScreen();
 				active_paused = false;
 			}
+      //DEBUG_PIN1.setValue(false);
 			return;
+
 		}
 		
 		// process next command on the queue.

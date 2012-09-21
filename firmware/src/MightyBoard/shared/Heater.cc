@@ -235,7 +235,6 @@ void Heater::manage_temperature() {
 
 	//if (next_sense_timeout.hasElapsed()) {
 	//	next_sense_timeout.start(sample_interval_micros);
-
 		switch (sensor.update()) {
 		case TemperatureSensor::SS_ADC_BUSY:
 		case TemperatureSensor::SS_ADC_WAITING:
@@ -349,6 +348,7 @@ void Heater::manage_temperature() {
 		set_output(mv);
 			
 	}
+
 }
 
 

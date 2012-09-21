@@ -87,25 +87,15 @@ int main() {
 	while (1) {
 		// Host interaction thread.
 		host::runHostSlice();	
-    DEBUG_PIN1.setValue(true);
 		// Command handling thread.
 		command::runCommandSlice();
-    DEBUG_PIN2.setValue(true);
-    
 		// Motherboard slice
 		board.runMotherboardSlice();
-    DEBUG_PIN3.setValue(true);
     // check for new tones
     Piezo::runPiezoSlice();
-    DEBUG_PIN4.setValue(true);
     // reset the watch dog timer
 		wdt_reset();
 
-    DEBUG_PIN1.setValue(false);
-    DEBUG_PIN2.setValue(false);
-    DEBUG_PIN3.setValue(false);
-    DEBUG_PIN4.setValue(false);
-		
 	}
 	return 0;
 }

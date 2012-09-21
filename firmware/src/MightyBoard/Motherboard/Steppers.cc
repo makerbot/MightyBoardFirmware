@@ -751,8 +751,5 @@ uint8_t isZHomed(){
   return z_homed;
 }
 
-bool isEnabled(uint8_t axis){
-  stepperAxisGetEnabled(axis);
-}
 
 }

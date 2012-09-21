@@ -777,6 +777,7 @@ void FilamentScreen::update(LiquidCrystalSerial& lcd, bool forceRedraw) {
             lcd.writeFromPgmspace(EXPLAIN_ONE_S_MSG);
           board.interfaceBlink(25,15);
           // if z stage is at zero, move z stage down
+          steppers::abort();
           target = steppers::getStepperPosition();
           if(target[2] < 1000){
             target[2] = 60000;
@@ -968,42 +969,43 @@ void FilamentScreen::notifyButtonPressed(ButtonArray::ButtonName button) {
             switch (filamentState){
         /// go to interactive 'OK' scrreen
                 case FILAMENT_OK:
-          if(startup){
-            filamentState++;
-            interface::pushScreen(&filamentOK);
-          }
-          else{
-            stopMotor();
-            /// shut the heaters off if we are not in the middle of a build
-            if(host::getHostState() == host::HOST_STATE_READY){
-              Motherboard::getBoard().getExtruderBoard(0).getExtruderHeater().set_target_temperature(0);
-              Motherboard::getBoard().getExtruderBoard(1).getExtruderHeater().set_target_temperature(0);
-            }
-            Motherboard::getBoard().setBoardStatus(Motherboard::STATUS_ONBOARD_PROCESS, false);
-            Motherboard::getBoard().StopProgressBar();
-            interface::popScreen();
-          }
+                  if(startup){
+                    stopMotor();
+                    filamentState++;
+                    interface::pushScreen(&filamentOK);
+                  }
+                  else{
+                    stopMotor();
+                    /// shut the heaters off if we are not in the middle of a build
+                    if(host::getHostState() == host::HOST_STATE_READY){
+                      Motherboard::getBoard().getExtruderBoard(0).getExtruderHeater().set_target_temperature(0);
+                      Motherboard::getBoard().getExtruderBoard(1).getExtruderHeater().set_target_temperature(0);
+                    }
+                    Motherboard::getBoard().setBoardStatus(Motherboard::STATUS_ONBOARD_PROCESS, false);
+                    Motherboard::getBoard().StopProgressBar();
+                    interface::popScreen();
+                  }
                     break;
                 /// exit out of filament menu system
                 case FILAMENT_EXIT:
-          stopMotor();
-          /// shut the heaters off if we are not in the middle of a build
-          if(host::getHostState() == host::HOST_STATE_READY){
-            Motherboard::getBoard().getExtruderBoard(0).getExtruderHeater().set_target_temperature(0);
-            Motherboard::getBoard().getExtruderBoard(1).getExtruderHeater().set_target_temperature(0);
-          }
-          Motherboard::getBoard().setBoardStatus(Motherboard::STATUS_ONBOARD_PROCESS, false);
-          Motherboard::getBoard().StopProgressBar();
-          interface::popScreen();
-                    break;
-                default:
-                    needsRedraw = true;
-                    break;
+                  stopMotor();
+                  /// shut the heaters off if we are not in the middle of a build
+                  if(host::getHostState() == host::HOST_STATE_READY){
+                    Motherboard::getBoard().getExtruderBoard(0).getExtruderHeater().set_target_temperature(0);
+                    Motherboard::getBoard().getExtruderBoard(1).getExtruderHeater().set_target_temperature(0);
+                  }
+                  Motherboard::getBoard().setBoardStatus(Motherboard::STATUS_ONBOARD_PROCESS, false);
+                  Motherboard::getBoard().StopProgressBar();
+                  interface::popScreen();
+                            break;
+                        default:
+                  needsRedraw = true;
+                  break;
             }
-      break;
+            break;
         case ButtonArray::LEFT:
-      Motherboard::getBoard().StopProgressBar();
-      interface::pushScreen(&cancel_build_menu);      
+          Motherboard::getBoard().StopProgressBar();
+          interface::pushScreen(&cancel_build_menu);      
             break;      
         case ButtonArray::RIGHT:
         case ButtonArray::DOWN:
@@ -1243,13 +1245,12 @@ void MessageScreen::addMessage(CircularBuffer& buf) {
   }
 }
 
-
+// this method is to process messages in program memory
 void MessageScreen::addMessage(const unsigned char msg[]) {
 
-	unsigned char* letter = (unsigned char *)msg;
-  while (*letter != 0) {
-    message[cursor++] = *letter;
-    letter++;
+	unsigned char letter;// = (unsigned char *)msg;
+	while (letter = pgm_read_byte(msg++)) {
+    message[cursor++] = letter;
   }
     
   // ensure that message is always null-terminated
@@ -2376,6 +2377,7 @@ void ActiveBuildMenu::handleSelect(uint8_t index){
       break;
     case 3:
       is_sleeping = !is_sleeping;
+      DEBUG_PIN1.setValue(true);
       if(is_sleeping){
         host::pauseBuild(false);
         is_paused = false;
@@ -2384,6 +2386,7 @@ void ActiveBuildMenu::handleSelect(uint8_t index){
         host::activePauseBuild(false, command::SLEEP_TYPE_COLD);
       }
       lineUpdate = true;
+      DEBUG_PIN1.setValue(false);
       break;
 #ifdef ACTIVE_COOLING_FAN
     case 6:
@@ -2734,13 +2737,8 @@ void UtilitiesMenu::drawItem(uint8_t index, LiquidCrystalSerial& lcd, uint8_t li
     break;
   case 6:
     stepperEnable = true;
-    // check if any steppers are enabled
-    for (int i = 0; i < STEPPER_COUNT; i++){ 
-      if(steppers::isEnabled(i)){
-        stepperEnable = false;
-        break;
-      }
-    }
+    if(steppers::allAxesEnabled())
+      stepperEnable = false;
     if(stepperEnable)
       lcd.writeFromPgmspace(ESTEPS_MSG);
     else

@@ -150,12 +150,6 @@ FORCE_INLINE void stepperAxisStep(uint8_t axis, bool value) {
 }
 
 /// The A3982 steper driver chip has an inverted enable
-FORCE_INLINE bool stepperAxisGetEnabled(uint8_t axis) {
-
-	return !STEPPER_IOPORT_READ(stepperAxisPorts[axis].enable);
-}
-
-/// The A3982 steper driver chip has an inverted enable
 FORCE_INLINE void stepperAxisSetHardwareEnabled(uint8_t axis, bool enabled ) {
 	if (enabled)	axesHardwareEnabled |=  _BV(axis);
 	else		axesHardwareEnabled &= ~_BV(axis);

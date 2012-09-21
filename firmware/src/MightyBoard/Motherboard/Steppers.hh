@@ -168,8 +168,6 @@ namespace steppers {
     /// check is z axis has homed
     uint8_t isZHomed();
 
-    /// check if a stepper axis is enabled
-    bool isEnabled(uint8_t axis);
 };
 
 #endif // STEPPERS_HH_

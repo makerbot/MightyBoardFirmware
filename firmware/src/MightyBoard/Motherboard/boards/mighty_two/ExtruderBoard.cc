@@ -55,9 +55,8 @@ void ExtruderBoard::reset() {
 
 void ExtruderBoard::runExtruderSlice() {
 
-        extruder_heater.manage_temperature();
-        coolingFan.manageCoolingFan();
-
+  extruder_heater.manage_temperature();
+  coolingFan.manageCoolingFan();
 }
 
 void ExtruderBoard::setFan(uint8_t on)

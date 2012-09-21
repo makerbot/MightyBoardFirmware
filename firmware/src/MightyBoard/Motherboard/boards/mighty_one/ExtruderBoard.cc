@@ -55,8 +55,8 @@ void ExtruderBoard::reset() {
 
 void ExtruderBoard::runExtruderSlice() {
 
-        extruder_heater.manage_temperature();
-        coolingFan.manageCoolingFan();
+  extruder_heater.manage_temperature();
+  coolingFan.manageCoolingFan();
 
 }
 
@@ -93,7 +93,7 @@ ExtruderHeatingElement::ExtruderHeatingElement(uint8_t id):
 
 void ExtruderHeatingElement::setHeatingElement(uint8_t value) {
 	
-	
+    
   	ATOMIC_BLOCK(ATOMIC_RESTORESTATE) {
 	   if(heater_id == 0)
 	   { 
