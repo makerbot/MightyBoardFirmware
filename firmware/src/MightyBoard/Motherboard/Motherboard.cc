@@ -49,7 +49,7 @@ Motherboard::Motherboard() :
       interfaceBoard(buttonArray, lcd),
       platform_thermistor(PLATFORM_PIN, TemperatureTable::table_thermistor),
 			platform_heater(platform_thermistor,platform_element,SAMPLE_INTERVAL_MICROS_THERMISTOR,
-     	eeprom_offsets::T0_DATA_BASE + toolhead_eeprom_offsets::HBP_PID_BASE, false), //TRICKY: HBP is only and anways on T0 for this machine
+     	      eeprom_offsets::T0_DATA_BASE + toolhead_eeprom_offsets::HBP_PID_BASE, false), //TRICKY: HBP is only and anways on T0 for this machine
 			using_platform(eeprom::getEeprom8(eeprom_offsets::HBP_PRESENT, 1)),
 #ifdef MODEL_REPLICATOR2
 			Extruder_One(0, EXA_PWR, EXA_FAN, ThermocoupleReader::CHANNEL_ONE, eeprom_offsets::T0_DATA_BASE),
@@ -199,11 +199,15 @@ void Motherboard::reset(bool hard_reset) {
 		
 		heatShutdown = false;
 		heatFailMode = HEATER_FAIL_NONE;
+
+#ifdef MODEL_REPLICATOR2 
+    therm_sensor.init();
+#endif
+
   } 	
   
   board_status = STATUS_NONE;
 #ifdef MODEL_REPLICATOR2 
-  therm_sensor.init();
 	therm_sensor_timeout.start(THERMOCOUPLE_UPDATE_RATE);
 	// turn off the active cooling fan
 	setExtra(false);  
