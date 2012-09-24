@@ -243,11 +243,6 @@
 // bot shuts down printers after a defined timeout 
 #define USER_INPUT_TIMEOUT		1800000000 // 30 minutes
 
-#define XSTEPS_PER_MM          94.139704f
-#define YSTEPS_PER_MM          94.139704f
-#define ZSTEPS_PER_MM          400
-#define ASTEPS_PER_MM          96.2752018f
-#define BSTEPS_PER_MM          96.2752018f
 
 //If defined, the planner is constrained to a pipeline size of 1,
 //this means that acceleration still happens, but only on a per block basis,

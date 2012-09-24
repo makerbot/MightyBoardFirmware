@@ -26,89 +26,75 @@
 namespace cooler_eeprom_offsets{
 //$BEGIN_ENTRY
 //$type:B 
-const static uint16_t ENABLE_OFFSET   =     0;
+const static uint16_t ENABLE   =     0;
 //$BEGIN_ENTRY
 //$type:B 
-const static uint16_t SETPOINT_C_OFFSET  =  1;
+const static uint16_t SETPOINT_C  =  1;
 }
 
 /** EEPROM storage offsets for PID data */
 namespace pid_eeprom_offsets{
 //$BEGIN_ENTRY
 //$type:H $floating_point:True
-const static uint16_t P_TERM_OFFSET = 0;
+const static uint16_t P_TERM = 0;
 //$BEGIN_ENTRY
 //$type:H $floating_point:True
-const static uint16_t I_TERM_OFFSET = 2;
+const static uint16_t I_TERM = 2;
 //$BEGIN_ENTRY
 //$type:H $floating_point:True
-const static uint16_t D_TERM_OFFSET = 4;
+const static uint16_t D_TERM = 4;
 }
+
+#ifdef MODEL_REPLICATOR2
+#define XSTEPS_PER_MM          88.573186f
+#define YSTEPS_PER_MM          88.573186f
+#else
+#define XSTEPS_PER_MM          94.139704f
+#define YSTEPS_PER_MM          94.139704f
+#endif
+
+#define ZSTEPS_PER_MM          400
+#define ASTEPS_PER_MM          96.2752018f
+#define BSTEPS_PER_MM          96.2752018f
 
 /** 
  * EEPROM default home axis positions in steps
  */
 namespace replicator_axis_offsets{
-	const static uint32_t DUAL_X_OFFSET_STEPS = 152*XSTEPS_PER_MM;
-	const static uint32_t SINGLE_X_OFFSET_STEPS = 152*XSTEPS_PER_MM;
-	const static uint32_t DUAL_Y_OFFSET_STEPS = 75*YSTEPS_PER_MM;
-	const static uint32_t SINGLE_Y_OFFSET_STEPS = 72*YSTEPS_PER_MM;
-	/// Footnote:
-	/// mm offsets
+	const static uint32_t DUAL_X_OFFSET_STEPS = 152L;
+	const static uint32_t SINGLE_X_OFFSET_STEPS = 152L;
+	const static uint32_t DUAL_Y_OFFSET_STEPS = 75L;
+	const static uint32_t SINGLE_Y_OFFSET_STEPS = 72L;
 	/// XDUAL: 152mm,
 	/// XSINGLE: 152mm,
 	/// Y: 75mm
 	/// YSINGLE: 72mm
-
-	/// steps per mm (from replicator.xml in RepG/machines)
-	/// XY : 94.139704
-	/// Z : 400
-
 }
 
 namespace replicator_axis_lengths{
-#ifdef MODEL_REPLICATOR2
-	const static uint32_t axis_lengths[5] = {227L*XSTEPS_PER_MM, 148L*YSTEPS_PER_MM, 160L*ZSTEPS_PER_MM, 1000L*ASTEPS_PER_MM, 1000L*BSTEPS_PER_MM};
+#ifdef MODEL_REPLICATOR
+	const static uint32_t axis_lengths[5] = {227L, 148L, 150L, 1000L, 1000L};
 #else
-	const static uint32_t axis_lengths[5] = {285L*XSTEPS_PER_MM, 150L*YSTEPS_PER_MM, 150L*ZSTEPS_PER_MM, 1000L*ASTEPS_PER_MM, 1000L*BSTEPS_PER_MM};
+	const static uint32_t axis_lengths[5] = {285L, 150L, 160L, 1000L, 1000L};
 #endif
-	
-	/// Footnote:
-	/// mm offsets
-	/// X AXIS: 227mm
-	/// Y AXIS: 148mm
-	/// Z AXIS: 150mm
+	/// X AXIS: 227mm replicator 1, 285mm replicator2
+	/// Y AXIS: 148mm replicator 1, 150mm replicator2
+	/// Z AXIS: 150mm replicator 1, 160mm replicator2
 	/// AB AXIS: 100000mm
-
-	/// steps per mm (from replicator.xml in RepG/machines)
-	/// XY : 94.139704
-	/// Z : 400
-	/// AB : 96.27520187
 }
 
 namespace replicator_axis_max_feedrates{
-    // These are the maximum feedrates of all axis, and are populated from Replicator G
-    // on connection.  These are reasonable defaults for X/Y/Z/A/B
     // Each one is the feedrate in mm per minute (extruders are the feedrate of the input filament)
     const static uint32_t axis_max_feedrates[5] = {18000, 18000, 1170, 1600, 1600};
 }
  
 namespace replicator_axis_steps_per_mm{
+    /// Steps per mm for all axis, all values multiplied by 1,000,000
 #ifdef MODEL_REPLICATOR2
     const static uint32_t axis_steps_per_mm[5] = { 88573186, 88573186, 400000000, 96275202, 96275202};
 #else
     const static uint32_t axis_steps_per_mm[5] = { 94139704, 94139704, 400000000, 96275202, 96275202};
 #endif
- 
-    /// Footnote:
-    /// Steps per mm for all axis, all values multiplied by 1,000,000
-    /// These values are updated from the settings contained in the machines.xml
-    /// (if different) when ReplicatorG connects to the bot
-    /// X: 94.139704
-    /// Y: 94.139704
-    /// Z: 400
-    /// A: 96.275201870333662468889989185642
-    /// B: 96.275201870333662468889989185642
 }
 
 /**
@@ -124,20 +110,12 @@ namespace toolhead_eeprom_offsets {
 //$type:H 
 const static uint16_t FEATURES			= 0x0000;
 /// Backoff stop time, in ms: 2 bytes
-//$BEGIN_ENTRY
-//$type:H 
 const static uint16_t BACKOFF_STOP_TIME         = 0x0002;
 /// Backoff reverse time, in ms: 2 bytes
-//$BEGIN_ENTRY
-//$type:H 
 const static uint16_t BACKOFF_REVERSE_TIME      = 0x0004;
 /// Backoff forward time, in ms: 2 bytes
-//$BEGIN_ENTRY
-//$type:H 
 const static uint16_t BACKOFF_FORWARD_TIME      = 0x0006;
 /// Backoff trigger time, in ms: 2 bytes
-//$BEGIN_ENTRY
-//$type:H 
 const static uint16_t BACKOFF_TRIGGER_TIME      = 0x0008;
 /// Extruder heater base location: 6 bytes
 //$BEGIN_ENTRY
@@ -148,13 +126,9 @@ const static uint16_t EXTRUDER_PID_BASE         = 0x000A;
 //$eeprom_map:pid_eeprom_offsets
 const static uint16_t HBP_PID_BASE              = 0x0010;
 /// Extra features word: 2 bytes
-//$BEGIN_ENTRY
-//$type:H 
 const static uint16_t EXTRA_FEATURES            = 0x0016;
 /// Extruder identifier; defaults to 0: 1 byte 
 /// Padding: 1 byte of space
-//$BEGIN_ENTRY
-//$type:B 
 const static uint16_t SLAVE_ID                  = 0x0018;
 /// Cooling fan info: 2 bytes 
 //$BEGIN_ENTRY
@@ -203,7 +177,7 @@ const static uint16_t AXIS_HOME_DIRECTION 		= 0x000C;
 /// Default locations for the axis in step counts: 5 x 32 bit = 20 bytes
 //$BEGIN_ENTRY
 //$type:iiiii 
-const static uint16_t AXIS_HOME_POSITIONS_STEPS	= 0x000E;
+const static uint16_t AXIS_HOME_POSITIONS_MM	= 0x000E;
 /// Name of this machine: 16 bytes (16 bytes extra buffer) 
 //$BEGIN_ENTRY
 //$type:s  $length:16
@@ -213,8 +187,6 @@ const static uint16_t MACHINE_NAME				= 0x0022;
 //$type:B 
 const static uint16_t TOOL_COUNT 				= 0x0042;
 /// Hardware ID. Must exactly match the USB VendorId/ProductId pair: 4 bytes
-//$BEGIN_ENTRY
-//$type:HH
 const static uint16_t VID_PID_INFO				= 0x0044;
 /// Version Number for internal releases
 //$BEGIN_ENTRY
@@ -261,7 +233,7 @@ const static uint16_t PREHEAT_SETTINGS = 0x0158;
 /// 1 byte,  0x01 for help menus on, 0x00 for off
 //$BEGIN_ENTRY
 //$type:B 
-const static uint16_t FILAMENT_HELP_SETTINGS = 0x0160;
+const static uint16_t FILAMENT_HELP_TEXT_ON = 0x0160;
 /// This indicates how far out of tolerance the toolhead0 toolhead1 distance is
 /// in steps.  3 x 32 bits = 12 bytes
 //$BEGIN_ENTRY
@@ -282,71 +254,45 @@ const static uint16_t AXIS_LENGTHS				= 0x018C;
 /// total lifetime print hours, 3bytes
 //$BEGIN_ENTRY
 //$eeprom_map: build_time_offsets
-const static uint16_t TOTAL_BUILD_TIME			= 0x028E;
-
-/// Hardware configuration settings 
-const static uint16_t BOTSTEP_TYPE      = 0x0292;
-
+const static uint16_t TOTAL_BUILD_TIME			= 0x01A0;
 /// axis steps per mm XYZAB 5*32bit = 20 bytes
-const static uint16_t AXIS_STEPS_PER_MM     = 0x01A0;
+//$BEGIN_ENTRY
+//$type:IIIII
+const static uint16_t AXIS_STEPS_PER_MM     = 0x01A4;
 /// Filament lifetime counter (in steps) 8 bytes (int64) x 2 (for 2 extruders)
-const static uint16_t FILAMENT_LIFETIME     = 0x01B4;
+//$BEGIN_ENTRY
+//$type:qq
+const static uint16_t FILAMENT_LIFETIME     = 0x01B8;
 /// Filament trip counter (in steps) 8 bytes (int64) x 2 (for 2 extruders)
-const static uint16_t FILAMENT_TRIP     = 0x01C4;
-const static uint16_t OVERRIDE_GCODE_TEMP   = 0x01D4;
-///Location of the profiles, 4 x 26 bytes (PROFILES_QUANTITY * PROFILE_SIZE)
-const static uint16_t PROFILES_BASE     = 0x01D5;
-///1 byte, set to PROFILES_INITIALIZED (0xAC) when profiles have been initialized
-const static uint16_t PROFILES_INIT         = 0x023D;
-/// Acceleraton settings 60 bytes: 1 byte (on/off) + acceleration settings
-const static uint16_t ACCELERATION2_SETTINGS     = 0x023E;
+//$BEGIN_ENTRY
+//$type:qq
+const static uint16_t FILAMENT_TRIP     = 0x01C8;
+/// Acceleration2 settings 28 bytes: additional acceleration settings
+//$BEGIN_ENTRY
+//$eeprom_map: acceleration2_eeprom_offsets
+const static uint16_t ACCELERATION2_SETTINGS     = 0x01D8;
 /// axis max feedrates XYZAB 5*32bit = 20 bytes
-const static uint16_t AXIS_MAX_FEEDRATES     = 0x027A;
-//const static uint16_t HEAT_DURING_PAUSE      = 0x028E;
+//$BEGIN_ENTRY
+//$type:HHHHH
+const static uint16_t AXIS_MAX_FEEDRATES     = 0x01F4;
+/// Hardware configuration settings 
+//$BEGIN_ENTRY
+//$type:B
+const static uint16_t BOTSTEP_TYPE      = 0x0208;
+/// temperature offset calibration: 1 byte x 3 heaters = 3 bytes
+//$BEGIN_ENTRY
+//$type:BBB
+const static uint16_t HEATER_CALIBRATION = 0x020A;
+// flag that reconfigured eeprom fields have been updated
+const static uint16_t VERSION6_1_UPDATE_FLAG = 0x20E;
+
 
 /// start of free space
-const static uint16_t FREE_EEPROM_STARTS        = 0x0230;
+const static uint16_t FREE_EEPROM_STARTS        = 0x0210;
 
 } 
 
-/*
-#define DEFAULT_ACCELERATION   2000 // mm/s/s
-#define DEFAULT_X_ACCELERATION 1500 // mm/s/s
-#define DEFAULT_Y_ACCELERATION 1500 // mm/s/s
-#define DEFAULT_Z_ACCELERATION 1000 // mm/s/s
-#define DEFAULT_A_ACCELERATION 3000 // mm/s/s
-#define DEFAULT_B_ACCELERATION 3000 // mm/s/s
 
-#define DEFAULT_MAX_XY_JERK 20.0 // ms/s 
-#define DEFAULT_MAX_Z_JERK 1.0 // mm/s
-#define DEFAULT_MAX_A_JERK 2.0 // mm/s
-#define DEFAULT_MAX_B_JERK 2.0 // mm/s   
-
-#define DEFAULT_MIN_SPEED 15 // mm/s
-
-#define ACCELERATION_INIT_BIT 3
-
-namespace acceleration_eeprom_offsets{
-//$BEGIN_ENTRY
-//$type:B 
-const static uint16_t ACTIVE_OFFSET	= 0x00;
-//$BEGIN_ENTRY
-//$type:H 
-const static uint16_t ACCELERATION_RATE_OFFSET = 0x02;
-//$BEGIN_ENTRY
-//$type:HHHHH
-const static uint16_t AXIS_RATES_OFFSET = 0x04;
-//$BEGIN_ENTRY
-//$type:HHHHH $floating_point:True
-const static uint16_t AXIS_JERK_OFFSET = 0x0E;
-//$BEGIN_ENTRY
-//$type:H 
-const static uint16_t MINIMUM_SPEED = 0x18;
-//$BEGIN_ENTRY
-//$type:B 
-const static uint16_t DEFAULTS_FLAG = 0x1A;
-}
-*/
 
 #define DEFAULT_MAX_ACCELERATION_AXIS_X 500
 #define DEFAULT_MAX_ACCELERATION_AXIS_Y 500
@@ -371,45 +317,63 @@ const static uint16_t DEFAULTS_FLAG = 0x1A;
  
 #define DEFAULT_SLOWDOWN_FLAG 0x01
  
-#define ACCELERATION_INIT_BIT 7
+#define ACCELERATION_INIT_BIT 2
  
 namespace acceleration_eeprom_offsets{
  
- 
-    const static uint16_t ACTIVE_OFFSET         = 0x00;
-    const static uint16_t MAX_ACCELERATION_AXIS     = 0x02; //5 * uint16_t
-    const static uint16_t MAX_ACCELERATION_NORMAL_MOVE  = 0x0C; //uint16_t
-    const static uint16_t MAX_ACCELERATION_EXTRUDER_MOVE    = 0x0E; //uint16_t
-    const static uint16_t MAX_SPEED_CHANGE          = 0x10; //5 * uint16_t
-    const static uint16_t JKN_ADVANCE_K         = 0x1A; //uint32_t
-    const static uint16_t JKN_ADVANCE_K2            = 0x1E; //uint32_t
-    const static uint16_t EXTRUDER_DEPRIME_STEPS        = 0x22; //2 * uint16_t (A & B axis)
-    const static uint16_t SLOWDOWN_FLAG         = 0x26; //uint8_t Bit 0 == 1 is slowdown enabled
-    const static uint16_t DEFAULTS_FLAG         = 0x27; //uint8_t Bit 7 == 1 is defaults written
-    const static uint16_t FUTURE_USE            = 0x28; //20 bytes for future use
-    //0x3C is end of acceleration settings (60 bytes long)
+    //$BEGIN_ENTRY
+    //$type:B 
+    const static uint16_t ACCELERATION_ACTIVE         = 0x00;
+    //$BEGIN_ENTRY
+    //$type:H 
+    const static uint16_t MAX_ACCELERATION_NORMAL_MOVE  = 0x02; //uint16_t
+    //$BEGIN_ENTRY
+    //$type:HHHHH 
+    const static uint16_t MAX_ACCELERATION_AXIS     = 0x04; //5 * uint16_t
+    //$BEGIN_ENTRY
+    //$type:HHHHH 
+    const static uint16_t MAX_SPEED_CHANGE          = 0x0E; //5 * uint16_t
+    //$BEGIN_ENTRY
+    //$type:H 
+    const static uint16_t MAX_ACCELERATION_EXTRUDER_MOVE    = 0x18; //uint16_t
+    //$BEGIN_ENTRY
+    //$type:B 
+    const static uint16_t DEFAULTS_FLAG         = 0x1A; //uint8_t Bit 7 == 1 is defaults written
+}
+
+namespace acceleration2_eeprom_offsets{
+    //$BEGIN_ENTRY
+    //$type:I 
+    const static uint16_t JKN_ADVANCE_K         = 0x00; //uint32_t
+    //$BEGIN_ENTRY
+    //$type:I 
+    const static uint16_t JKN_ADVANCE_K2        = 0x04; //uint32_t
+    //$BEGIN_ENTRY
+    //$type:HH 
+    const static uint16_t EXTRUDER_DEPRIME_STEPS = 0x08; //2 * uint16_t (A & B axis)
+    //$BEGIN_ENTRY
+    //$type:B 
+    const static uint16_t SLOWDOWN_FLAG         = 0x0A; //uint8_t Bit 0 == 1 is slowdown enabled
+    const static uint16_t FUTURE_USE            = 0x0C; //20 bytes for future use
+    //0x1C is end of acceleration2 settings (28 bytes long)
 }
 
 namespace build_time_offsets{
 //$BEGIN_ENTRY
 //$type:H 
-	const static uint16_t HOURS_OFFSET	 = 0x00;
+	const static uint16_t HOURS = 0x00;
 //$BEGIN_ENTRY
 //$type:B 
-	const static uint16_t MINUTES_OFFSET = 0x02;
+	const static uint16_t MINUTES = 0x02;
 }
 
 // buzz on/off settings
 namespace buzz_eeprom_offsets{
 //$BEGIN_ENTRY
-//$type:HH 
-const static uint16_t BASIC_BUZZ_OFFSET		= 0x00;
-//$BEGIN_ENTRY
-//$type:HH 
-const static uint16_t ERROR_BUZZ_OFFSET 	= 0x04;
-//$BEGIN_ENTRY
-//$type:HH
-const static uint16_t DONE_BUZZ_OFFSET		= 0x08;
+//$type:B 
+const static uint16_t SOUND_ON = 0x00;
+const static uint16_t ERROR_BUZZ = 0x04;
+const static uint16_t DONE_BUZZ = 0x08;
 }
 
 /** blink/LED EERROM offset values */
@@ -418,13 +382,13 @@ const static uint16_t DONE_BUZZ_OFFSET		= 0x08;
 namespace blink_eeprom_offsets{
 //$BEGIN_ENTRY
 //$type:B  
-const static uint16_t BASIC_COLOR_OFFSET	= 0x00;
+const static uint16_t BASIC_COLOR = 0x00;
 //$BEGIN_ENTRY
 //$type:B  
-const static uint16_t LED_HEAT_OFFSET	= 0x02;
+const static uint16_t LED_HEAT_ON	= 0x02;
 //$BEGIN_ENTRY
 //$type:BBB  
-const static uint16_t CUSTOM_COLOR_OFFSET 	= 0x04;
+const static uint16_t CUSTOM_COLOR 	= 0x04;
 }
 
 
@@ -432,32 +396,30 @@ const static uint16_t CUSTOM_COLOR_OFFSET 	= 0x04;
 namespace therm_eeprom_offsets{
 //$BEGIN_ENTRY
 //$type:i  
-const static uint16_t THERM_R0_OFFSET                   = 0x00;
+const static uint16_t THERM_R0                   = 0x00;
 //$BEGIN_ENTRY
 //$type:i  
-const static uint16_t THERM_T0_OFFSET                   = 0x04;
+const static uint16_t THERM_T0                  = 0x04;
 //$BEGIN_ENTRY
 //$type:i  
-const static uint16_t THERM_BETA_OFFSET                 = 0x08;
-//$BEGIN_ENTRY
-//$type:H $mult:40
-const static uint16_t THERM_DATA_OFFSET                 = 0x10;
+const static uint16_t THERM_BETA                = 0x08;
+/// this is legacy storage for alternate thermistor tables
+const static uint16_t THERM_DATA                 = 0x10;
 }
 
 /** preheat EERROM offset values and on/off settings for each heater */
 namespace preheat_eeprom_offsets{
 //$BEGIN_ENTRY
 //$type:H  
-const static uint16_t PREHEAT_RIGHT_OFFSET                = 0x00;
+const static uint16_t PREHEAT_RIGHT_TEMP                = 0x00;
 //$BEGIN_ENTRY
 //$type:H  
-const static uint16_t PREHEAT_LEFT_OFFSET                = 0x02;
+const static uint16_t PREHEAT_LEFT_TEMP                = 0x02;
 //$BEGIN_ENTRY
 //$type:H  
-const static uint16_t PREHEAT_PLATFORM_OFFSET           = 0x04;
-//$BEGIN_ENTRY
-//$type:B  
-const static uint16_t PREHEAT_ON_OFF_OFFSET             = 0x06;
+const static uint16_t PREHEAT_PLATFORM_TEMP           = 0x04;
+// this byte is firmware local to note if preheat is active 
+const static uint16_t PREHEAT_ON_OFF             = 0x06;
 }
 
 /**
@@ -530,16 +492,19 @@ enum {
 }
 
 namespace eeprom {
+  const static uint8_t VERSION6_1_FLAG = 41;
 	void factoryResetEEPROM();
 	void fullResetEEPROM();
 	void setToolHeadCount(uint8_t count);
-    void setDefaultSettings();
-    void setCustomColor(uint8_t red, uint8_t green, uint8_t blue);
-    bool isSingleTool();
-    bool hasHBP();
-    void setDefaultsAcceleration();
-    void storeToolheadToleranceDefaults();
-    void setDefaultAxisHomePositions();
-    void updateBuildTime(uint8_t new_hours, uint8_t new_minutes);
+  void setDefaultSettings();
+  void setCustomColor(uint8_t red, uint8_t green, uint8_t blue);
+  bool isSingleTool();
+  bool hasHBP();
+  void setDefaultsAcceleration();
+  void storeToolheadToleranceDefaults();
+  void setDefaultAxisHomePositions();
+  void updateBuildTime(uint8_t new_hours, uint8_t new_minutes);
+  float getAxisStepsPerMM(uint8_t axis);
+  void eepromResetv61();
 }
 #endif // EEPROMMAP_HHe

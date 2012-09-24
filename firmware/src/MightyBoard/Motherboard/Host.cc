@@ -688,10 +688,9 @@ sdcard::SdErrorCode startBuildFromSD() {
 		return e;
 	}
 	
-	
 	command::reset();
-	steppers::reset();
 	steppers::abort();
+	steppers::reset();
 	Motherboard::getBoard().reset(false);
 	currentState = HOST_STATE_BUILDING_FROM_SD;
 	return e;
@@ -705,6 +704,7 @@ void startOnboardBuild(uint8_t  build){
     Motherboard::getBoard().setBoardStatus(Motherboard::STATUS_ONBOARD_SCRIPT, true);
     command::reset();
     steppers::abort();
+    steppers::reset();
   }
 }
 
@@ -730,8 +730,8 @@ void stopBuild() {
     uint8_t z_home = steppers::isZHomed();   
     if(z_home > 0){
       Point target = steppers::getStepperPosition();
-      if(z_home == 1) {target[2] = 58000;}
-      else {target[2] = 60000;}
+      if(z_home == 1) {target[2] = 145L*eeprom::getAxisStepsPerMM(Z_AXIS);}
+      else {target[2] = 150L*eeprom::getAxisStepsPerMM(Z_AXIS);}
       command::pause(false);
       steppers::setTarget(target, 150);
 			InterfaceBoard& ib = Motherboard::getBoard().getInterfaceBoard();

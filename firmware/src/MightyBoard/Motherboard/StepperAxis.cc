@@ -70,35 +70,39 @@ void stepperAxisInit(bool hard_reset) {
 			stepperAxis[i].invert_endstop = !endstops_present || ((endstops_invert & (1<<i)) != 0);
 			stepperAxis[i].invert_axis = (axes_invert & (1<<i)) != 0;
 
-			stepperAxis[i].steps_per_mm = (float)eeprom::getEeprom32(eeprom_offsets::AXIS_STEPS_PER_MM + i * sizeof(uint32_t),
-								   	         replicator_axis_steps_per_mm::axis_steps_per_mm[i]) / 1000000.0;
+			stepperAxis[i].steps_per_mm = eeprom::getAxisStepsPerMM(i);
 
 			stepperAxis[i].max_feedrate = (float)eeprom::getEeprom32(eeprom_offsets::AXIS_MAX_FEEDRATES + i * sizeof(uint32_t),
                                                                    		 replicator_axis_max_feedrates::axis_max_feedrates[i]) / 60.0;
 
 			//Read the axis lengths in
-                	int32_t length = (int32_t)eeprom::getEeprom32(eeprom_offsets::AXIS_LENGTHS + i * sizeof(uint32_t), replicator_axis_lengths::axis_lengths[i]);
-                	int32_t *axisMin = &stepperAxis[i].min_axis_steps_limit;
-                	int32_t *axisMax = &stepperAxis[i].max_axis_steps_limit;
+      int32_t length = (int32_t)eeprom::getEeprom32(eeprom_offsets::AXIS_LENGTHS + i * sizeof(uint32_t), replicator_axis_lengths::axis_lengths[i]);
+      length = (int32_t)((float)length * stepperAxis[i].steps_per_mm * 1000.0) / 1000;
 
-                	switch(i) {
-                       		case X_AXIS:
-                        	case Y_AXIS:
-                               		//Half the axis in either direction around the center point
-                                	*axisMax = length / 2;
-                                	*axisMin = - (*axisMax);
-                                	break;
-                        	case Z_AXIS:
-                                	//Z is special, as 0 as at the top, so min is 0, and max = length - Z Home Offset
-                                	*axisMax = length - (int32_t)eeprom::getEeprom32(eeprom_offsets::AXIS_HOME_POSITIONS_STEPS + i * sizeof(uint32_t), 0);
-                                	*axisMin = 0;
-                                	break;
-                        	case A_AXIS:
-                        	case B_AXIS:
-                               		*axisMax = length;
-                                	*axisMin = - length;
-                                	break;
-                	}
+      int32_t *axisMin = &stepperAxis[i].min_axis_steps_limit;
+      int32_t *axisMax = &stepperAxis[i].max_axis_steps_limit;
+
+      switch(i) {
+              case X_AXIS:
+              case Y_AXIS:
+                      //Half the axis in either direction around the center point
+                      *axisMax = length / 2;
+                      *axisMin = - (*axisMax);
+                      break;
+              case Z_AXIS:
+                      //Z is special, as 0 as at the top, so min is 0, and max = length - Z Home Offset
+                      int32_t z_home_position_steps;
+                      z_home_position_steps = (int32_t)((float)eeprom::getEeprom32(eeprom_offsets::AXIS_HOME_POSITIONS_MM + i * sizeof(uint32_t), 0) *
+                          stepperAxis[i].steps_per_mm); 
+                      *axisMax = length - z_home_position_steps;
+                      *axisMin = 0;
+                      break;
+              case A_AXIS:
+              case B_AXIS:
+                      *axisMax = length;
+                      *axisMin = - length;
+                      break;
+      }
 
 			//Setup the pins
 			STEPPER_IOPORT_SET_DIRECTION(stepperAxisPorts[i].dir, true);
@@ -124,7 +128,7 @@ void stepperAxisInit(bool hard_reset) {
 			dda_position[i]	= 0;
 
 			stepperAxis[i].hasHomed		 = false;
-        		stepperAxis[i].hasDefinePosition = false;
+      stepperAxis[i].hasDefinePosition = false;
 		}
 		
 		//Setup the higher level stuff functionality / create the ddas

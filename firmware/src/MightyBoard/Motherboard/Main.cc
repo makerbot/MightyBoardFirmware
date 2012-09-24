@@ -32,7 +32,9 @@
 #include <util/delay.h>
 #include "UtilityScripts.hh"
 #include "Piezo.hh"
+#ifdef STACK_PAINT
 #include "Menu_locales.hh"
+#endif
 
 #define DEBUG_SRAM_MONITOR
 #if defined(STACK_PAINT) && defined(DEBUG_SRAM_MONITOR)
@@ -122,7 +124,6 @@ void reset(bool hard_reset) {
 		eeprom::init();
 		steppers::abort();
 		steppers::reset();
-	  TemperatureTable::initThermistorTables();
 		board.reset(hard_reset);
 
 	// brown out occurs on normal power shutdown, so this is not a good message		

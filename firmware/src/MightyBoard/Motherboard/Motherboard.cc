@@ -43,13 +43,19 @@
 /// Instantiate static motherboard instance
 Motherboard Motherboard::motherboard;
 
+enum HeaterTypes{
+  EXTRUDER_A = 0,
+  EXTRUDER_B = 1,
+  HEATER_HBP = 2,
+};
+
 /// Create motherboard object
 Motherboard::Motherboard() :
       lcd(LCD_STROBE, LCD_DATA, LCD_CLK),
       interfaceBoard(buttonArray, lcd),
       platform_thermistor(PLATFORM_PIN, TemperatureTable::table_thermistor),
 			platform_heater(platform_thermistor,platform_element,SAMPLE_INTERVAL_MICROS_THERMISTOR,
-     	      eeprom_offsets::T0_DATA_BASE + toolhead_eeprom_offsets::HBP_PID_BASE, false), //TRICKY: HBP is only and anways on T0 for this machine
+     	      eeprom_offsets::T0_DATA_BASE + toolhead_eeprom_offsets::HBP_PID_BASE, false, HEATER_HBP),
 			using_platform(eeprom::getEeprom8(eeprom_offsets::HBP_PRESENT, 1)),
 #ifdef MODEL_REPLICATOR2
 			Extruder_One(0, EXA_PWR, EXA_FAN, ThermocoupleReader::CHANNEL_ONE, eeprom_offsets::T0_DATA_BASE),
@@ -383,7 +389,7 @@ void Motherboard::HeatingAlerts(){
             setTemp += (int16_t)(getExtruderBoard(1).getExtruderHeater().get_set_temperature());
         }
              
-		if((setTemp != 0) && eeprom::getEeprom8(eeprom_offsets::LED_STRIP_SETTINGS + blink_eeprom_offsets::LED_HEAT_OFFSET, 1)
+		if((setTemp != 0) && eeprom::getEeprom8(eeprom_offsets::LED_STRIP_SETTINGS + blink_eeprom_offsets::LED_HEAT_ON, 1)
           && (eeprom::getEeprom8(eeprom_offsets::LED_STRIP_SETTINGS, LED_DEFAULT_OFF) != LED_DEFAULT_OFF)){
 			int32_t mult = 255;
 			if(!heating_lights_active){

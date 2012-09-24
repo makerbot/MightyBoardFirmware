@@ -34,6 +34,7 @@
 #include "UtilityScripts.hh"
 #include "stdio.h"
 #include "Menu_locales.hh"
+#include "StepperAxis.hh"
 
 namespace command {
 
@@ -196,14 +197,14 @@ Point sleep_position;
 
 void startSleep(){
 
-  //DEBUG_PIN4.setValue(true);
 	// record current position
 	sleep_position = steppers::getStepperPosition();
 	
 	Motherboard &board = Motherboard::getBoard();
 	
 	// retract
-	Point retract = Point(sleep_position[0], sleep_position[1], sleep_position[2], sleep_position[3] + ASTEPS_PER_MM, sleep_position[4] + BSTEPS_PER_MM);
+	Point retract = Point(sleep_position[0], sleep_position[1], sleep_position[2], sleep_position[3] + (uint32_t)stepperAxisStepsPerMM(A_AXIS), 
+        sleep_position[4] + stepperAxisStepsPerMM(B_AXIS));
 	steppers::setTarget(retract, ab_mm_per_second_20);
 	
 	// record heater state
@@ -220,14 +221,13 @@ void startSleep(){
 	
 	// move to wait position
 	Point z_pos = Point(retract);
-	z_pos[Z_AXIS] = 150L*ZSTEPS_PER_MM; 
+	z_pos[Z_AXIS] = 150L*(int32_t)stepperAxisStepsPerMM(Z_AXIS); 
 	Point wait_pos = Point(z_pos);
-	wait_pos[X_AXIS] = -110.5*XSTEPS_PER_MM;
-	wait_pos[Y_AXIS] = -74*YSTEPS_PER_MM;
+	wait_pos[X_AXIS] = -110.5*stepperAxisStepsPerMM(X_AXIS);
+	wait_pos[Y_AXIS] = -74*stepperAxisStepsPerMM(Y_AXIS);
 	
 	steppers::setTarget(z_pos, z_mm_per_second_18);
 	steppers::setTarget(wait_pos, xy_mm_per_second_80);
-  //DEBUG_PIN4.setValue(false);
 }
 
 void stopSleep(){
@@ -476,7 +476,7 @@ void runCommandSlice() {
       board.getPlatformHeater().set_target_temperature(0);
 	
       Point target = steppers::getStepperPosition();
-      target[2] = 60000;
+      target[2] = 150L*stepperAxisStepsPerMM(Z_AXIS);
       command::pause(false);
       steppers::setTarget(target, 150);
       sdcard::finishPlayback();
@@ -528,21 +528,6 @@ void runCommandSlice() {
 		if (!steppers::isRunning()) {
 			mode = READY;
 		} 
-    /*else {
-			if (command_buffer.getLength() > 0 && !active_paused) {
-				Motherboard::getBoard().resetUserInputTimeout();
-				uint8_t command = command_buffer[0];
-				if (command == HOST_CMD_QUEUE_POINT_EXT || command == HOST_CMD_QUEUE_POINT_NEW) {
-					handleMovementCommand(command);
-				}
-				else if (command == HOST_CMD_ENABLE_AXES) {
-					if (command_buffer.getLength() >= 2) {
-						pop8(); // remove the command code
-						uint8_t axes = pop8();
-						}
-				}
-			}
-		}*/
 	}
 	if (mode == DELAY) {
 		// check timers
@@ -607,7 +592,6 @@ void runCommandSlice() {
 		if(active_paused){
 			// sleep called, waiting for current stepper move to finish
 			if((sleep_mode == SLEEP_START_WAIT) && st_empty()){
-        //DEBUG_PIN1.setValue(true);
 				if(sleep_type == SLEEP_TYPE_COLD){
 					Motherboard::getBoard().getInterfaceBoard().errorMessage(SLEEP_PREP_MSG);
 				}else if(sleep_type == SLEEP_TYPE_FILAMENT){
@@ -657,7 +641,6 @@ void runCommandSlice() {
 				interface::popScreen();
 				active_paused = false;
 			}
-      //DEBUG_PIN1.setValue(false);
 			return;
 
 		}
@@ -855,8 +838,10 @@ void runCommandSlice() {
 					// then record it to the eeprom.
 					for (uint8_t i = 0; i < STEPPER_COUNT; i++) {
 						if ( axes & (1 << i) ) {
-							uint16_t offset = eeprom_offsets::AXIS_HOME_POSITIONS_STEPS + 4*i;
+							uint16_t offset = eeprom_offsets::AXIS_HOME_POSITIONS_MM + 4*i;
 							uint32_t position = steppers::getStepperPosition()[i];
+              // convert position to mmm
+              position = (int32_t)(stepperAxisStepsToMM(position, i) * 1000.0) / 1000;
 							cli();
 							eeprom_write_block(&position, (void*) offset, 4);
 							sei();
@@ -874,10 +859,12 @@ void runCommandSlice() {
 
 					for (uint8_t i = 0; i < STEPPER_COUNT; i++) {
 						if ( axes & (1 << i) ) {
-							uint16_t offset = eeprom_offsets::AXIS_HOME_POSITIONS_STEPS + 4*i;
+							uint16_t offset = eeprom_offsets::AXIS_HOME_POSITIONS_MM + 4*i;
 							cli();
 							eeprom_read_block(&(newPoint[i]), (void*) offset, 4);
 							sei();
+              // convert new point to steps
+              newPoint[i]  = stepperAxisMMToSteps(newPoint[i], i);
 						}
 					}
 
@@ -890,7 +877,7 @@ void runCommandSlice() {
 					uint8_t axis = pop8();
 					uint8_t value = pop8();
 					line_number++;
-                    steppers::setAxisPotValue(axis, value);
+          steppers::setAxisPotValue(axis, value);
 				}
 			}else if (command == HOST_CMD_SET_RGB_LED){
 				if (command_buffer.getLength() >= 6) {

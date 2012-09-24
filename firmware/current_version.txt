@@ -1,3 +1,5 @@
+6.1.22
+ * internal release with jetty acceleration + eeprom changes
 6.0.21
  * this is a merge of the jetty acceleration (more better!)
 6.0.20

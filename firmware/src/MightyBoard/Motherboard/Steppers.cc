@@ -136,16 +136,16 @@ void loadToleranceOffsets() {
 	// get toolhead offsets
 	ATOMIC_BLOCK(ATOMIC_RESTORESTATE){
 		for(int i = 0; i  < 3; i++){
-			int32_t tolerance_err = (int32_t)(eeprom::getEeprom32(eeprom_offsets::TOOLHEAD_OFFSET_SETTINGS + i*4, 0)) / 10;
-			tolerance_offset_T0[i] = (tolerance_err/2);
+			int32_t tolerance_err = (int32_t)((float)eeprom::getEeprom32(eeprom_offsets::TOOLHEAD_OFFSET_SETTINGS + i*4, 0) * stepperAxisStepsPerMM(i)) / 1000;
+			tolerance_offset_T1[i] = tolerance_err;
 		}
 		// For now, force Z offset to be zero as bad things can happen if it has a value AND there is no use case for it having a value on the replicator
 		// extruder axes are 0 because offset concept does not apply
 		for (int i = 2; i < STEPPER_COUNT; i++)
-			tolerance_offset_T0[i] = 0;
+			tolerance_offset_T1[i] = 0;
 
 		for(int i = 0; i < STEPPER_COUNT; i++)
-			tolerance_offset_T1[i] = -1 * tolerance_offset_T0[i];
+			tolerance_offset_T0[i] = 0;
 	}
 }
 
@@ -164,13 +164,13 @@ void reset() {
 
 	// If acceleration has not been initialized before (i.e. last time we ran we were an earlier firmware),
 	// then we initialize the acceleration eeprom settings here
-	uint8_t accelerationStatus = eeprom::getEeprom8(eeprom_offsets::ACCELERATION2_SETTINGS + acceleration_eeprom_offsets::DEFAULTS_FLAG, 0xFF);
+	uint8_t accelerationStatus = eeprom::getEeprom8(eeprom_offsets::ACCELERATION_SETTINGS + acceleration_eeprom_offsets::DEFAULTS_FLAG, 0xFF);
 	if (accelerationStatus !=  _BV(ACCELERATION_INIT_BIT)) {
 		eeprom::setDefaultsAcceleration();
 	}
 
         //Get the acceleration settings
-	uint8_t accel = eeprom::getEeprom8(eeprom_offsets::ACCELERATION2_SETTINGS + acceleration_eeprom_offsets::ACTIVE_OFFSET, 0) & 0x01;
+	uint8_t accel = eeprom::getEeprom8(eeprom_offsets::ACCELERATION_SETTINGS + acceleration_eeprom_offsets::ACCELERATION_ACTIVE, 0) & 0x01;
         acceleration = accel & 0x01;
 
 	setSegmentAccelState(acceleration);
@@ -187,17 +187,19 @@ void reset() {
 		axis_steps_per_unit_inverse[i] = FTOFP(1.0 / stepperAxisStepsPerMM(i));
 
 	//Macros to clean things up a bit
-	#define NAC2(LOCATION) eeprom_offsets::ACCELERATION2_SETTINGS + acceleration_eeprom_offsets::LOCATION
+	#define NAC1(LOCATION) eeprom_offsets::ACCELERATION_SETTINGS + acceleration_eeprom_offsets::LOCATION
+	#define NAC2(LOCATION) eeprom_offsets::ACCELERATION2_SETTINGS + acceleration2_eeprom_offsets::LOCATION
+	#define AC1(LOCATION,INT16INDEX) NAC1(LOCATION) + sizeof(uint16_t) * INT16INDEX
 	#define AC2(LOCATION,INT16INDEX) NAC2(LOCATION) + sizeof(uint16_t) * INT16INDEX
 
 	// Set max acceleration in units/s^2 for print moves
 	// X,Y,Z,A,B maximum start speed for accelerated moves.
 	// A,B default values are good for skeinforge 40+, for older versions raise them a lot.
-	max_acceleration_units_per_sq_second[X_AXIS] = (uint32_t)eeprom::getEeprom16(AC2(MAX_ACCELERATION_AXIS,0), DEFAULT_MAX_ACCELERATION_AXIS_X);
-	max_acceleration_units_per_sq_second[Y_AXIS] = (uint32_t)eeprom::getEeprom16(AC2(MAX_ACCELERATION_AXIS,1), DEFAULT_MAX_ACCELERATION_AXIS_Y);
-	max_acceleration_units_per_sq_second[Z_AXIS] = (uint32_t)eeprom::getEeprom16(AC2(MAX_ACCELERATION_AXIS,2), DEFAULT_MAX_ACCELERATION_AXIS_Z);
-	max_acceleration_units_per_sq_second[A_AXIS] = (uint32_t)eeprom::getEeprom16(AC2(MAX_ACCELERATION_AXIS,3), DEFAULT_MAX_ACCELERATION_AXIS_A);
-	max_acceleration_units_per_sq_second[B_AXIS] = (uint32_t)eeprom::getEeprom16(AC2(MAX_ACCELERATION_AXIS,4), DEFAULT_MAX_ACCELERATION_AXIS_B);
+	max_acceleration_units_per_sq_second[X_AXIS] = (uint32_t)eeprom::getEeprom16(AC1(MAX_ACCELERATION_AXIS,0), DEFAULT_MAX_ACCELERATION_AXIS_X);
+	max_acceleration_units_per_sq_second[Y_AXIS] = (uint32_t)eeprom::getEeprom16(AC1(MAX_ACCELERATION_AXIS,1), DEFAULT_MAX_ACCELERATION_AXIS_Y);
+	max_acceleration_units_per_sq_second[Z_AXIS] = (uint32_t)eeprom::getEeprom16(AC1(MAX_ACCELERATION_AXIS,2), DEFAULT_MAX_ACCELERATION_AXIS_Z);
+	max_acceleration_units_per_sq_second[A_AXIS] = (uint32_t)eeprom::getEeprom16(AC1(MAX_ACCELERATION_AXIS,3), DEFAULT_MAX_ACCELERATION_AXIS_A);
+	max_acceleration_units_per_sq_second[B_AXIS] = (uint32_t)eeprom::getEeprom16(AC1(MAX_ACCELERATION_AXIS,4), DEFAULT_MAX_ACCELERATION_AXIS_B);
 
 	for (uint8_t i = 0; i < STEPPER_COUNT; i ++) {
 		// Limit the max accelerations so that the calculation of block->acceleration & JKN Advance K2
@@ -211,7 +213,7 @@ void reset() {
 	//Set default acceleration for "Normal Moves (acceleration)" and "filament only moves (retraction)" in mm/sec^2
 
 	// X,Y,Z,A,B max acceleration in mm/s^2 for printing moves
-	p_acceleration = (uint32_t)eeprom::getEeprom16(NAC2(MAX_ACCELERATION_NORMAL_MOVE), DEFAULT_MAX_ACCELERATION_NORMAL_MOVE);
+	p_acceleration = (uint32_t)eeprom::getEeprom16(NAC1(MAX_ACCELERATION_NORMAL_MOVE), DEFAULT_MAX_ACCELERATION_NORMAL_MOVE);
 	if (p_acceleration > 10000)
 	     // 10,000 limit is actually a little smaller than 0xFFFFF / 96 steps/mm
 	     p_acceleration = 10000;
@@ -221,7 +223,7 @@ void reset() {
 #endif
 
 	// X,Y,Z,A,B max acceleration in mm/s^2 for retracts
-	p_retract_acceleration  = (uint32_t)eeprom::getEeprom16(NAC2(MAX_ACCELERATION_EXTRUDER_MOVE), DEFAULT_MAX_ACCELERATION_EXTRUDER_MOVE);
+	p_retract_acceleration  = (uint32_t)eeprom::getEeprom16(NAC1(MAX_ACCELERATION_EXTRUDER_MOVE), DEFAULT_MAX_ACCELERATION_EXTRUDER_MOVE);
 	if (p_retract_acceleration > 10000)
 	     // 10,000 limit is actually a little smaller than 0xFFFFF / 96 steps/mm
 	     p_retract_acceleration = 10000;
@@ -235,11 +237,11 @@ void reset() {
 	extruder_deprime_steps[1]    = (int16_t)eeprom::getEeprom16(AC2(EXTRUDER_DEPRIME_STEPS,1), DEFAULT_EXTRUDER_DEPRIME_STEPS_B);
 
 	//Maximum speed change
-	max_speed_change[X_AXIS]  = FTOFP((float)eeprom::getEeprom16(AC2(MAX_SPEED_CHANGE,0), DEFAULT_MAX_SPEED_CHANGE_X));
-	max_speed_change[Y_AXIS]  = FTOFP((float)eeprom::getEeprom16(AC2(MAX_SPEED_CHANGE,1), DEFAULT_MAX_SPEED_CHANGE_Y));
-	max_speed_change[Z_AXIS]  = FTOFP((float)eeprom::getEeprom16(AC2(MAX_SPEED_CHANGE,2), DEFAULT_MAX_SPEED_CHANGE_Z));
-	max_speed_change[A_AXIS]  = FTOFP((float)eeprom::getEeprom16(AC2(MAX_SPEED_CHANGE,3), DEFAULT_MAX_SPEED_CHANGE_A));
-	max_speed_change[B_AXIS]  = FTOFP((float)eeprom::getEeprom16(AC2(MAX_SPEED_CHANGE,4), DEFAULT_MAX_SPEED_CHANGE_B));
+	max_speed_change[X_AXIS]  = FTOFP((float)eeprom::getEeprom16(AC1(MAX_SPEED_CHANGE,0), DEFAULT_MAX_SPEED_CHANGE_X));
+	max_speed_change[Y_AXIS]  = FTOFP((float)eeprom::getEeprom16(AC1(MAX_SPEED_CHANGE,1), DEFAULT_MAX_SPEED_CHANGE_Y));
+	max_speed_change[Z_AXIS]  = FTOFP((float)eeprom::getEeprom16(AC1(MAX_SPEED_CHANGE,2), DEFAULT_MAX_SPEED_CHANGE_Z));
+	max_speed_change[A_AXIS]  = FTOFP((float)eeprom::getEeprom16(AC1(MAX_SPEED_CHANGE,3), DEFAULT_MAX_SPEED_CHANGE_A));
+	max_speed_change[B_AXIS]  = FTOFP((float)eeprom::getEeprom16(AC1(MAX_SPEED_CHANGE,4), DEFAULT_MAX_SPEED_CHANGE_B));
 
 #ifdef DEBUG_SLOW_MOTION
 	max_speed_change[X_AXIS]  = FTOFP((float)1);
