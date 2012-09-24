@@ -260,12 +260,8 @@ const static uint16_t TOTAL_BUILD_TIME			= 0x01A0;
 //$type:IIIII
 const static uint16_t AXIS_STEPS_PER_MM     = 0x01A4;
 /// Filament lifetime counter (in steps) 8 bytes (int64) x 2 (for 2 extruders)
-//$BEGIN_ENTRY
-//$type:qq
 const static uint16_t FILAMENT_LIFETIME     = 0x01B8;
 /// Filament trip counter (in steps) 8 bytes (int64) x 2 (for 2 extruders)
-//$BEGIN_ENTRY
-//$type:qq
 const static uint16_t FILAMENT_TRIP     = 0x01C8;
 /// Acceleration2 settings 28 bytes: additional acceleration settings
 //$BEGIN_ENTRY
