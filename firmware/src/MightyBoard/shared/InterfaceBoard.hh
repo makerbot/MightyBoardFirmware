@@ -55,7 +55,7 @@ private:
         SplashScreen splashScreen;       ///< version infor screen
         WelcomeScreen welcomeScreen;     ///< welcome screen
         
-        SnakeMode snake;				        ///< Snake game
+//        SnakeMode snake;				        ///< Snake game
         
         BuildFinished buildFinished;	  ///< screen displayed at end of build
 

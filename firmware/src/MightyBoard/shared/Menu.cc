@@ -768,7 +768,7 @@ void FilamentScreen::update(LiquidCrystalSerial& lcd, bool forceRedraw) {
           steppers::abort();
           target = steppers::getStepperPosition();
           if(target[2] < 1000){
-            target[2] = 150L * eeprom::getAxisStepsPerMM(Z_AXIS);
+            target[2] = 150L * stepperAxisStepsPerMM(Z_AXIS);
             interval = 9000000;
             steppers::setTargetNew(target, interval, 0x1f);
           }

@@ -730,8 +730,8 @@ void stopBuild() {
     uint8_t z_home = steppers::isZHomed();   
     if(z_home > 0){
       Point target = steppers::getStepperPosition();
-      if(z_home == 1) {target[2] = 145L*eeprom::getAxisStepsPerMM(Z_AXIS);}
-      else {target[2] = 150L*eeprom::getAxisStepsPerMM(Z_AXIS);}
+      if(z_home == 1) {target[2] = 145L*stepperAxisStepsPerMM(Z_AXIS);}
+      else {target[2] = 150L*stepperAxisStepsPerMM(Z_AXIS);}
       command::pause(false);
       steppers::setTarget(target, 150);
 			InterfaceBoard& ib = Motherboard::getBoard().getInterfaceBoard();

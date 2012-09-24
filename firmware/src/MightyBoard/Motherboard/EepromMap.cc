@@ -346,12 +346,6 @@ void setDefaultSettings(){
 }
 }
 
-float getAxisStepsPerMM(uint8_t axis){
-
-	return (float)eeprom::getEeprom32(eeprom_offsets::AXIS_STEPS_PER_MM + axis * sizeof(uint32_t),
-	   							   	            replicator_axis_steps_per_mm::axis_steps_per_mm[axis]) / 1000000.0;
-}
-
 //
 void storeToolheadToleranceDefaults(){
 	
@@ -421,6 +415,9 @@ void fullResetEEPROM() {
 
   /// store the heater calibration bytes
   eeprom_write_block((uint8_t*)&(heater_calibrate[0]), (uint8_t*)(eeprom_offsets::HEATER_CALIBRATION), 3);
+ 
+  // write the update byte for version 6.1   
+  eeprom_write_byte((uint8_t*)(eeprom_offsets::VERSION6_1_UPDATE_FLAG), VERSION6_1_FLAG);
  }
 }
 
@@ -451,5 +448,6 @@ void eepromResetv61(){
     eeprom_write_byte((uint8_t*)(eeprom_offsets::VERSION6_1_UPDATE_FLAG), VERSION6_1_FLAG);
   }
 }
+
 
 }

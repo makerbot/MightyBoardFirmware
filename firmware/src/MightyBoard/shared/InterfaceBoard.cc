@@ -172,16 +172,16 @@ void InterfaceBoard::doUpdate() {
 
     if(!screen_locked){
         if (buttons.getButton(button)) {
-            if (button == ButtonArray::RESET){
-                host::stopBuild();
-                return;
+            //if (button == ButtonArray::RESET){
+            //    host::stopBuild();
+            //    return;
             // respond to button press if waiting
             // pass on to screen if a cancel screen is active
-            } else if((((1<<button) & waitingMask) != 0) && 
+            if((((1<<button) & waitingMask) != 0) && 
                (!screenStack[screenIndex]->isCancelScreen())){
                  waitingMask = 0;
-            } else if (button == ButtonArray::EGG){
-                pushScreen(&snake);
+           // } else if (button == ButtonArray::EGG){
+                //pushScreen(&snake);
             } else {
                 screenStack[screenIndex]->notifyButtonPressed(button);
             }

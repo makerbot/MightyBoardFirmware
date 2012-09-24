@@ -26,8 +26,8 @@ private:
         uint8_t buttonPress;
         bool buttonPressWaiting;
         Timeout buttonTimeout;
-        Timeout centerHold;
-        Timeout rightHold;
+//        Timeout centerHold;
+//        Timeout rightHold;
 
 public:
         /// Representation of the different buttons available on the keypad
@@ -37,12 +37,12 @@ public:
                 LEFT            = 6,
                 DOWN            = 4,
                 UP              = 5,
-                RESET			= 1,
-                EGG				= 0
+//                RESET			= 1,
+//                EGG				= 0
         };
         uint32_t ButtonDelay;
         const static uint32_t FastDelay = 100000;
-		const static uint32_t SlowDelay = 500000;
+	    	const static uint32_t SlowDelay = 500000;
         const static uint32_t ResetDelay = 10000000;
         
         void init();

@@ -20,7 +20,6 @@
 #include "HeatingElement.hh"
 #include "Thermistor.hh"
 #include "Eeprom.hh"
-#include "EepromMap.hh"
 #include "Motherboard.hh"
 
 

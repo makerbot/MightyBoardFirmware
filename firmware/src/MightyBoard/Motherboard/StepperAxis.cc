@@ -70,7 +70,8 @@ void stepperAxisInit(bool hard_reset) {
 			stepperAxis[i].invert_endstop = !endstops_present || ((endstops_invert & (1<<i)) != 0);
 			stepperAxis[i].invert_axis = (axes_invert & (1<<i)) != 0;
 
-			stepperAxis[i].steps_per_mm = eeprom::getAxisStepsPerMM(i);
+			stepperAxis[i].steps_per_mm = (float)eeprom::getEeprom32(eeprom_offsets::AXIS_STEPS_PER_MM + i * sizeof(uint32_t),
+	   							   	            replicator_axis_steps_per_mm::axis_steps_per_mm[i]) / 1000000.0;
 
 			stepperAxis[i].max_feedrate = (float)eeprom::getEeprom32(eeprom_offsets::AXIS_MAX_FEEDRATES + i * sizeof(uint32_t),
                                                                    		 replicator_axis_max_feedrates::axis_max_feedrates[i]) / 60.0;

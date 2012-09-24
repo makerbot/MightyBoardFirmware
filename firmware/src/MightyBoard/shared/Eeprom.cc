@@ -12,6 +12,7 @@
 
 namespace eeprom {
 
+
 /**
  * if the EEPROM is initalized and matches firmware version, exit
  * if the EEPROM is not initalized, write defaults, and set a new version
@@ -50,9 +51,9 @@ void init() {
           //Add the full toolhead offset.  This was formerly stored in RepG  
           // we assume that any upgrades using this will be replicator 1 machines
 #ifdef MODEL_REPLICATOR
-#define X_STEPS_PER_MM 94.139704f
+          const static float X_STEPS_PER_MM = 94.139704f;
 #else
-#define X_STEPS_PER_MM 88.5731f
+          const static float X_STEPS_PER_MM = 88.5731f;
 #endif
           x_nozzle_offset =  (x_nozzle_offset * 100) / X_STEPS_PER_MM;
           x_nozzle_offset = x_nozzle_offset + (33L * 1000);

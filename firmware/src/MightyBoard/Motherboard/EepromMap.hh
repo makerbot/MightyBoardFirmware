@@ -46,16 +46,16 @@ const static uint16_t D_TERM = 4;
 }
 
 #ifdef MODEL_REPLICATOR2
-#define XSTEPS_PER_MM          88.573186f
-#define YSTEPS_PER_MM          88.573186f
+const static float XSTEPS_PER_MM = 88.573186f;
+const static float YSTEPS_PER_MM = 88.573186f;
 #else
-#define XSTEPS_PER_MM          94.139704f
-#define YSTEPS_PER_MM          94.139704f
+const static float XSTEPS_PER_MM = 94.139704f;
+const static float YSTEPS_PER_MM = 94.139704f;
 #endif
 
-#define ZSTEPS_PER_MM          400
-#define ASTEPS_PER_MM          96.2752018f
-#define BSTEPS_PER_MM          96.2752018f
+const static float ZSTEPS_PER_MM = 400;
+const static float ASTEPS_PER_MM = 96.2752018f;
+const static float BSTEPS_PER_MM = 96.2752018f;
 
 /** 
  * EEPROM default home axis positions in steps
@@ -349,8 +349,8 @@ namespace acceleration2_eeprom_offsets{
     const static uint16_t EXTRUDER_DEPRIME_STEPS = 0x08; //2 * uint16_t (A & B axis)
     //$BEGIN_ENTRY
     //$type:B 
-    const static uint16_t SLOWDOWN_FLAG         = 0x0A; //uint8_t Bit 0 == 1 is slowdown enabled
-    const static uint16_t FUTURE_USE            = 0x0C; //20 bytes for future use
+    const static uint16_t SLOWDOWN_FLAG         = 0x0C; //uint8_t Bit 0 == 1 is slowdown enabled
+    const static uint16_t FUTURE_USE            = 0x0E; //18 bytes for future use
     //0x1C is end of acceleration2 settings (28 bytes long)
 }
 
@@ -489,8 +489,9 @@ enum {
 
 namespace eeprom {
   const static uint8_t VERSION6_1_FLAG = 41;
+  void fullResetEEPROM();
+  void eepromResetv61(); 
 	void factoryResetEEPROM();
-	void fullResetEEPROM();
 	void setToolHeadCount(uint8_t count);
   void setDefaultSettings();
   void setCustomColor(uint8_t red, uint8_t green, uint8_t blue);
@@ -498,9 +499,7 @@ namespace eeprom {
   bool hasHBP();
   void setDefaultsAcceleration();
   void storeToolheadToleranceDefaults();
-  void setDefaultAxisHomePositions();
   void updateBuildTime(uint8_t new_hours, uint8_t new_minutes);
-  float getAxisStepsPerMM(uint8_t axis);
-  void eepromResetv61();
+  void setDefaultAxisHomePositions();
 }
 #endif // EEPROMMAP_HHe
