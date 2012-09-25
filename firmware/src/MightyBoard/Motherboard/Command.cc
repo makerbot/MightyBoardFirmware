@@ -570,6 +570,7 @@ void runCommandSlice() {
 
 			} else {
 				mode = READY;
+        Motherboard::getBoard().setBoardStatus(Motherboard::STATUS_WAITING_FOR_BUTTON, false);
 			//	Motherboard::getBoard().interfaceBlink(0,0);
 			}
 		} else {
@@ -579,6 +580,7 @@ void runCommandSlice() {
 				if(button_timeout_behavior & (1 << BUTTON_CLEAR_SCREEN))
 					ib.popScreen();
 				Motherboard::getBoard().interfaceBlink(0,0);
+        Motherboard::getBoard().setBoardStatus(Motherboard::STATUS_WAITING_FOR_BUTTON, false);
 				RGB_LED::setDefaultColor();
 				mode = READY;
 			}
@@ -737,6 +739,7 @@ void runCommandSlice() {
 					Motherboard::getBoard().interfaceBlink(25,15);
 					InterfaceBoard& ib = Motherboard::getBoard().getInterfaceBoard();
 					ib.waitForButton(button_mask);
+          Motherboard::getBoard().setBoardStatus(Motherboard::STATUS_WAITING_FOR_BUTTON, true);
 					mode = WAIT_ON_BUTTON;
 				}
 			} else if (command == HOST_CMD_DISPLAY_MESSAGE) {
@@ -780,6 +783,7 @@ void runCommandSlice() {
 							Motherboard::getBoard().interfaceBlink(25,15);
 							InterfaceBoard& ib = Motherboard::getBoard().getInterfaceBoard();
 							ib.waitForButton(button_mask);
+              Motherboard::getBoard().setBoardStatus(Motherboard::STATUS_WAITING_FOR_BUTTON, true);
 							mode = WAIT_ON_BUTTON;
 						}
 					}
