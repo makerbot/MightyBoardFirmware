@@ -110,14 +110,13 @@ void SplashScreen::notifyButtonPressed(ButtonArray::ButtonName button) {
   // We can't really do anything, since the machine is still loading, so ignore.
   switch (button) {
     case ButtonArray::CENTER:
+      break;
+    case ButtonArray::LEFT:
       interface::popScreen();
       break;
-        case ButtonArray::LEFT:
-      interface::popScreen();
-      break;
-        case ButtonArray::RIGHT:
-        case ButtonArray::DOWN:
-        case ButtonArray::UP:
+    case ButtonArray::RIGHT:
+    case ButtonArray::DOWN:
+    case ButtonArray::UP:
       break;
 
   }
@@ -1830,18 +1829,17 @@ void MonitorMode::update(LiquidCrystalSerial& lcd, bool forceRedraw) {
 
 void MonitorMode::notifyButtonPressed(ButtonArray::ButtonName button) {
   switch (button) {
-        case ButtonArray::CENTER:
         case ButtonArray::LEFT:
             switch(host::getHostState()) {
             case host::HOST_STATE_BUILDING:
             case host::HOST_STATE_BUILDING_FROM_SD:
-        interface::pushScreen(&active_build_menu);
-        break;
+                interface::pushScreen(&active_build_menu);
+                break;
             case host::HOST_STATE_BUILDING_ONBOARD:
                 interface::pushScreen(&cancel_build_menu);
                 break;
             default:
-        Motherboard::getBoard().StopProgressBar();
+                Motherboard::getBoard().StopProgressBar();
                 interface::popScreen();
                 break;
             }
@@ -1972,7 +1970,7 @@ void Menu::notifyButtonPressed(ButtonArray::ButtonName button) {
             else{
                 if (itemIndex > firstItemIndex) {
                     itemIndex--;
-                    if(sliding_menu && ((itemIndex - zeroIndex + 1)%LCD_SCREEN_HEIGHT == firstItemIndex) && (zeroIndex > 0)){
+                    if(sliding_menu && ((itemIndex - zeroIndex + 1)%LCD_SCREEN_HEIGHT == firstItemIndex+1) && (zeroIndex > 0)){
             zeroIndex--;
           } 
                     cursorUpdate = true;
@@ -2617,19 +2615,17 @@ void CancelBuildMenu::drawItem(uint8_t index, LiquidCrystalSerial& lcd, uint8_t 
   }
 }
 
-void CancelBuildMenu::pop(void){
-  host::pauseBuild(false);
-}
-
 void CancelBuildMenu::handleSelect(uint8_t index) {
     
   switch (index) {
     case 2:
+      host::pauseBuild(false);
       interface::popScreen();
       break;
     case 3:
       if((host::getHostState() != host::HOST_STATE_BUILDING_ONBOARD) && (Motherboard::getBoard().GetBoardStatus() & Motherboard::STATUS_ONBOARD_PROCESS)){
         cancel_process = true;
+        host::pauseBuild(false);
         interface::popScreen();
       }else{
         // Cancel build
@@ -3097,7 +3093,6 @@ void SDMenu::resetState() {
 
 //Returns true if the file is an s3g file
 //Keeping this in C instead of C++ saves 20 bytes
- 
 bool isS3GFile(char *filename, uint8_t len) {
     if ((len >= 4) && 
         (filename[len-4]== '.') && (filename[len-3]== 's') &&
@@ -3145,8 +3140,8 @@ uint8_t SDMenu::countFiles() {
       break;
     }
 
-    //Only count it if it ends in .s3g
-    if (isS3GFile(fnbuf,idx)) count++;
+    //Only count it if it ends in .s3g and is not a 'hidden' file (ie starts with '.')
+    if (isS3GFile(fnbuf,idx) && !(fnbuf[0] == '.')) count++;
 
   } while (e == sdcard::SD_SUCCESS);
 
@@ -3187,14 +3182,13 @@ bool SDMenu::getFilename(uint8_t index, char buffer[], uint8_t buffer_size) {
   char fnbuf[SD_CARD_MAX_FILE_LENGTH];
 
   for(uint8_t i = 0; i < index+1; i++) {
-    // Ignore dot-files
     do {
       e = sdcard::directoryNextEntry(fnbuf,SD_CARD_MAX_FILE_LENGTH, &idx);
       if (fnbuf[0] == '\0') {
         return false;
       }
       
-    } while ((e == sdcard::SD_SUCCESS)  && ( ! isS3GFile(fnbuf,idx)));
+    } while ((e == sdcard::SD_SUCCESS)  && (!isS3GFile(fnbuf,idx) || (fnbuf[0] == '.')));
       
     if (e != sdcard::SD_SUCCESS) {
        return false;

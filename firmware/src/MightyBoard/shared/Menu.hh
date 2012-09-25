@@ -223,7 +223,6 @@ public:
     
     bool isCancelScreen(){return true;}
     
-    void pop(void);
     
 protected:
 	void drawItem(uint8_t index, LiquidCrystalSerial& lcd, uint8_t line_number);
@@ -502,8 +501,6 @@ public:
 	ActiveBuildMenu();
     
 	void resetState();
-	
-	void pop(void);
 	
 	micros_t getUpdateRate() {return 100L * 1000L;}
     
