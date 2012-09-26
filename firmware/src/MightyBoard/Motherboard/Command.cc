@@ -34,6 +34,7 @@
 #include "UtilityScripts.hh"
 #include "stdio.h"
 #include "Menu_locales.hh"
+#include "Version.hh"
 //#include "StepperAxis.hh"
 
 
@@ -485,6 +486,7 @@ void runCommandSlice() {
         command::pause(false);
         steppers::setTarget(target, 150);
         sdcard::finishPlayback();
+        sd_fail_count = 0;
       
         /// do the sd card initialization files
         //command_buffer.reset();
@@ -703,7 +705,22 @@ void runCommandSlice() {
               }
 						}
 					}
-				}
+				} 
+      } else if (command == HOST_CMD_STREAM_VERSION){
+          if(command_buffer.getLength() >= 11){
+          // stream number
+          uint8_t version = pop16();
+
+          if(version != stream_version){
+            Motherboard::getBoard().errorResponse(ERROR_STREAM_VERSION);
+          }
+          // extra version
+          pop8();
+          // checksum (currently not implemented)
+          pop32();
+          // extra bytes
+          pop32();
+        }
 			} else if (command == HOST_CMD_SET_POSITION_EXT) {
 				// check for completion
 				if (command_buffer.getLength() >= 21) {

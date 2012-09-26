@@ -1,3 +1,5 @@
+6.1.23.1.0
+ * internal release with stream version numbers
 6.1.22
  * internal release with jetty acceleration + eeprom changes
 6.0.21

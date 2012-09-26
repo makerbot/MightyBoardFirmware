@@ -281,6 +281,26 @@ void handleVersion(const InPacket& from_host, OutPacket& to_host) {
 
 // Received driver version info, and request for fw version info.
 // puts fw version into a reply packet, and send it back
+void handleStreamVersion(const InPacket& from_host, OutPacket& to_host) {
+
+    // stream number
+    uint8_t version = from_host.read16(1);
+
+    if(version != stream_version){
+      Motherboard::getBoard().errorResponse(ERROR_STREAM_VERSION);
+    }
+
+    // extra version
+    from_host.read8(1);
+    // checksum (currently not implemented)
+    from_host.read32(4);
+    // extra bytes
+    from_host.read32(4);
+    to_host.append8(RC_OK);
+}
+
+// Received driver version info, and request for fw version info.
+// puts fw version into a reply packet, and send it back
 void handleGetAdvancedVersion(const InPacket& from_host, OutPacket& to_host) {
 
 	// we're not doing anything with the host version at the moment
@@ -551,6 +571,9 @@ bool processQueryPacket(const InPacket& from_host, OutPacket& to_host) {
 			case HOST_CMD_VERSION:
 				handleVersion(from_host,to_host);
 				return true;
+      case HOST_CMD_STREAM_VERSION:
+        handleStreamVersion(from_host,to_host);
+        return true;
 			case HOST_CMD_GET_BUILD_NAME:
 				handleGetBuildName(from_host,to_host);
 				return true;

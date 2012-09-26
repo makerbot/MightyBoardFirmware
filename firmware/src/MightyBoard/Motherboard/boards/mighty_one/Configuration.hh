@@ -256,7 +256,7 @@
 //If defined, the stack is painted with a value and the free sram reported in
 //in the Version menu.  This enables debugging to see if the SRAM was ever exhausted
 //which would lead to stack corruption.
-#define STACK_PAINT
+//#define STACK_PAINT
  
 //If defined, stores the square root lookup table in PROGMEM instead of SRAM.
 //Saves 772 bytes of SRAM, costs 48 bytes of program space
