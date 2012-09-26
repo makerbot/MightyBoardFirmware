@@ -93,34 +93,15 @@ bool hard_reset = false;
 bool cancelBuild = false;
 
 void runHostSlice() {
-	DEBUG_PIN1.setValue(true);	
   InPacket& in = UART::getHostUART().in;
   OutPacket& out = UART::getHostUART().out;
 	if (out.isSending()) {
 		// still sending; wait until send is complete before reading new host packets.
-    DEBUG_PIN1.setValue(false);
 		return;
 	}
-  if(!(!cancelBuild || cancel_timeout.hasElapsed())){
-    DEBUG_PIN2.setValue(true);
-  }else{
-    DEBUG_PIN2.setValue(false);
-  }
-  if(!(!z_stage_timeout.isActive() || z_stage_timeout.hasElapsed() || st_empty())){
-    DEBUG_PIN3.setValue(true);
-  }else{
-    DEBUG_PIN3.setValue(false);
-  }
-  if(!do_host_reset){
-    DEBUG_PIN5.setValue(true);
-  }else{
-    DEBUG_PIN5.setValue(false);
-  }
-  
 
   // soft reset the machine unless waiting to notify repG that a cancel has occured
 	if (do_host_reset && (!cancelBuild || cancel_timeout.hasElapsed()) && (!z_stage_timeout.isActive() || z_stage_timeout.hasElapsed() || st_empty())){
-	DEBUG_PIN4.setValue(true);
   	if((buildState == BUILD_RUNNING) || (buildState == BUILD_PAUSED) || (buildState == BUILD_SLEEP)){
 			stopBuild();
 		}
@@ -142,8 +123,6 @@ void runHostSlice() {
 		buildName[0] = 0;
 		currentState = HOST_STATE_READY;
 
-    DEBUG_PIN4.setValue(false);
-    DEBUG_PIN1.setValue(false);			
 		return;
 	}
     // new packet coming in
@@ -197,6 +176,9 @@ void runHostSlice() {
 			out.append8(RC_CANCEL_BUILD);
 			cancelBuild = false;
 			Motherboard::getBoard().indicateError(6);
+    // don't process if we are still cancelling the build
+    } else if (currentState == HOST_STATE_CANCEL_BUILD){
+      out.append8(RC_CANCEL_BUILD);
 		} else
 #if defined(HONOR_DEBUG_PACKETS) && (HONOR_DEBUG_PACKETS == 1)
 		if (processDebugPacket(in, out)) {
@@ -229,8 +211,6 @@ void runHostSlice() {
 		Motherboard::getBoard().setBoardStatus(Motherboard::STATUS_ONBOARD_SCRIPT, false);
 	}
 	managePrintTime();
-  DEBUG_PIN1.setValue(false);
-  
 }
 
 /** Identify a command packet, and process it.  If the packet is a command

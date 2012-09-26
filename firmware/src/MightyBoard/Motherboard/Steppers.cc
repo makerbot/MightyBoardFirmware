@@ -336,7 +336,7 @@ void definePosition(const Point& position_in) {
 		stepperAxis[i].hasDefinePosition = true;
 
 		//Add the toolhead offset
-		position_offset[i] += (*tool_offsets)[i];
+//		position_offset[i] += (*tool_offsets)[i];
 	}
 
 	plan_set_position(position_offset[X_AXIS], position_offset[Y_AXIS], position_offset[Z_AXIS], position_offset[A_AXIS], position_offset[B_AXIS]);
@@ -388,6 +388,7 @@ const Point getStepperPosition() {
 		position[i] -= (*gp_tool_offsets)[i];
 
 	Point p = Point(position[X_AXIS], position[Y_AXIS], position[Z_AXIS], position[A_AXIS], position[B_AXIS]);
+
 	return p;
 }
 
@@ -653,7 +654,7 @@ void changeToolIndex(uint8_t tool) {
 	toolIndex %= 2;
 
 	if(toolIndex == 1)	tool_offsets = &tolerance_offset_T1;
-	else			tool_offsets = &tolerance_offset_T0;
+	else      tool_offsets = &tolerance_offset_T0;
 }
 
 

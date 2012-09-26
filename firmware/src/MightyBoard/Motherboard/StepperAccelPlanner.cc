@@ -1071,7 +1071,6 @@ void plan_init(FPTYPE extruderAdvanceK, FPTYPE extruderAdvanceK2, bool zhold) {
 
 void plan_buffer_line(FPTYPE feed_rate, const uint32_t &dda_rate, const uint8_t &extruder, bool use_accel, uint8_t active_toolhead)
 {
-  DEBUG_PIN3.setValue(true);
 	//If we have an empty buffer, then disable slowdown until the buffer has become at least 1/2 full
 	//This prevents slow start and gradual speedup at the beginning of a print, due to the SLOWDOWN algorithm
 	if ( slowdown_limit && block_buffer_head == block_buffer_tail ) disable_slowdown = true;
@@ -1245,7 +1244,6 @@ void plan_buffer_line(FPTYPE feed_rate, const uint32_t &dda_rate, const uint8_t 
 			sblock = NULL;
 		#endif
 
-    DEBUG_PIN3.setValue(false);
 		return;
 
 	}
@@ -1568,7 +1566,6 @@ void plan_buffer_line(FPTYPE feed_rate, const uint32_t &dda_rate, const uint8_t 
 		sblock = NULL;
 	#endif
 
-  DEBUG_PIN3.setValue(false);
 	return;
 }
 

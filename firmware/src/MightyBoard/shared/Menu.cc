@@ -2360,7 +2360,6 @@ void ActiveBuildMenu::handleSelect(uint8_t index){
       break;
     case 3:
       is_sleeping = !is_sleeping;
-      DEBUG_PIN1.setValue(true);
       if(is_sleeping){
         host::pauseBuild(false);
         is_paused = false;
@@ -2369,7 +2368,6 @@ void ActiveBuildMenu::handleSelect(uint8_t index){
         host::activePauseBuild(false, command::SLEEP_TYPE_COLD);
       }
       lineUpdate = true;
-      DEBUG_PIN1.setValue(false);
       break;
 #ifdef ACTIVE_COOLING_FAN
     case 6:
