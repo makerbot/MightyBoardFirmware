@@ -53,6 +53,7 @@ bool active_paused = false;
 bool heat_shutdown = false;
 bool cold_pause = false;
 uint32_t sd_count = 0;
+uint8_t sd_fail_count = 0;
 
 uint16_t getRemainingCapacity() {
 	uint16_t sz;
@@ -156,6 +157,7 @@ void reset() {
 	active_paused = false;
 	sd_count = 0;
 	sdcard_reset = false;
+  sd_fail_count = 0;
 	mode = READY;
 }
 
@@ -463,32 +465,35 @@ void runCommandSlice() {
 		}
 		if(!sdcard::playbackHasNext() && (sd_count < sdcard::getFileSize()) && !sdcard_reset){
 			
-			Motherboard::getBoard().getInterfaceBoard().resetLCD();
-			Motherboard::getBoard().errorResponse(STATICFAIL_MSG);
-			sdcard_reset = true;
-      /// temporary behavior until we get a method to restart the build
-      steppers::abort();
-      command_buffer.reset();
+      sd_fail_count++;
+      if(sd_fail_count > 5){
+        Motherboard::getBoard().getInterfaceBoard().resetLCD();
+        Motherboard::getBoard().errorResponse(STATICFAIL_MSG);
+        sdcard_reset = true;
+        /// temporary behavior until we get a method to restart the build
+        steppers::abort();
+        command_buffer.reset();
 
-      // cool heaters
-      Motherboard &board = Motherboard::getBoard();
-      board.getExtruderBoard(0).getExtruderHeater().set_target_temperature(0);
-      board.getExtruderBoard(1).getExtruderHeater().set_target_temperature(0);
-      board.getPlatformHeater().set_target_temperature(0);
-	
-      Point target = steppers::getStepperPosition();
-      target[2] = 150L*stepperAxisStepsPerMM(Z_AXIS);
-      command::pause(false);
-      steppers::setTarget(target, 150);
-      sdcard::finishPlayback();
+        // cool heaters
+        Motherboard &board = Motherboard::getBoard();
+        board.getExtruderBoard(0).getExtruderHeater().set_target_temperature(0);
+        board.getExtruderBoard(1).getExtruderHeater().set_target_temperature(0);
+        board.getPlatformHeater().set_target_temperature(0);
+    
+        Point target = steppers::getStepperPosition();
+        target[2] = 150L*stepperAxisStepsPerMM(Z_AXIS);
+        command::pause(false);
+        steppers::setTarget(target, 150);
+        sdcard::finishPlayback();
       
-			/// do the sd card initialization files
-			//command_buffer.reset();
-			//sdcard::startPlayback(host::getBuildName());
-			//uint32_t count;
-			//while(count < sd_count){
-			//	sdcard::playbackNext();
-			//}
+        /// do the sd card initialization files
+        //command_buffer.reset();
+        //sdcard::startPlayback(host::getBuildName());
+        //uint32_t count;
+        //while(count < sd_count){
+        //	sdcard::playbackNext();
+        //}
+      }
 		}else if(!sdcard::playbackHasNext() && command_buffer.isEmpty() && isReady()){
 			sdcard::finishPlayback();
 		}

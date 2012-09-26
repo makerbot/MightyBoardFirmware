@@ -696,6 +696,8 @@ void stopBuild() {
     	
     steppers::abort();
 
+    
+		Motherboard::getBoard().setBoardStatus(Motherboard::STATUS_CANCELLING, true);
 		// record print statistics
 		last_print_line = command::getLineNumber();
 		stopPrintTime();
