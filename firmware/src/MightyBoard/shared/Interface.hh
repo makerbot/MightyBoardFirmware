@@ -39,9 +39,6 @@ bool isConnected();
 /// \param[in] newScreen Screen to be added to the stack.
 void pushScreen(Screen* newScreen);
 
-/// add a screen to the stack without updating
-void pushNoUpdate(Screen *newScreen);
-
 /// Remove the top screen from the screen stack. If there is only one screen left,
 /// it will not be removed.
 void popScreen();
@@ -71,6 +68,8 @@ void setLEDs(bool on);
 
 /// set build percentage to be displayed in monitor mode
 void setBuildPercentage(uint8_t percent);
+
+
 
 }
 

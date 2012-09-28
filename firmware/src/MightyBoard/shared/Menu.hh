@@ -9,17 +9,19 @@
 #include "Timeout.hh"
 #include "Host.hh"
 #include "UtilityScripts.hh"
+#include "Point.hh"
+
+
+/// this puts a max value on the number of items per menu
+/// TODO : alert during build if number of items exceeds this.
+const static uint8_t MAX_INDICES = 20;
 
 /// states for Welcome Menu
 enum WeclomeStates{
     WELCOME_START,
     WELCOME_BUTTONS1,
     WELCOME_BUTTONS2,
-  //  WELCOME_BUTTONS3,
-  //  WELCOME_BUTTONS4,
-  //  WELCOME_BUTTONS5,
     WELCOME_EXPLAIN,
-  //  WELCOME_TOOL_SELECT,
     WELCOME_LEVEL,
     WELCOME_LEVEL_ACTION,
     WELCOME_LEVEL_OK,
@@ -99,9 +101,6 @@ public:
         /// \param button Button that was pressed
         virtual void notifyButtonPressed(ButtonArray::ButtonName button);
         
-        /// return true if this screen uses continuous button mode
-        virtual bool continuousButtons(void){ return false;}
-        
         /// set build percentage to be displayed in monitor mode
         virtual void setBuildPercentage(uint8_t percent){return;}
         
@@ -125,7 +124,6 @@ class Menu: public Screen {
 public:
 	micros_t getUpdateRate() {return 500L * 1000L;}
 
-
 	void update(LiquidCrystalSerial& lcd, bool forceRedraw);
 
 	void reset();
@@ -138,17 +136,25 @@ protected:
 
         bool needsRedraw;               ///< set to true if a menu item changes out of sequence
 		bool lineUpdate;				///< flags the menu to update the current line
+		bool cursorUpdate;				///< flag to update the menu cursor
         volatile uint8_t itemIndex;     ///< The currently selected item
         uint8_t lastDrawIndex;          ///< The index used to make the last draw
+        volatile uint8_t zeroIndex;     ///< The index corresponding to the zeroth display line
+        uint8_t lastZeroIndex;          ///< The last zeroIndex displayed
         uint8_t itemCount;              ///< Total number of items
         uint8_t firstItemIndex;         ///< The first selectable item. Set this
                                         ///< to greater than 0 if the first
                                         ///< item(s) are a title)
+        bool selectMode;       			///< true if in counter change state
+		uint8_t selectIndex;        	///< The currently selected item, in a counter change state
+		bool sliding_menu;				///< the menu either slides, or scrolls down in groups of SCREEN_HEIGHT
+                                        
+        uint8_t counter_item[MAX_INDICES];	///< array defining which idices are counters
 
         /// Draw an item at the current cursor position.
         /// \param[in] index Index of the item to draw
         /// \param[in] LCD screen to draw onto
-	virtual void drawItem(uint8_t index, LiquidCrystalSerial& lcd);
+	virtual void drawItem(uint8_t index, LiquidCrystalSerial& lcd, uint8_t line_number);
 
         /// Handle selection of a menu item
         /// \param[in] index Index of the menu item that was selected
@@ -158,25 +164,11 @@ protected:
         /// menu from the stack, or pop up a confirmation dialog to make sure
         /// that the menu should be removed.
 	virtual void handleCancel();
-};
-
-/// The Counter menu builds on menu to allow selecting number values .
-class CounterMenu: public Menu {
-public:
-	micros_t getUpdateRate() {return 500L * 1000L;}
-    
-    
-    void notifyButtonPressed(ButtonArray::ButtonName button);
-    
-protected:
-    bool selectMode;        ///< true if in counter change state
-    uint8_t selectIndex;        ///< The currently selected item, in a counter change state
-    uint8_t firstSelectIndex;   ///< first line with selectable item
-    uint8_t lastSelectIndex;   ///< last line with a selectable item
-    
-    void reset();
-
-    virtual void handleCounterUpdate(uint8_t index, bool up);
+	
+		/// Handle update of a menu counter item
+        /// \param[in] index Index of the menu item that was selected
+        /// \param[up] direction of counter, up or down
+	virtual void handleCounterUpdate(uint8_t index, bool up){return;}
 };
 
 /// Display a welcome splash screen, that removes itself when updated.
@@ -203,7 +195,7 @@ public:
 	void resetState();
     
 protected:
-	void drawItem(uint8_t index, LiquidCrystalSerial& lcd);
+	void drawItem(uint8_t index, LiquidCrystalSerial& lcd, uint8_t line_number);
     
 	void handleSelect(uint8_t index);
     
@@ -216,7 +208,7 @@ public:
 	void resetState();
     
 protected:
-	void drawItem(uint8_t index, LiquidCrystalSerial& lcd);
+	void drawItem(uint8_t index, LiquidCrystalSerial& lcd, uint8_t line_number);
     
 	void handleSelect(uint8_t index);
 };
@@ -228,7 +220,7 @@ public:
 	void resetState();
     
 protected:
-	void drawItem(uint8_t index, LiquidCrystalSerial& lcd);
+	void drawItem(uint8_t index, LiquidCrystalSerial& lcd, uint8_t line_number);
     
 	void handleSelect(uint8_t index);
 };
@@ -244,12 +236,63 @@ public:
     void pop(void);
     
 protected:
-	void drawItem(uint8_t index, LiquidCrystalSerial& lcd);
+	void drawItem(uint8_t index, LiquidCrystalSerial& lcd, uint8_t line_number);
     
 	void handleSelect(uint8_t index);
     
     
     bool paused;
+};
+
+class BuildStats: public Screen {
+
+private:
+
+	const static uint8_t UPDATE_COUNT_MAX = 20;
+	uint8_t update_count;
+
+public:
+
+	micros_t getUpdateRate() {return 500L * 1000L;}
+	
+	void update(LiquidCrystalSerial& lcd, bool forceRedraw);
+	
+	void reset();
+
+    void notifyButtonPressed(ButtonArray::ButtonName button);
+};
+
+class BuildFinished: public Screen {
+
+private:
+	bool waiting;
+
+public:
+	
+	bool screenWaiting(void);
+
+	micros_t getUpdateRate() {return 500L * 1000L;}
+	
+	void update(LiquidCrystalSerial& lcd, bool forceRedraw);
+	
+	void reset();
+
+    void notifyButtonPressed(ButtonArray::ButtonName button);
+};
+
+class BotStats: public Screen {
+
+private:
+
+public:
+
+	micros_t getUpdateRate() {return 500L * 1000L;}
+	
+	void update(LiquidCrystalSerial& lcd, bool forceRedraw);
+	
+	void reset();
+
+    void notifyButtonPressed(ButtonArray::ButtonName button);
 };
 
 
@@ -263,31 +306,30 @@ private:
 	uint8_t cursor;
 	bool needsRedraw;
 	bool incomplete;
-	bool lcdClear;
-	bool popScreenOn;
+	bool waiting_for_user;
 	Timeout timeout;
-    
-    CancelBuildMenu cancelBuildMenu;
     
 public:
 	MessageScreen() : needsRedraw(false) { message[0] = '\0'; }
 
 	void setXY(uint8_t xpos, uint8_t ypos) { x = xpos; y = ypos; }
 
-	void addMessage(CircularBuffer& buf, bool msgComplete);
-	void addMessage(char * msg, bool msgComplete);
+	void addMessage(CircularBuffer& buf);
+	void addMessage(char * msg);
 	void clearMessage();
-	void setTimeout(uint8_t seconds, bool pop);
+	void setTimeout(uint8_t seconds);//, bool pop);
+	void refreshScreen();
 
-	micros_t getUpdateRate() {return 50L * 1000L;}
+	micros_t getUpdateRate() {return 100L * 1000L;}
   
 	void update(LiquidCrystalSerial& lcd, bool forceRedraw);
 	
 	void reset();
 
-    void notifyButtonPressed(ButtonArray::ButtonName button);
-    
-    bool screenWaiting(void);
+  void notifyButtonPressed(ButtonArray::ButtonName button);
+  
+  bool screenWaiting(void);
+  void WaitForUser(bool wait);
 };
 
 
@@ -316,9 +358,8 @@ public:
 
 	void reset();
 
-    void notifyButtonPressed(ButtonArray::ButtonName button);
+  void notifyButtonPressed(ButtonArray::ButtonName button);
      
-    bool continuousButtons(void) {return true;}
 };
 
 /// This is an easter egg.
@@ -350,8 +391,6 @@ private:
 	direction_t snakeDirection;			// The direction the snake is heading
 	coord_t applePosition;				// Location of the apple
 	uint8_t applesEaten;				// Number of apples that have been eaten
-//	int gameSpeed = START_SPEED;		// Speed of the game (in ms per turn)
-
 
 public:
 	micros_t getUpdateRate() {return updateRate;}
@@ -366,77 +405,55 @@ public:
         void notifyButtonPressed(ButtonArray::ButtonName button);
 };
 
-/*class SDSpecialBuild: public Screen{
-	
-	protected:
-		char buildType[host::MAX_FILE_LEN];
-		bool buildFailed;
-		
-
-public:
-	SDSpecialBuild();
-	micros_t getUpdateRate() {return 50L * 1000L;}
-
-
-	void update(LiquidCrystalSerial& lcd, bool forceRedraw);
-
-	void reset();
-	virtual void resetState();
-	
-	bool startBuild(void);
-	void notifyButtonPressed(ButtonArray::ButtonName button);
-
-};*/
-
 class SDMenu: public Menu {
 public:
 	SDMenu();
 
 	void resetState();
 	
-	 bool continuousButtons(void) {return true;}
+	micros_t getUpdateRate() {return 50L * 1000L;}
+
+  static const uint8_t SD_CARD_MAX_FILE_LENGTH = 31; 
 
 protected:
 	bool cardNotFound;
+	bool cardReadError;
+	bool cardBadFormat;
+	bool cardTooBig;
 	
 	uint8_t countFiles();
 
-    bool getFilename(uint8_t index,
-                         char buffer[],
-                         uint8_t buffer_size);
+  bool getFilename(uint8_t index,
+                       char buffer[],
+                       uint8_t buffer_size);
 
-	void drawItem(uint8_t index, LiquidCrystalSerial& lcd);
+	void drawItem(uint8_t index, LiquidCrystalSerial& lcd, uint8_t line_number);
 
 	void handleSelect(uint8_t index);
+
 };
 
 /// load / unload filament options
 class FilamentScreen: public Screen {
     
 private:
-    FilamentOKMenu filamentOK;
-    CancelBuildMenu cancelBuildMenu;
     
     uint8_t filamentState;
     uint8_t axisID, toolID;
     bool forward;
     bool dual;
     bool startup;
-    bool heatLights;
-    bool LEDClear;
     Timeout filamentTimer;
     bool toggleBlink;
     int toggleCounter;
-    uint8_t lastHeatIndex;
-    bool helpText;
-    
+    bool helpText;   
     bool needsRedraw;
     
     void startMotor();
     void stopMotor();
     
 public:
-	micros_t getUpdateRate() {return 50L * 1000L;}
+	micros_t getUpdateRate() {return 500L * 1000L;}
     
     void setScript(FilamentScript script);
     
@@ -448,7 +465,7 @@ public:
     void notifyButtonPressed(ButtonArray::ButtonName button);
 };
 
-class SelectAlignmentMenu : public CounterMenu{
+class SelectAlignmentMenu : public Menu{
 	
 public:
 	SelectAlignmentMenu();
@@ -459,7 +476,7 @@ protected:
     
     void resetState();
     
-	void drawItem(uint8_t index, LiquidCrystalSerial& lcd);
+	void drawItem(uint8_t index, LiquidCrystalSerial& lcd, uint8_t line_number);
     
 	void handleSelect(uint8_t index);
     
@@ -469,8 +486,6 @@ protected:
 class NozzleCalibrationScreen: public Screen {
 	
 private:
-    SelectAlignmentMenu align;
-    CancelBuildMenu cancelBuildMenu;
     
     uint8_t alignmentState;
     bool needsRedraw;               ///< set to true if a menu item changes out of sequence
@@ -485,18 +500,39 @@ public:
     void notifyButtonPressed(ButtonArray::ButtonName button);
 };
 
+class ActiveBuildMenu: public Menu {
+	
+private:
+	
+	bool FanOn;
+	int8_t LEDColor;
+
+	bool is_paused;
+	bool is_sleeping;
+	
+public:
+	ActiveBuildMenu();
+    
+	void resetState();
+	
+	void pop(void);
+	
+	micros_t getUpdateRate() {return 100L * 1000L;}
+    
+protected:
+	void drawItem(uint8_t index, LiquidCrystalSerial& lcd, uint8_t line_number);
+    
+	void handleSelect(uint8_t index);
+	
+	void handleCounterUpdate(uint8_t index, bool up);
+};
+
 /// Display a welcome splash screen on first user boot
 class WelcomeScreen: public Screen {
     
 private:
     int8_t welcomeState;
     int level_offset;
-    
-    SDMenu sdmenu;
-    FilamentScreen filament;
-    //    ToolSelectMenu tool_select;
-    ReadyMenu ready;
-    LevelOKMenu levelOK;
     
     bool needsRedraw;
 public:
@@ -510,19 +546,21 @@ public:
     void notifyButtonPressed(ButtonArray::ButtonName button);
 };
 
-class PreheatSettingsMenu: public CounterMenu {
+class PreheatSettingsMenu: public Menu {
 public:
 	PreheatSettingsMenu();
+	
+	micros_t getUpdateRate() {return 50L * 1000L;}
     
 protected:
-    uint16_t counterRight;
-    uint16_t counterLeft;
-    uint16_t counterPlatform;
+    int16_t counterRight;
+    int16_t counterLeft;
+    int16_t counterPlatform;
     bool singleTool;
     
     void resetState();
     
-	void drawItem(uint8_t index, LiquidCrystalSerial& lcd);
+	void drawItem(uint8_t index, LiquidCrystalSerial& lcd, uint8_t line_number);
     
 	void handleSelect(uint8_t index);
     
@@ -536,24 +574,19 @@ public:
 	void resetState();
     
 protected:
-	void drawItem(uint8_t index, LiquidCrystalSerial& lcd);
+	void drawItem(uint8_t index, LiquidCrystalSerial& lcd, uint8_t line_number);
     
 	void handleSelect(uint8_t index);
 };
 
-
 class MonitorMode: public Screen {
 private:
-	CancelBuildMenu cancelBuildMenu;
-
 	uint8_t updatePhase;
 	uint8_t buildPercentage;
-	bool singleTool;
-    bool toggleBlink;
-    bool heating;
-    bool LEDClear;
-    bool heatLights;
-    uint8_t lastHeatIndex;
+	bool singleTool; 
+  bool heating;
+  bool hasHBP;
+  uint8_t num_update_phases;
     
 public:
 	micros_t getUpdateRate() {return 500L * 1000L;}
@@ -563,9 +596,9 @@ public:
 
 	void reset();
 
-    void notifyButtonPressed(ButtonArray::ButtonName button);
+  void notifyButtonPressed(ButtonArray::ButtonName button);
     
-    void setBuildPercentage(uint8_t percent);
+  void setBuildPercentage(uint8_t percent);
 };
 
 class HeaterPreheat: public Menu {
@@ -574,12 +607,12 @@ public:
 	
 	HeaterPreheat();
 	
-	void drawItem(uint8_t index, LiquidCrystalSerial& lcd);
+	void drawItem(uint8_t index, LiquidCrystalSerial& lcd, uint8_t line_number);
 
 	void handleSelect(uint8_t index);
 
 private:
-	MonitorMode monitorMode;
+
 	int8_t _rightActive, _leftActive, _platformActive;
     
     void storeHeatByte();
@@ -587,32 +620,34 @@ private:
      
     bool singleTool;
     bool preheatActive;
-	
+
 };
 
-class SettingsMenu: public CounterMenu {
+class SettingsMenu: public Menu {
 public:
 	SettingsMenu();
+	
+	micros_t getUpdateRate() {return 100L * 1000L;}
     
     
 protected:
     void resetState();
     
-	void drawItem(uint8_t index, LiquidCrystalSerial& lcd);
+	void drawItem(uint8_t index, LiquidCrystalSerial& lcd, uint8_t line_number);
     
 	void handleSelect(uint8_t index);
 	
 	void handleCounterUpdate(uint8_t index, bool up);
     
 private:
-    /// Static instances of our menus
     
-    int8_t singleExtruder;
-    int8_t soundOn;
+    uint8_t  singleExtruder;
+    uint8_t  soundOn;
     int8_t LEDColor;
-    int8_t heatingLEDOn;
-    int8_t helpOn;
-    int8_t accelerationOn;
+    uint8_t  heatingLEDOn;
+    uint8_t  helpOn;
+	uint8_t  accelerationOn;
+    uint8_t  HBPPresent;
     
 };
 
@@ -622,15 +657,13 @@ public:
     
     
 protected:
-	void drawItem(uint8_t index, LiquidCrystalSerial& lcd);
+	void drawItem(uint8_t index, LiquidCrystalSerial& lcd, uint8_t line_number);
     
 	void handleSelect(uint8_t index);
 	
 	void resetState();
     
 private:
-    /// Static instances of our menus
-    FilamentScreen filament;
 
     bool singleTool;
     
@@ -640,32 +673,42 @@ private:
 class UtilitiesMenu: public Menu {
 public:
 	UtilitiesMenu();
-
-
+	
+	micros_t getUpdateRate() {return 100L * 1000L;}
+	
 protected:
-	void drawItem(uint8_t index, LiquidCrystalSerial& lcd);
+	void drawItem(uint8_t index, LiquidCrystalSerial& lcd, uint8_t line_number);
 
 	void handleSelect(uint8_t index);
 	
 	void resetState();
 
 private:
-    /// Static instances of our menus
-    MonitorMode monitorMode;
-    JogMode jogger;
-    WelcomeScreen welcome;
- //   HeaterTestScreen heater;
-    SettingsMenu set;
-    PreheatSettingsMenu preheat;
-    ResetSettingsMenu reset_settings;
-    FilamentMenu filament;
-    NozzleCalibrationScreen alignment;
-    SplashScreen splash;
     
+    bool singleTool; 
     bool stepperEnable;
     bool blinkLED;
+
+};
+
+class InfoMenu: public Menu {
+public:
+	InfoMenu();
+	
+	micros_t getUpdateRate() {return 100L * 1000L;}
+	
+protected:
+	void drawItem(uint8_t index, LiquidCrystalSerial& lcd, uint8_t line_number);
+
+	void handleSelect(uint8_t index);
+	
+	void resetState();
+
+private:
+
     bool singleTool;
 };
+
 
 
 class MainMenu: public Menu {
@@ -674,17 +717,14 @@ public:
 
 
 protected:
-	void drawItem(uint8_t index, LiquidCrystalSerial& lcd);
+	void drawItem(uint8_t index, LiquidCrystalSerial& lcd, uint8_t line_number);
 
 	void handleSelect(uint8_t index);
 	
 	void resetState();
 
 private:
-        /// Static instances of our menus
-        SDMenu sdMenu;
-        HeaterPreheat preheat;
-        UtilitiesMenu utils;
+     
 
 };
 

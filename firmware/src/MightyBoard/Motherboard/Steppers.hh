@@ -90,6 +90,16 @@ namespace steppers {
 
 	/// set acceleration on or off
     bool SetAccelerationOn(bool on);
+    
+    /// return a bit field that contains the state of the endstops
+    uint8_t getEndstopStatus();
+    
+    // return true stepper[index] is enabled
+    bool isEnabled(uint8_t index);
+
+    // retur true when z_axis has been homed since last reset()
+    uint8_t isZHomed();
+
 };
 
 #endif // STEPPERS_HH_

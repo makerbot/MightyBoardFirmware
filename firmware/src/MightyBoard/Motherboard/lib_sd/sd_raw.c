@@ -11,6 +11,10 @@
 #include <string.h>
 #include <avr/io.h>
 #include "sd_raw.h"
+#include "avr/delay.h"
+#include "Configuration.hh"
+#include "Pin.hh"
+
 
 /**
  * \addtogroup sd_raw MMC/SD/SDHC card raw access
@@ -147,6 +151,9 @@
 #if !SD_RAW_SAVE_RAM
 /* static data buffer for acceleration */
 static uint8_t raw_block[512];
+#ifdef STABILITY_MODE
+static uint8_t stability_block[512];
+#endif
 /* offset where the data within raw_block lies on the card */
 static offset_t raw_block_address;
 #if SD_RAW_WRITE_BUFFERING
@@ -217,7 +224,7 @@ uint8_t sd_raw_init()
         response = sd_raw_send_command(CMD_GO_IDLE_STATE, 0);
         if(response == (1 << R1_IDLE_STATE))
             break;
-
+      
         if(i == 0x1ff)
         {
             unselect_card();
@@ -278,7 +285,7 @@ uint8_t sd_raw_init()
         if((response & (1 << R1_IDLE_STATE)) == 0)
             break;
 
-        if(i == 0x7fff)
+        if(i == 0x1ff)
         {
             unselect_card();
             return 0;
@@ -302,6 +309,7 @@ uint8_t sd_raw_init()
         sd_raw_rec_byte();
     }
 #endif
+	
 
     /* set block size to 512 bytes */
     if(sd_raw_send_command(CMD_SET_BLOCKLEN, 512))
@@ -312,6 +320,8 @@ uint8_t sd_raw_init()
 
     /* deaddress card */
     unselect_card();
+    
+    
 
     /* switch to highest SPI frequency possible */
     SPCR &= ~((1 << SPR1) | (1 << SPR0)); /* Clock Frequency: f_OSC / 4 */
@@ -323,8 +333,9 @@ uint8_t sd_raw_init()
 #if SD_RAW_WRITE_BUFFERING
     raw_block_written = 1;
 #endif
-    if(!sd_raw_read(0, raw_block, sizeof(raw_block)))
+    if(!sd_raw_read(0, raw_block, sizeof(raw_block))){
         return 0;
+	}
 #endif
 
     return 1;
@@ -352,6 +363,7 @@ uint8_t sd_raw_locked()
     return get_pin_locked() == 0x00;
 }
 
+
 /**
  * \ingroup sd_raw
  * Sends a raw byte to the memory card.
@@ -361,9 +373,16 @@ uint8_t sd_raw_locked()
  */
 void sd_raw_send_byte(uint8_t b)
 {
+	uint8_t tries = 0;
+	
+	//PORTC |= 0x02;
     SPDR = b;
     /* wait for byte to be shifted out */
-    while(!(SPSR & (1 << SPIF)));
+    while(!(SPSR & (1 << SPIF)) && (tries < 100)){
+		tries++;
+		_delay_us(1);
+	}
+    //PORTC &= ~0x02;
     SPSR &= ~(1 << SPIF);
 }
 
@@ -376,9 +395,15 @@ void sd_raw_send_byte(uint8_t b)
  */
 uint8_t sd_raw_rec_byte()
 {
+	uint8_t tries = 0;
     /* send dummy data for receiving some */
+    //PORTC |= 0x01;
     SPDR = 0xff;
-    while(!(SPSR & (1 << SPIF)));
+    while(!(SPSR & (1 << SPIF)) && (tries < 100)){
+		tries++;
+		_delay_us(1);
+	}
+    //PORTC &= ~0x01;
     SPSR &= ~(1 << SPIF);
 
     return SPDR;
@@ -430,6 +455,83 @@ uint8_t sd_raw_send_command(uint8_t command, uint32_t arg)
 }
 
 /**
+ * \ingroup sd_raw_read_block
+ * Reads block of raw data from the card.
+ *
+ * \param[in] block_address the address of the block to read
+ * \param[in] block_offset The offset from which to read.
+ * \param[out] raw_buffer The buffer into which to write the data.
+ * \param[in] read_length The number of bytes to read.
+ * \returns 0 on failure, 1 on success.
+ * \see sd_raw_read_interval, sd_raw_write, sd_raw_write_interval
+ */
+uint8_t sd_raw_read_block(offset_t block_address, offset_t block_offset, uint8_t* raw_buffer, uintptr_t read_length) {
+
+
+#if SD_RAW_WRITE_BUFFERING
+            if(!sd_raw_sync())
+                return 0;
+#endif
+
+            /* address card */
+            select_card();
+           
+
+            /* send single block request */
+#if SD_RAW_SDHC
+            if(sd_raw_send_command(CMD_READ_SINGLE_BLOCK, (sd_raw_card_type & (1 << SD_RAW_SPEC_SDHC) ? block_address / 512 : block_address)))
+#else
+            if(sd_raw_send_command(CMD_READ_SINGLE_BLOCK, block_address))
+#endif
+            {
+                unselect_card();
+                return 0;
+            }
+            
+            uint16_t tries = 0;
+
+            /* wait for data block (start byte 0xfe) */
+            while((sd_raw_rec_byte() != 0xfe)){
+				if(tries >= 0x7FFF){
+					unselect_card();
+					return 0;
+				}
+				tries++;
+			}
+            
+
+#if SD_RAW_SAVE_RAM
+            /* read byte block */
+            uint16_t read_to = block_offset + read_length;
+            for(uint16_t i = 0; i < 512; ++i)
+            {
+                uint8_t b = sd_raw_rec_byte();
+                if(i >= block_offset && i < read_to)
+                    *buffer++ = b;
+            }
+#else
+            /* read byte block */
+          //  uint8_t* cache = raw_block;
+            uint8_t* cache = raw_buffer;
+            for(uint16_t i = 0; i < 512; ++i)
+                *cache++ = sd_raw_rec_byte();
+#endif
+      
+            /* read crc16 */
+            sd_raw_rec_byte();
+            sd_raw_rec_byte();
+            
+            /* deaddress card */
+            unselect_card();
+
+            /* let card some time to finish */
+            sd_raw_rec_byte();
+            
+            return 1;
+}
+
+
+/**
  * \ingroup sd_raw
  * Reads raw data from the card.
  *
@@ -446,6 +548,7 @@ uint8_t sd_raw_read(offset_t offset, uint8_t* buffer, uintptr_t length)
     uint16_t read_length;
     while(length > 0)
     {
+		
         /* determine byte count to read at once */
         block_offset = offset & 0x01ff;
         block_address = offset - block_offset;
@@ -455,64 +558,40 @@ uint8_t sd_raw_read(offset_t offset, uint8_t* buffer, uintptr_t length)
         
 #if !SD_RAW_SAVE_RAM
         /* check if the requested data is cached */
-        if(block_address != raw_block_address)
+        if(block_address != raw_block_address){
 #endif
-        {
-#if SD_RAW_WRITE_BUFFERING
-            if(!sd_raw_sync())
-                return 0;
+			bool read_fail = true;
+			/// we quit out of the while loop if we have two read fails in a row
+			while(read_fail){
+				read_fail = false;
+				if(!sd_raw_read_block(block_address, block_offset, raw_block, read_length)){
+					return 0;
+				}
+	#ifdef STABILITY_MODE
+				if (!sd_raw_read_block(block_address, block_offset, stability_block, read_length)){
+					return 0;
+				}
+				
+				for (int16_t i = 0; i < 512; i++){
+					if(stability_block[i] != raw_block[i]){
+						/// if this is the second read fail, report an error
+						if(read_fail){
+							return 0;
+						}else{
+							read_fail = true;
+							break;
+						}
+					}
+				}
 #endif
+			}
 
-            /* address card */
-            select_card();
-
-            /* send single block request */
-#if SD_RAW_SDHC
-            if(sd_raw_send_command(CMD_READ_SINGLE_BLOCK, (sd_raw_card_type & (1 << SD_RAW_SPEC_SDHC) ? block_address / 512 : block_address)))
-#else
-            if(sd_raw_send_command(CMD_READ_SINGLE_BLOCK, block_address))
-#endif
-            {
-                unselect_card();
-                return 0;
-            }
-
-            /* wait for data block (start byte 0xfe) */
-            while(sd_raw_rec_byte() != 0xfe);
-
-#if SD_RAW_SAVE_RAM
-            /* read byte block */
-            uint16_t read_to = block_offset + read_length;
-            for(uint16_t i = 0; i < 512; ++i)
-            {
-                uint8_t b = sd_raw_rec_byte();
-                if(i >= block_offset && i < read_to)
-                    *buffer++ = b;
-            }
-#else
-            /* read byte block */
-            uint8_t* cache = raw_block;
-            for(uint16_t i = 0; i < 512; ++i)
-                *cache++ = sd_raw_rec_byte();
-            raw_block_address = block_address;
-
-            memcpy(buffer, raw_block + block_offset, read_length);
-            buffer += read_length;
-#endif
-            
-            /* read crc16 */
-            sd_raw_rec_byte();
-            sd_raw_rec_byte();
-            
-            /* deaddress card */
-            unselect_card();
-
-            /* let card some time to finish */
-            sd_raw_rec_byte();
-        }
 #if !SD_RAW_SAVE_RAM
-        else
-        {
+			raw_block_address = block_address;
+			/// copy the data into the buffer
+			memcpy(buffer, raw_block + block_offset, read_length);
+            buffer += read_length;
+        } else {
             /* use cached data */
             memcpy(buffer, raw_block + block_offset, read_length);
             buffer += read_length;
@@ -554,6 +633,7 @@ uint8_t sd_raw_read_interval(offset_t offset, uint8_t* buffer, uintptr_t interva
 {
     if(!buffer || interval == 0 || length < interval || !callback)
         return 0;
+        
 
 #if !SD_RAW_SAVE_RAM
     while(length >= interval)
@@ -595,8 +675,16 @@ uint8_t sd_raw_read_interval(offset_t offset, uint8_t* buffer, uintptr_t interva
             return 0;
         }
 
+		uint16_t tries = 0;
+
         /* wait for data block (start byte 0xfe) */
-        while(sd_raw_rec_byte() != 0xfe);
+        while(sd_raw_rec_byte() != 0xfe){
+				if (tries >= 0x7fff){
+					unselect_card();
+					return 0;
+				}
+				tries++;
+		 }
 
         /* read up to the data of interest */
         for(uint16_t i = 0; i < block_offset; ++i)
@@ -736,8 +824,16 @@ uint8_t sd_raw_write(offset_t offset, const uint8_t* buffer, uintptr_t length)
         sd_raw_send_byte(0xff);
         sd_raw_send_byte(0xff);
 
+		uint16_t tries = 0;
+		
         /* wait while card is busy */
-        while(sd_raw_rec_byte() != 0xff);
+        while(sd_raw_rec_byte() != 0xff){
+			if(tries >= 0x7FFF){
+				unselect_card();
+				return 0;
+			}
+			tries++;
+		 }
         sd_raw_rec_byte();
 
         /* deaddress card */
@@ -863,7 +959,16 @@ uint8_t sd_raw_get_info(struct sd_raw_info* info)
         unselect_card();
         return 0;
     }
-    while(sd_raw_rec_byte() != 0xfe);
+    
+    uint16_t tries = 0;
+    while(sd_raw_rec_byte() != 0xfe){
+		if (tries >= 0x7FFF){
+			unselect_card();
+			return 0;
+		}
+		tries++;
+	 }
+	
     for(uint8_t i = 0; i < 18; ++i)
     {
         uint8_t b = sd_raw_rec_byte();
@@ -916,7 +1021,16 @@ uint8_t sd_raw_get_info(struct sd_raw_info* info)
         unselect_card();
         return 0;
     }
-    while(sd_raw_rec_byte() != 0xfe);
+    
+   tries = 0;
+    while(sd_raw_rec_byte() != 0xfe){
+		if (tries >= 0x7FFF){
+			unselect_card();
+			return 0;
+		}
+		tries++;
+	}
+	
     for(uint8_t i = 0; i < 18; ++i)
     {
         uint8_t b = sd_raw_rec_byte();
@@ -988,6 +1102,7 @@ uint8_t sd_raw_get_info(struct sd_raw_info* info)
     }
 
     unselect_card();
+    
 
     return 1;
 }

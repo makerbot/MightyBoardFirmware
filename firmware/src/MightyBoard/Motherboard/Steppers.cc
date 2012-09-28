@@ -25,6 +25,8 @@
 #include "EepromMap.hh"
 #include "stdio.h"
 
+#define STEPPER_COMP_REGISTER OCR5A
+
 namespace steppers {
 
 
@@ -32,23 +34,28 @@ namespace steppers {
 DigiPots digi_pots[STEPPER_COUNT] = {
 #if STEPPER_COUNT > 0
         DigiPots( X_POT_PIN,
-				  eeprom_offsets::DIGI_POT_SETTINGS),
+				  eeprom_offsets::DIGI_POT_SETTINGS,
+				  XVREF_Pin),
 #endif
 #if STEPPER_COUNT > 1
         DigiPots(Y_POT_PIN,
-				  eeprom_offsets::DIGI_POT_SETTINGS),
+				  eeprom_offsets::DIGI_POT_SETTINGS,
+				  YVREF_Pin),
 #endif
 #if STEPPER_COUNT > 2
         DigiPots(Z_POT_PIN,
-				eeprom_offsets::DIGI_POT_SETTINGS),
+				eeprom_offsets::DIGI_POT_SETTINGS,
+				 ZVREF_Pin),
 #endif
 #if STEPPER_COUNT > 3
         DigiPots(A_POT_PIN,
-				eeprom_offsets::DIGI_POT_SETTINGS),
+				eeprom_offsets::DIGI_POT_SETTINGS,
+				 AVREF_Pin),
 #endif
 #if STEPPER_COUNT > 4
         DigiPots(B_POT_PIN,
-				eeprom_offsets::DIGI_POT_SETTINGS),
+				eeprom_offsets::DIGI_POT_SETTINGS,
+				  BVREF_Pin),
 #endif
 };
 
@@ -56,6 +63,7 @@ volatile bool is_running;
 volatile int32_t intervals;
 volatile int32_t intervals_remaining;
 
+uint8_t z_homed;
 bool invert_endstops[STEPPER_COUNT];             ///< True if endstops input polarity is inverted for this axis.
 bool invert_axis[STEPPER_COUNT];                 ///< True if motions for this axis should be inverted
 
@@ -210,13 +218,14 @@ void ResetCounters() {
 void reset(){
 
 	InitPins();
+  z_homed = 0;
 }
 
 //public:
 void init() {
 	is_running = false;
 	is_homing = false;
-	
+
 	InitPins();
 	
 	ResetCounters();
@@ -239,6 +248,7 @@ void init() {
 	acceleration_tick_counter = 0;
 	current_feedrate_index = 0;
 	acceleration_on = true;
+  z_homed = 0;
 }
 
 void abort() {
@@ -252,7 +262,7 @@ void abort() {
 	feedrate_dirty = 1;
 	acceleration_tick_counter = 0;
 	current_feedrate_index = 0;
-	OCR3A = INTERVAL_IN_MICROSECONDS * 16;
+	STEPPER_COMP_REGISTER = INTERVAL_IN_MICROSECONDS * 16;
 }
 
 /// Define current position as given point
@@ -478,10 +488,11 @@ bool getNextMove() {
 #endif
 	is_running = true;
 	
+  /// this is a cludge that we are going to remove in the next release
 	if(delta[Z_AXIS] > ZSTEPS_PER_MM*10){
-		OCR3A = HOMING_INTERVAL_IN_MICROSECONDS * 16;
+		STEPPER_COMP_REGISTER = HOMING_INTERVAL_IN_MICROSECONDS * 16;
 	} else {
-		OCR3A = INTERVAL_IN_MICROSECONDS * 16;
+		STEPPER_COMP_REGISTER = INTERVAL_IN_MICROSECONDS * 16;
 	}
 	
 	return true;
@@ -496,7 +507,7 @@ void startHoming(const bool maximums, const uint8_t axes_enabled, const uint32_t
 	// ToDo: Return to using the interval if the us_per_step > INTERVAL_IN_MICROSECONDS
 	const int32_t negative_half_interval = -1;
 	
-	OCR3A = HOMING_INTERVAL_IN_MICROSECONDS * 16;
+	STEPPER_COMP_REGISTER = HOMING_INTERVAL_IN_MICROSECONDS * 16;
 	
 	for (int i = 0; i < STEPPER_COUNT; i++) {
 		counter[i] = negative_half_interval;
@@ -553,6 +564,24 @@ void enableAxis(uint8_t index, bool enable) {
 			_WRITE(B_ENABLE, !enable);
 			break;
 	}
+}
+
+bool isEnabled(uint8_t index){
+
+	// The A3982 stepper driver chip has an inverted enable.
+	switch(index){
+		case X_AXIS: 
+			return !(_READ(X_ENABLE));
+        case Y_AXIS: 
+			return !(_READ(Y_ENABLE));
+		case Z_AXIS: 
+			return !(_READ(Z_ENABLE));
+		case A_AXIS: 
+			return !(_READ(A_ENABLE));
+		case B_AXIS: 
+			return !(_READ(B_ENABLE));
+	}
+
 }
 
 /// set digital potentiometer for stepper axis
@@ -615,6 +644,21 @@ bool IsActive(uint8_t axis){
 
 bool SetAccelerationOn(bool on){
 	acceleration_on = on;
+}
+
+/// returns a bit field indicating the endstop status as follows
+/// (7-0) : | N/A | N/A | z max | z min | y max | y min | x max | x min |
+uint8_t getEndstopStatus(){
+	
+	uint8_t status = 0;
+	status |= (_READ(Z_MAX)) ? 0x20 : 0;
+	status |= (_READ(Z_MIN)) ? 0x10 : 0;
+	status |= (_READ(Y_MAX)) ? 0x08 : 0;
+	status |= (_READ(Y_MIN)) ? 0x04 : 0;
+	status |= (_READ(X_MAX)) ? 0x02 : 0;
+	status |= (_READ(X_MIN)) ? 0x01 : 0; 
+	
+	return status;
 }
 
 
@@ -734,7 +778,7 @@ bool doInterrupt() {
 		}
 
 		if ((feedrate_changerate != 0)){
-			 
+
 			// Change our feedrate. 
 			feedrate += feedrate_changerate;
 			feedrate_dirty = 1;
@@ -746,7 +790,6 @@ bool doInterrupt() {
 				feedrate = feedrate_target;
 			} 
 		}
-	
 		return is_running;
 	} else if (is_homing) {
 		timer_counter -= HOMING_INTERVAL_IN_MICROSECONDS;//interval_microseconds;
@@ -804,6 +847,7 @@ bool doInterrupt() {
 							position[Z_AXIS] += step_change[Z_AXIS];
 							_WRITE(Z_STEP, false);
 						} else {
+              z_homed++;
 							is_homing |= false;
 						}
 					}
@@ -822,6 +866,10 @@ bool doInterrupt() {
 		return is_homing;
 	}
 	return false;
+}
+
+uint8_t isZHomed(){
+  return z_homed;
 }
 
 }

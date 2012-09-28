@@ -15,6 +15,8 @@
 #include "Configuration.hh"
 #include "Pin.hh"
 
+#define SD_TIMEOUT 1000  //1ms
+
 #ifdef __cplusplus
 extern "C"
 {
@@ -126,6 +128,10 @@ extern "C"
 #else
     typedef uint32_t offset_t;
 #endif
+
+/// we define a stable mode that will read each block twice and check that they are the same
+/// this is to avoid intermittent read errors (which are expected very rarely, but not never)
+#define STABILITY_MODE
 
 /* configuration checks */
 #if SD_RAW_WRITE_SUPPORT

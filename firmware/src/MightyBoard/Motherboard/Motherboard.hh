@@ -32,13 +32,9 @@
 #include "HeatingElement.hh"
 #include "Heater.hh"
 #include "ExtruderBoard.hh"
+#ifdef MODEL_REPLICATOR
 #include "Cutoff.hh"
-
-enum status_states{
-	STATUS_NONE = 0,
-	STATUS_HEAT_INACTIVE_SHUTDOWN = 0x40
-};
-
+#endif
 
 /// Build platform heating element on v34 Extruder controller
 /// \ingroup ECv34
@@ -52,14 +48,31 @@ public:
 /// \ingroup MBv40
 class Motherboard {
 private:
-        // TODO: Declare this in main, drop the singleton.
-        /// Static instance of the motherboard
-        static Motherboard motherboard;
+  // TODO: Declare this in main, drop the singleton.
+  /// Static instance of the motherboard
+  static Motherboard motherboard;
 
 public:
-        /// Get the motherboard instance.
-        static Motherboard& getBoard() { return motherboard; }
-        ExtruderBoard& getExtruderBoard(uint8_t id) { if(id == 1){ return Extruder_Two;} else  { return Extruder_One;} }
+
+	enum status_states{
+		STATUS_NONE = 0,
+		STATUS_HEAT_INACTIVE_SHUTDOWN = 0x40,
+		STATUS_ONBOARD_PROCESS = 0x08,
+		STATUS_ONBOARD_SCRIPT = 0x04,
+		STATUS_MANUAL_MODE = 0x02,
+		STATUS_PREHEATING = 0x01,
+	};
+
+  /// Get the motherboard instance.
+  static Motherboard& getBoard() { return motherboard; }
+  ExtruderBoard& getExtruderBoard(uint8_t id) { if(id == 1){ return Extruder_Two;} else  { return Extruder_One;} }
+  Heater& getPlatformHeater() { return platform_heater; }
+  InterfaceBoard& getInterfaceBoard() { return interfaceBoard; }	
+  //MessageScreen* getMessageScreen() { return &messageScreen; }
+#ifdef MODEL_REPLICATOR2
+  ThermocoupleReader& getThermocoupleReader() { return therm_sensor; }
+#endif	
+  void initClocks();
 
 private:
 
@@ -69,38 +82,54 @@ private:
 	/// Private constructor; use the singleton
 	Motherboard();
 
-        // TODO: Move this to an interface board slice.
+  // TODO: Move this to an interface board slice.
 	Timeout interface_update_timeout;
 	Timeout user_input_timeout;
+#ifdef MODEL_REPLICATOR2
+	Timeout therm_sensor_timeout;
+	ThermocoupleReader therm_sensor;
+#else
+  Cutoff cutoff; //we're not using the safety cutoff, but we need to disable the circuit
+#endif
 
-        /// True if we have an interface board attached
+  /// True if we have an interface board attached
 	bool hasInterfaceBoard;
 	
 	ExtruderBoard Extruder_One;
 	ExtruderBoard Extruder_Two;
+	Timeout extruder_manage_timeout;
+	Timeout platform_timeout;
 	
 	ButtonArray buttonArray;
 	LiquidCrystalSerial lcd;
 	InterfaceBoard interfaceBoard;
 	
-	MainMenu mainMenu;              ///< Main system menu
 	SplashScreen splashScreen;      ///< Displayed at startup
-	MonitorMode monitorMode;        ///< Displayed during build
 	WelcomeScreen welcomeScreen;	///< Displayed on Startup for the first time
-	MessageScreen messageScreen;    ///< Displayed by user-specified messages
     
 	Thermistor platform_thermistor;
 	BuildPlatformHeatingElement platform_element;
 	Heater platform_heater;
 	bool using_platform;
-	
-	Cutoff cutoff;
+
 	bool heatShutdown;  // set if safety cutoff is triggered
 	bool buttonWait;
 	bool reset_request;
 	HeaterFailMode heatFailMode;
 	
 	uint8_t board_status;
+	
+	bool heating_lights_active;
+	int16_t currentTemp;
+  int16_t setTemp; 
+  bool toggleBlink;
+  bool progress_active;
+	uint8_t progress_line;
+	uint8_t progress_start_char;
+	uint8_t progress_end_char;
+	uint8_t progress_last_index;
+    
+  void HeatingAlerts();
 
 
 public:
@@ -112,7 +141,7 @@ public:
 	void runMotherboardSlice();
 
 	/// Count the number of steppers available on this board.
-        const int getStepperCount() const { return STEPPER_COUNT; }
+  const int getStepperCount() const { return STEPPER_COUNT; }
 	
 	/// Get the number of microseconds that have passed since
 	/// the board was initialized.  This value will wrap after
@@ -132,12 +161,7 @@ public:
 	
 	bool isUsingPlatform() { return using_platform; }
 	void setUsingPlatform(bool is_using);
-	void setValve(bool on);
-	Heater& getPlatformHeater() { return platform_heater; }
-
-	InterfaceBoard& getInterfaceBoard() { return interfaceBoard; }	
-
-	MessageScreen* getMessageScreen() { return &messageScreen; }
+	void setExtra(bool on);
 	
 	void resetUserInputTimeout();
 	void startButtonWait();
@@ -145,10 +169,21 @@ public:
 	/// push an error screen, and wait until button 
 	void errorResponse(char msg[], bool reset = false);
 	
-	uint8_t GetErrorStatus();
+		/// return board_status byte
+	uint8_t GetBoardStatus(){ return board_status;}
+	
+	/// set board_status flag
+	void setBoardStatus(status_states state, bool on);
+	
 	
 	/// update microsecond counter
 	void UpdateMicros();
+	
+	uint8_t HeatProgressBar(uint8_t line, uint8_t start_char, uint8_t end_char, uint8_t lastHeatIndex);
+	void StartProgressBar(uint8_t line, uint8_t start_char, uint8_t end_char);
+	void StopProgressBar();
+	
+	bool isHeating();
 };
 
 

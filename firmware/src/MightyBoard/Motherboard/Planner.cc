@@ -642,7 +642,10 @@ namespace planner {
 	void addMoveToBufferRelative(const Point& move, const int32_t &ms, const int8_t relative)
 	{
 		
-		Point target = move + *tool_offsets;
+		Point target;
+
+		target = move + *tool_offsets;
+
 		int32_t max_delta = 0;
 		for (int i = 0; i < STEPPER_COUNT; i++) {
 			int32_t delta = 0;
@@ -658,6 +661,7 @@ namespace planner {
 				max_delta = delta;
 			}
 		}
+
 		/// Clip Z axis so that plate cannot attempt to move out of build area
 		/// other axis clipping will be added in a future revision
 		if(target[Z_AXIS] > axes[Z_AXIS].max_length){
@@ -671,7 +675,8 @@ namespace planner {
 	// Buffer the move. IOW, add a new block, and recalculate the acceleration accordingly
 	void addMoveToBuffer(const Point& target, const int32_t &us_per_step)
 	{
-		Point offset_target = target + *tool_offsets;
+		Point offset_target;
+		offset_target = target + *tool_offsets;
 		
 		/// Clip Z axis so that plate cannot attempt to move out of build area
 		/// other axis clipping will be added in a future revision
@@ -682,6 +687,7 @@ namespace planner {
 			
 		planNextMove(offset_target, us_per_step, offset_target - position);
 		position = target;
+
 	}
 
 
@@ -742,7 +748,7 @@ namespace planner {
 		if (local_step_event_count == 0)
 			return false;
 
-		if(!accelerationON){
+		if(!accelerationON){// || (steps[Z_AXIS] > ZSTEPS_PER_MM*10)){
 			block->target = target;
 			block->nominal_rate = 1000000/us_per_step;
 			block->accelerate_until = 0;
@@ -880,15 +886,15 @@ namespace planner {
 		ATOMIC_BLOCK(ATOMIC_RESTORESTATE){
 			for(int i = 0; i  < 3; i++){
 				int32_t tolerance_err = (int32_t)(eeprom::getEeprom32(eeprom_offsets::TOOLHEAD_OFFSET_SETTINGS + i*4, 0)) / 10;
-				tolerance_offset_T0[i] = (tolerance_err/2);
+				tolerance_offset_T1[i] = tolerance_err;
 			}
 			// For now, force Z offset to be zero as bad things can happen if it has a value AND there is no use case for it having a value on the replicator
 			// extruder axes are 0 because offset concept does not apply
 			for (int i = 2; i < STEPPER_COUNT; i++)
-				tolerance_offset_T0[i] = 0;
+				tolerance_offset_T1[i] = 0;
 
 			for(int i = 0; i < STEPPER_COUNT; i++)
-				tolerance_offset_T1[i] = -1 * tolerance_offset_T0[i];
+				tolerance_offset_T0[i] = 0;
 		}
 	}
 
@@ -933,6 +939,13 @@ namespace planner {
 	void definePosition(const Point& new_position)
 	{
 		position = new_position;
+		
+		/// Clip Z axis so that plate cannot attempt to move out of build area
+		/// other axis clipping will be added in a future revision
+		if(position[Z_AXIS] > axes[Z_AXIS].max_length){
+			position[Z_AXIS] = axes[Z_AXIS].max_length;
+		}
+		
 		steppers::definePosition(new_position);
 		
 		// reset speed
