@@ -80,7 +80,6 @@
 #define HOST_CMD_BOARD_STATUS	     23
 #define HOST_CMD_GET_BUILD_STATS   24
 #define HOST_CMD_ADVANCED_VERSION  27
-#define HOST_CMD_STREAM_VERSION    28
 
 // These are our bufferable commands from the host
 
@@ -115,6 +114,7 @@
 #define HOST_CMD_BUILD_END_NOTIFICATION 154
 #define HOST_CMD_QUEUE_POINT_NEW_EXT 155
 #define HOST_CMD_SET_ACCELERATION_TOGGLE 156
+#define HOST_CMD_STREAM_VERSION    157
 #define HOST_CMD_DEBUG_ECHO        0x70
 
 // These are our query commands from the host
