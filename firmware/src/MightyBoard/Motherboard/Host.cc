@@ -178,7 +178,7 @@ void runHostSlice() {
 			Motherboard::getBoard().indicateError(6);
     // don't process if we are still cancelling the build
     } else if (currentState == HOST_STATE_CANCEL_BUILD){
-      out.append8(RC_CANCEL_BUILD);
+      out.append8(RC_BOT_BUILDING);
 		} else
 #if defined(HONOR_DEBUG_PACKETS) && (HONOR_DEBUG_PACKETS == 1)
 		if (processDebugPacket(in, out)) {

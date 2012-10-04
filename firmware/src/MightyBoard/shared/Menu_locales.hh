@@ -264,6 +264,8 @@ static PROGMEM unsigned char RESTARTING_MSG[] = "Restarting the Build";
 
 static PROGMEM unsigned char ERROR_STREAM_INCOMPATIBLE_REP1[] = "Warning:Build speedsfaster than 50mm/s  require s4g format  for best results.   "; 
 static PROGMEM unsigned char ERROR_STREAM_VERSION[] = "This is not the s4g version I work best with. For help see: makerbot.com/help   ";
+static PROGMEM unsigned char ERROR_BOT_TYPE_REP1[] = "I am a Replicator.  This build is for   another bot. See:   makerbot.com/help";
+static PROGMEM unsigned char ERROR_BOT_TYPE_REP2[] = "I am a Replicator 2.This build is for   another bot. See:   makerbot.com/help";
 static PROGMEM unsigned char ERROR_SRAM[] = "MY SRAM USAGE IS    OVER THE 8K LIMIT!  ";
 static PROGMEM unsigned char ERROR_SD_CARD_REMOVED[] = "SD Card Removed";
 static PROGMEM unsigned char ERROR_PLATFORM_HEATING_TIMEOUT[] = "I timed out while   attempting to heat  my platform.";

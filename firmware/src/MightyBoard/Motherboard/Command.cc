@@ -96,9 +96,8 @@ int16_t pop16() {
 	union {
 		// AVR is little-endian
 		int16_t a;
-		struct {
-			uint8_t data[2];
-		} b;
+		struct { 
+			uint8_t data[2];} b;
 	} shared;
 	shared.b.data[0] = command_buffer.pop();
 	shared.b.data[1] = command_buffer.pop();
@@ -673,7 +672,11 @@ void runCommandSlice() {
         (command != HOST_CMD_SET_BUILD_PERCENT ) &&
         (command != HOST_CMD_CHANGE_TOOL ) &&
         (command != HOST_CMD_SET_POSITION_EXT) &&
-        (command != HOST_CMD_SET_ACCELERATION_TOGGLE)) {
+        (command != HOST_CMD_SET_ACCELERATION_TOGGLE) &&
+        (command != HOST_CMD_RECALL_HOME_POSITION) &&
+        (command != HOST_CMD_FIND_AXES_MINIMUM) &&
+        (command != HOST_CMD_FIND_AXES_MAXIMUM) &&
+        (command != HOST_CMD_TOOL_COMMAND)){
            if ( ! st_empty() )     return;
     }
 
@@ -708,18 +711,36 @@ void runCommandSlice() {
 				} 
       } else if (command == HOST_CMD_STREAM_VERSION){
           if(command_buffer.getLength() >= 11){
+      
+          pop8();// remove the command code
           // stream number
-          uint8_t version = pop16();
+          uint8_t version_high = pop8();
+					uint8_t version_low = pop8();
 
-          if(version != stream_version){
+          if((version_high *100 + version_low) != stream_version){
             Motherboard::getBoard().errorResponse(ERROR_STREAM_VERSION);
           }
           // extra version
           pop8();
           // checksum (currently not implemented)
           pop32();
+          uint16_t bot_type = pop16();
           // extra bytes
+#ifdef MODEL_REPLICATOR
+					if(bot_type != 0xD314){
+						Motherboard::getBoard().errorResponse(ERROR_BOT_TYPE_REP1);
+					} 
+#elif MODEL_REPLICATOR2
+					if(bot_type != 0xB015){
+						Motherboard::getBoard().errorResponse(ERROR_BOT_TYPE_REP2);
+					} 
+#endif
+          // eleven extra bytes
+          pop16();
           pop32();
+          pop32();
+          pop8();
+          
         }
 			} else if (command == HOST_CMD_SET_POSITION_EXT) {
 				// check for completion
