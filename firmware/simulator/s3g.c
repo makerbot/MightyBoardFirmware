@@ -33,7 +33,6 @@ typedef struct {
      const char *cmd_name;
 } s3g_command_info_t;
 
-#define HOST_CMD_QUEUE_POINT_NEW_EXT 155
 static const s3g_command_info_t command_table_raw[] = {
      /*   0 */  {HOST_CMD_VERSION, 0, "version"},
      /*   1 */  {HOST_CMD_INIT, 0, "initialize"},

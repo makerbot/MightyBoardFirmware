@@ -279,11 +279,11 @@ void Motherboard::doStepperInterrupt() {
   if(command::isPaused()) return;
 
   DISABLE_TIMER_INTERRUPTS;
-  cli();
+  sei();
   
   steppers::doStepperInterrupt();
   
-  sei();
+  cli();
   ENABLE_TIMER_INTERRUPTS;
  
 #ifdef ANTI_CLUNK_PROTECTION

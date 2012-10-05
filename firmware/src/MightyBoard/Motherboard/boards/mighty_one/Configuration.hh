@@ -41,12 +41,6 @@
 
 #include "AvrPort.hh"
 
-// Interval for the stepper update in microseconds.  This interval is the minimum
-// possible time between steps; in practical terms, your time between steps should
-// be at least eight times this large.  Reducing the interval can cause resource
-// starvation; leave this at 64uS or greater unless you know what you're doing.
-#define INTERVAL_IN_MICROSECONDS 128
-
 // --- Power Supply Unit configuration ---
 // Define as 1 if a PSU is present; 0 if not.
 #define HAS_PSU         0
@@ -257,11 +251,6 @@
 //in the Version menu.  This enables debugging to see if the SRAM was ever exhausted
 //which would lead to stack corruption.
 //#define STACK_PAINT
- 
-//If defined, stores the square root lookup table in PROGMEM instead of SRAM.
-//Saves 772 bytes of SRAM, costs 48 bytes of program space
-//It's a bit slower reading from PROGMEM than SRAM
-#define SQRT_TABLE_IN_PROGMEM
  
 //Oversample the dda to provide less jitter.
 //To switch off oversampling, comment out

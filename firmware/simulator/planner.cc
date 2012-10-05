@@ -70,7 +70,6 @@ static void usage(FILE *f, const char *prog)
 	     prog ? prog : "s3gdump");
 }
 
-#define HOST_CMD_QUEUE_POINT_NEW_EXT 155
 
 int main(int argc, const char *argv[])
 {
@@ -258,8 +257,6 @@ int main(int argc, const char *argv[])
 	  }
 	  else if (cmd.cmd_id == HOST_CMD_QUEUE_POINT_NEW_EXT)
 	  {
-        printf("invalid command: HOST_CMD_QUEUE_POINT_NEW_EXT\n");
-        /*
 	       Point target = Point(cmd.t.queue_point_new_ext.x, cmd.t.queue_point_new_ext.y,
 				    cmd.t.queue_point_new_ext.z, cmd.t.queue_point_new_ext.a,
 				    cmd.t.queue_point_new_ext.b);
@@ -270,7 +267,6 @@ int main(int argc, const char *argv[])
 	       if (show_moves && myctx.buf[0]) pending_notice("%s\n", myctx.buf);
 	       handle_pending_notices();
 	       if (movesplanned() >= (BLOCK_BUFFER_SIZE >> 1)) plan_dump_current_block(1);
-	      */
     }
 	  else if (cmd.cmd_id == HOST_CMD_QUEUE_POINT_EXT)
 	  {

@@ -700,15 +700,10 @@ void runCommandSlice() {
 					bool enable = (axes & 0x80) != 0;
 					for (int i = 0; i < STEPPER_COUNT; i++) {
 						if ((axes & _BV(i)) != 0) {
-              //If we're issuing a disable for an extruder axis, and the planner pipeline is not
-              //empty, then we drop it, otherwise we action it.
-              //This is needed because RepG sends errant Enable/Disable commands constantly during the print.
-              if (! (( i >= A_AXIS ) && ( ! enable ) &&  ( ! st_empty() ))){
 							  steppers::enableAxis(i, enable);
-              }
-						}
+            }
 					}
-				} 
+				}
       } else if (command == HOST_CMD_STREAM_VERSION){
           if(command_buffer.getLength() >= 11){
       
@@ -740,7 +735,7 @@ void runCommandSlice() {
           pop32();
           pop32();
           pop8();
-          
+          line_number++;    
         }
 			} else if (command == HOST_CMD_SET_POSITION_EXT) {
 				// check for completion
@@ -1008,6 +1003,7 @@ void runCommandSlice() {
         if (command_buffer.getLength() >= 2){
           pop8(); // remove the command code
           uint8_t status = pop8();
+          line_number++;
           steppers::setSegmentAccelState(status == 1);
         } 
 			} else {

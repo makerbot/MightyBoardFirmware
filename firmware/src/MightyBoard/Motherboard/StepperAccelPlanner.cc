@@ -559,8 +559,10 @@ void calculate_trapezoid_for_block(block_t *block, FPTYPE entry_factor, FPTYPE e
 					// On the ToM with 1/8th stepping we use >> 4
 					// On the Replicator with 1/16th stepping we use >> 5
 					// Acceleration limit to prevent overflow is 0xFFFFF / axis-steps-per-mm
-					advance_pressure_relax = FPTOI(FPDIV(FPMULT3(extruder_advance_k2, 
-								  ITOFP((int32_t)block->acceleration_st >> (1+MICROSTEPPING)), KCONSTANT_100), ITOFP((int32_t)decelerate_steps)));
+           advance_pressure_relax =
+            FPTOI(FPMULT3(extruder_advance_k2, KCONSTANT_100,
+                    FPDIV(ITOFP((int32_t)block->acceleration_st >> (1+MICROSTEPPING)),
+                    ITOFP((int32_t)decelerate_steps))));
 				}
 	
 				#ifndef SIMULATOR
