@@ -123,7 +123,6 @@ void reset(bool hard_reset) {
 		eeprom::init();
 		steppers::abort();
 		steppers::reset();
-    //TemperatureTable::initThermistorTables();
 		board.reset(hard_reset);
 
 	// brown out occurs on normal power shutdown, so this is not a good message		

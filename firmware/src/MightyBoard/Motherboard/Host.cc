@@ -176,9 +176,6 @@ void runHostSlice() {
 			out.append8(RC_CANCEL_BUILD);
 			cancelBuild = false;
 			Motherboard::getBoard().indicateError(6);
-    // don't process if we are still cancelling the build
-    } else if (currentState == HOST_STATE_CANCEL_BUILD){
-      out.append8(RC_BOT_BUILDING);
 		} else
 #if defined(HONOR_DEBUG_PACKETS) && (HONOR_DEBUG_PACKETS == 1)
 		if (processDebugPacket(in, out)) {
@@ -229,6 +226,10 @@ bool processCommandPacket(const InPacket& from_host, OutPacket& to_host) {
 				to_host.append8(RC_OK);
 				return true;
 			}
+      if(currentState == HOST_STATE_CANCEL_BUILD){
+        to_host.append8(RC_CANCEL_BUILD);
+        return true;
+      }
 			if(sdcard::isPlaying() || utility::isPlaying()){
 				// ignore action commands if SD card build is playing
 				// or if ONBOARD script is playing
