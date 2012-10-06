@@ -131,10 +131,7 @@ enum CommandState{
 	WAIT_ON_BUTTON
 } mode = READY;
 
-Timeout delay_timeout;
-Timeout homing_timeout;
-Timeout tool_wait_timeout;
-Timeout button_wait_timeout;
+Timeout command_buffer_timeout;
 
 /// Bitmap of button pushes to wait for
 uint8_t button_mask;
@@ -526,7 +523,7 @@ void runCommandSlice() {
 	if (mode == HOMING) {
 		if (!steppers::isRunning()) {
 			mode = READY;
-		} else if (homing_timeout.hasElapsed()) {
+		} else if (command_buffer_timeout.hasElapsed()) {
 			steppers::abort();
 			mode = READY;
 		}
@@ -538,12 +535,12 @@ void runCommandSlice() {
 	}
 	if (mode == DELAY) {
 		// check timers
-		if (delay_timeout.hasElapsed()) {
+		if (command_buffer_timeout.hasElapsed()) {
 			mode = READY;
 		}
 	}
 	if (mode == WAIT_ON_TOOL) {
-		if(tool_wait_timeout.hasElapsed()){
+		if(command_buffer_timeout.hasElapsed()){
 			Motherboard::getBoard().errorResponse(ERROR_HEATING_TIMEOUT); 
 			mode = READY;		
 		}else if( Motherboard::getBoard().getExtruderBoard(currentToolIndex).getExtruderHeater().has_reached_target_temperature() && 
@@ -556,7 +553,7 @@ void runCommandSlice() {
     }
 	}
 	if (mode == WAIT_ON_PLATFORM) {
-		if(tool_wait_timeout.hasElapsed()){
+		if(command_buffer_timeout.hasElapsed()){
 			Motherboard::getBoard().errorResponse(ERROR_PLATFORM_HEATING_TIMEOUT); 
 			mode = READY;		
 		} else if (!Motherboard::getBoard().getPlatformHeater().isHeating()){
@@ -567,7 +564,7 @@ void runCommandSlice() {
 		}
 	}
 	if (mode == WAIT_ON_BUTTON) {
-		if (button_wait_timeout.hasElapsed()) {
+		if (command_buffer_timeout.hasElapsed()) {
 			if (button_timeout_behavior & (1 << BUTTON_TIMEOUT_ABORT)) {
 				// Abort build!
 				// We'll interpret this as a catastrophic situation
@@ -622,7 +619,7 @@ void runCommandSlice() {
 				currentToolIndex = 0;
 				mode = WAIT_ON_PLATFORM;
 				/// set timeout to 30 minutes
-				tool_wait_timeout.start(USER_INPUT_TIMEOUT);
+				command_buffer_timeout.start(USER_INPUT_TIMEOUT);
 				sleep_mode = SLEEP_HEATING_P;
 				Motherboard::getBoard().StartProgressBar(3,0,20);
 			// when platform is hot, wait for tool A
@@ -630,14 +627,14 @@ void runCommandSlice() {
 				currentToolIndex = 0;
 				mode = WAIT_ON_TOOL;
 				/// set timeout to 30 minutes
-				tool_wait_timeout.start(USER_INPUT_TIMEOUT);
+				command_buffer_timeout.start(USER_INPUT_TIMEOUT);
 				sleep_mode = SLEEP_HEATING_A;
 			// when tool A is hot, wait for tool B
 			}else if (sleep_mode == SLEEP_HEATING_A){
 				currentToolIndex = 1;
 				mode = WAIT_ON_TOOL;
 				/// set timeout to 30 minutes
-				tool_wait_timeout.start(USER_INPUT_TIMEOUT);
+				command_buffer_timeout.start(USER_INPUT_TIMEOUT);
 				sleep_mode = SLEEP_RETURN;
 			// when heaters are hot, return to print
 			}else if (sleep_mode == SLEEP_RETURN){
@@ -758,7 +755,7 @@ void runCommandSlice() {
 					uint32_t microseconds = pop32() * 1000L;
 					line_number++;
 					
-					delay_timeout.start(microseconds);
+					command_buffer_timeout.start(microseconds);
 				}
 			} else if (command == HOST_CMD_PAUSE_FOR_BUTTON) {
 				if (command_buffer.getLength() >= 5) {
@@ -769,9 +766,9 @@ void runCommandSlice() {
 					line_number++;
 					
 					if (timeout_seconds != 0) {
-						button_wait_timeout.start(timeout_seconds * 1000L * 1000L);
+						command_buffer_timeout.start(timeout_seconds * 1000L * 1000L);
 					} else {
-						button_wait_timeout = Timeout();
+						command_buffer_timeout = Timeout();
 					}
                     // set button wait via interface board
 					Motherboard::getBoard().interfaceBlink(25,15);
@@ -812,9 +809,9 @@ void runCommandSlice() {
 						
 						if (options & (1 << 2)) { // button wait bit --> start button wait
 							if (timeout_seconds != 0) {
-								button_wait_timeout.start(timeout_seconds * 1000L * 1000L);
+								command_buffer_timeout.start(timeout_seconds * 1000L * 1000L);
 							} else {
-								button_wait_timeout = Timeout();
+								command_buffer_timeout = Timeout();
 							}
 							button_mask = (1 << ButtonArray::CENTER);  // center button
 							button_timeout_behavior &= (1 << BUTTON_CLEAR_SCREEN);
@@ -837,7 +834,7 @@ void runCommandSlice() {
 					line_number++;
 					
 					mode = HOMING;
-					homing_timeout.start(timeout_s * 1000L * 1000L);
+					command_buffer_timeout.start(timeout_s * 1000L * 1000L);
 					steppers::startHoming(command==HOST_CMD_FIND_AXES_MAXIMUM,
 							flags,
 							feedrate);
@@ -853,7 +850,7 @@ void runCommandSlice() {
 					
 					// if we re-add handling of toolTimeout, we need to make sure
 					// that values that overflow our counter will not be passed)
-					tool_wait_timeout.start(toolTimeout*1000000L);
+					command_buffer_timeout.start(toolTimeout*1000000L);
 				}
 			} else if (command == HOST_CMD_WAIT_FOR_PLATFORM) {
         // FIXME: Almost equivalent to WAIT_FOR_TOOL
@@ -867,7 +864,7 @@ void runCommandSlice() {
 					
 					// if we re-add handling of toolTimeout, we need to make sure
 					// that values that overflow our counter will not be passed)
-					tool_wait_timeout.start(toolTimeout*1000000L);
+					command_buffer_timeout.start(toolTimeout*1000000L);
 				}
 			} else if (command == HOST_CMD_STORE_HOME_POSITION) {
 

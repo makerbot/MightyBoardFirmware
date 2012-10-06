@@ -80,16 +80,16 @@ public:
         /// refreshing too fast during a build is certain to interfere with
         /// the serial and stepper processes, which will decrease build quality.
         /// \return refresh interval, in microseconds.
-	virtual micros_t getUpdateRate();
+	virtual micros_t getUpdateRate() = 0;
 
         /// Update the screen display,
         /// \param[in] lcd LCD to write to
         /// \param[in] forceRedraw if true, redraw the entire screen. If false,
         ///                        only updated sections need to be redrawn.
-	virtual void update(LiquidCrystalSerial& lcd, bool forceRedraw);
+	virtual void update(LiquidCrystalSerial& lcd, bool forceRedraw) = 0;
 
         /// Reset the screen to it's default state
-	virtual void reset();
+	virtual void reset() = 0;
 
         /// Get a notification that a button was pressed down.
         /// This function is called for every button that is pressed. Screen
@@ -99,11 +99,7 @@ public:
         /// Note that the current implementation only supports one button
         /// press at a time, and will discard any other events.
         /// \param button Button that was pressed
-  virtual void notifyButtonPressed(ButtonArray::ButtonName button);
-        
-        /// check if the screen is a cancel screen in case other button
-        /// wait behavior is activated 
-  virtual bool isCancelScreen(void){ return false;}
+  virtual void notifyButtonPressed(ButtonArray::ButtonName button) = 0;
         
 };
 
@@ -221,16 +217,12 @@ public:
     
 	void resetState();
     
-    bool isCancelScreen(){return true;}
-    
-    
 protected:
 	void drawItem(uint8_t index, LiquidCrystalSerial& lcd, uint8_t line_number);
     
 	void handleSelect(uint8_t index);
-    
-    
-    bool paused;
+      
+  bool paused;
 };
 
 class BuildStats: public Screen {

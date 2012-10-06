@@ -43,7 +43,8 @@ public:
 			MESSAGE_SCREEN = 2,
       BUILD_SCREEN = 3,
       SPLASH_SCREEN = 4,
-      WELCOME_SCREEN = 5
+      WELCOME_SCREEN = 5,
+      CANCEL_SCREEN = 6
 		};
 
 private:
@@ -54,7 +55,8 @@ private:
         MessageScreen messageScreen;		///< Screen to display messages
         SplashScreen splashScreen;       ///< version infor screen
         WelcomeScreen welcomeScreen;     ///< welcome screen
-        
+        CancelBuildMenu cancelScreen;       /// < cancel screen
+ 
 //        SnakeMode snake;				        ///< Snake game
         
         BuildFinished buildFinished;	  ///< screen displayed at end of build

@@ -131,7 +131,8 @@ extern "C"
 
 /// we define a stable mode that will read each block twice and check that they are the same
 /// this is to avoid intermittent read errors (which are expected very rarely, but not never)
-#define STABILITY_MODE
+/// WARNING: STABILITY_MODE requires a 512 byte array, which gets us into dangerous territory in SRAM usage
+//#define STABILITY_MODE
 
 /* configuration checks */
 #if SD_RAW_WRITE_SUPPORT

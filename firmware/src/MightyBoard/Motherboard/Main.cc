@@ -16,7 +16,6 @@
  */
 
 #include "Main.hh"
-#include "DebugPacketProcessor.hh"
 #include "Host.hh"
 #include "Command.hh"
 #include <avr/interrupt.h>
@@ -124,6 +123,7 @@ void reset(bool hard_reset) {
 		eeprom::init();
 		steppers::abort();
 		steppers::reset();
+    //TemperatureTable::initThermistorTables();
 		board.reset(hard_reset);
 
 	// brown out occurs on normal power shutdown, so this is not a good message		

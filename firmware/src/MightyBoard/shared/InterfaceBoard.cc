@@ -96,6 +96,8 @@ void InterfaceBoard::queueScreen(ScreenType screen){
       break;
     case WELCOME_SCREEN:
       pushScreen(&welcomeScreen);
+    case CANCEL_SCREEN:
+      pushScreen(&cancelScreen);
       break;
 		default:
 			break;
@@ -177,8 +179,8 @@ void InterfaceBoard::doUpdate() {
             //    return;
             // respond to button press if waiting
             // pass on to screen if a cancel screen is active
-            if((((1<<button) & waitingMask) != 0) && 
-               (!screenStack[screenIndex]->isCancelScreen())){
+            if((((1<<button) & waitingMask) != 0) &&
+                (screenStack[screenIndex] != &cancelScreen)){
                  waitingMask = 0;
            // } else if (button == ButtonArray::EGG){
                 //pushScreen(&snake);
@@ -191,9 +193,7 @@ void InterfaceBoard::doUpdate() {
         }
        
         // update build data
-        if(screenStack[screenIndex] == &buildScreen){
-          buildScreen.setBuildPercentage(buildPercentage);	
-        }
+        buildScreen.setBuildPercentage(buildPercentage);	
         screenStack[screenIndex]->update(lcd, false);
     }
 }

@@ -123,13 +123,13 @@ inline Entry getEntry(int8_t entryIdx, int8_t table_id) {
 		// get from progmem
 		switch(table_id){
 			case table_thermistor:
-				memcpy_P(&rv, (const void*)&(default_therm_table[entryIdx]), sizeof(Entry));
+				memcpy_PF(&rv, (uint_farptr_t)&(default_therm_table[entryIdx]), sizeof(Entry));
 				break;
 			case table_thermocouple:
-				memcpy_P(&rv, (const void*)&(thermocouple_lookup[entryIdx]), sizeof(Entry));
+				memcpy_PF(&rv, (uint_farptr_t)&(thermocouple_lookup[entryIdx]), sizeof(Entry));
 				break;
 			case table_cold_junction:
-				memcpy_P(&rv, (const void*)&(cold_temp_lookup[entryIdx]), sizeof(Entry));
+				memcpy_PF(&rv, (uint_farptr_t)&(cold_temp_lookup[entryIdx]), sizeof(Entry));
 				break;
 		}
 	}
@@ -174,25 +174,6 @@ int16_t TempReadtoCelsius(int16_t reading, int8_t table_idx, int16_t max_allowed
   if (celsius > max_allowed_value)
 	  celsius = max_allowed_value;
   return celsius;
-}
-
-/// Check that table has been stored in eeprom
-/// @param[in] off eeprom offset location to check
-/// @return true if eeprom offset location is not cleared (0xFF)
-bool isTableSet(uint16_t off) {
-	const void* offset = (const void*)off;
-	uint8_t first_byte;
-	ATOMIC_BLOCK(ATOMIC_RESTORESTATE){
-	eeprom_read_block(&first_byte,offset,1);
-	}
-	return first_byte != 0xff;
-}
-
-/// initialize thermocouple tables
-/// this functionality is legacy
-void initThermistorTables() {
-	//has_table[0] = isTableSet(eeprom_offsets::THERM_TABLE + therm_eeprom_offsets::THERM_DATA);
-	//has_table[1] = isTableSet(eeprom::THERM_TABLE_1 + eeprom::THERM_DATA_OFFSET);
 }
 
 }

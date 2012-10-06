@@ -25,7 +25,7 @@
 #include "Piezo.hh"
 #include "Main.hh"
 
-CancelBuildMenu cancel_build_menu;
+//CancelBuildMenu cancel_build_menu;
 BuildStats build_stats_screen;
 FilamentScreen filamentScreen;
 SDMenu sdmenu;
@@ -512,7 +512,7 @@ void NozzleCalibrationScreen::notifyButtonPressed(ButtonArray::ButtonName button
       }
       break;
    case ButtonArray::LEFT:
-      interface::pushScreen(&cancel_build_menu);
+      interface::queueScreen(InterfaceBoard::CANCEL_SCREEN);
       break;
       
    case ButtonArray::RIGHT:
@@ -992,7 +992,7 @@ void FilamentScreen::notifyButtonPressed(ButtonArray::ButtonName button) {
             break;
         case ButtonArray::LEFT:
           Motherboard::getBoard().StopProgressBar();
-          interface::pushScreen(&cancel_build_menu);      
+          interface::queueScreen(InterfaceBoard::CANCEL_SCREEN);      
             break;      
         case ButtonArray::RIGHT:
         case ButtonArray::DOWN:
@@ -1306,7 +1306,7 @@ void MessageScreen::notifyButtonPressed(ButtonArray::ButtonName button) {
         if((state == host::HOST_STATE_BUILDING_ONBOARD) ||
                 (state == host::HOST_STATE_BUILDING) ||
             (state == host::HOST_STATE_BUILDING_FROM_SD)){
-                interface::pushScreen(&cancel_build_menu);
+                interface::queueScreen(InterfaceBoard::CANCEL_SCREEN);
         }
     case ButtonArray::RIGHT:
     case ButtonArray::DOWN:
@@ -1836,7 +1836,7 @@ void MonitorMode::notifyButtonPressed(ButtonArray::ButtonName button) {
                 interface::pushScreen(&active_build_menu);
                 break;
             case host::HOST_STATE_BUILDING_ONBOARD:
-                interface::pushScreen(&cancel_build_menu);
+                interface::queueScreen(InterfaceBoard::CANCEL_SCREEN);
                 break;
             default:
                 Motherboard::getBoard().StopProgressBar();
@@ -2356,7 +2356,7 @@ void ActiveBuildMenu::handleSelect(uint8_t index){
       break;
     case 1:
       // Cancel build
-      interface::pushScreen(&cancel_build_menu);
+      interface::queueScreen(InterfaceBoard::CANCEL_SCREEN);
       break;
     case 3:
       is_sleeping = !is_sleeping;

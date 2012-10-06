@@ -36,10 +36,6 @@ enum therm_tables {
 /// @return Temperature reading, in degrees Celcius
 int16_t TempReadtoCelsius(int16_t reading, int8_t table_idx, int16_t max_allowed_value);
 
-/// Initialize the thermocouple lookup tables. This needs to be called at boot, before calling
-/// #TempReadtoCelsius()
-void initThermistorTables();
-
 }
 
 typedef struct {
