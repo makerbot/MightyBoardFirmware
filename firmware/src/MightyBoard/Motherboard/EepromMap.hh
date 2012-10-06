@@ -308,8 +308,8 @@ const static uint16_t FREE_EEPROM_STARTS        = 0x0210;
 #define DEFAULT_JKN_ADVANCE_K                  850             // 0.00850 Multiplied by 100000
 #define DEFAULT_JKN_ADVANCE_K2                 900             // 0.00900 Multiplied by 100000
  
-#define DEFAULT_EXTRUDER_DEPRIME_STEPS_A 34
-#define DEFAULT_EXTRUDER_DEPRIME_STEPS_B 34
+#define DEFAULT_EXTRUDER_DEPRIME_STEPS_A 0
+#define DEFAULT_EXTRUDER_DEPRIME_STEPS_B 0
  
 #define DEFAULT_SLOWDOWN_FLAG 0x01
  

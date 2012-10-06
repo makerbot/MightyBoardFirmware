@@ -121,6 +121,7 @@ void reset(bool hard_reset) {
 		utility::reset();
 		command::reset();
 		eeprom::init();
+    steppers::init();
 		steppers::abort();
 		steppers::reset();
 		board.reset(hard_reset);
@@ -142,7 +143,6 @@ int main() {
   INTERFACE_POWER.setValue(false);
 #endif
 	reset(true);
-	steppers::init();
 	sei();
 	    
 	while (1) {
