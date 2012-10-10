@@ -103,7 +103,8 @@ void runHostSlice() {
   // soft reset the machine unless waiting to notify repG that a cancel has occured
 	if (do_host_reset && (!cancelBuild || cancel_timeout.hasElapsed()) && (!z_stage_timeout.isActive() || z_stage_timeout.hasElapsed() || st_empty())){
   	if((buildState == BUILD_RUNNING) || (buildState == BUILD_PAUSED) || (buildState == BUILD_SLEEP)){
-			stopBuild();
+			buildState = BUILD_CANCELED;
+      stopBuild();
 		}
 		do_host_reset = false;
     cancelBuild = false;
@@ -725,7 +726,6 @@ void stopBuild() {
 		// record print statistics
 		last_print_line = command::getLineNumber();
 		stopPrintTime();
-		buildState = BUILD_CANCELED;
 		command::ActivePause(true, command::SLEEP_TYPE_NONE);
 		
 		uint8_t hours;
@@ -747,8 +747,8 @@ void stopBuild() {
     }
 	}
 
-    // if building from repG, try to send a cancel msg to repG before reseting 
-	if(currentState == HOST_STATE_BUILDING)
+  // if building from repG, try to send a cancel msg to repG before reseting 
+	if((currentState == HOST_STATE_BUILDING) && (buildState != BUILD_CANCELED))
 	{	
 		currentState = HOST_STATE_CANCEL_BUILD;
 		cancelBuild = true;

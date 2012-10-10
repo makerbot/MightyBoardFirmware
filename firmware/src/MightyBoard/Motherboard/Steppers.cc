@@ -136,7 +136,7 @@ void loadToleranceOffsets() {
 	// get toolhead offsets
 	ATOMIC_BLOCK(ATOMIC_RESTORESTATE){
 		for(int i = 0; i  < 3; i++){
-			int32_t tolerance_err = (int32_t)((float)eeprom::getEeprom32(eeprom_offsets::TOOLHEAD_OFFSET_SETTINGS + i*4, 0) * stepperAxisStepsPerMM(i)) / 1000;
+			int32_t tolerance_err = (int32_t)(((float)((int32_t)eeprom::getEeprom32(eeprom_offsets::TOOLHEAD_OFFSET_SETTINGS + i*4, 0) * stepperAxisStepsPerMM(i))) / 1000);
 			tolerance_offset_T1[i] = tolerance_err;
 		}
 		// For now, force Z offset to be zero as bad things can happen if it has a value AND there is no use case for it having a value on the replicator

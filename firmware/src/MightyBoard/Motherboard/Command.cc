@@ -383,10 +383,11 @@ bool processExtruderCommandPacket() {
 			else {
 				board.getExtruderBoard(id).getExtruderHeater().Pause(false);
 			}
-			Motherboard::getBoard().setBoardStatus(Motherboard::STATUS_PREHEATING, false);
+			board.setBoardStatus(Motherboard::STATUS_PREHEATING, false);
 			// warn the user if an invalid tool command is received
 			if(id == 1 && eeprom::isSingleTool()){
-				Motherboard::getBoard().errorResponse(ERROR_INVALID_TOOL);
+				board.errorResponse(ERROR_INVALID_TOOL);
+			  board.getExtruderBoard(id).getExtruderHeater().set_target_temperature(0);
 			}
 			return true;
 		// can be removed in process via host query works OK
@@ -411,9 +412,13 @@ bool processExtruderCommandPacket() {
 			check_temp_state = pause_state;
 			board.getExtruderBoard(0).getExtruderHeater().Pause(pause_state);
 			board.getExtruderBoard(1).getExtruderHeater().Pause(pause_state);
-			Motherboard::getBoard().setBoardStatus(Motherboard::STATUS_PREHEATING, false);
+			board.setBoardStatus(Motherboard::STATUS_PREHEATING, false);
 			if(!eeprom::hasHBP()){
-				Motherboard::getBoard().errorResponse(ERROR_INVALID_PLATFORM);
+        if(host::getHostState() != host::HOST_STATE_BUILDING_ONBOARD){
+				  board.errorResponse(ERROR_INVALID_PLATFORM);
+        }
+        board.getPlatformHeater().set_target_temperature(0);      
+        board.setUsingPlatform(false);
 			}
 			return true;
         // not being used with 5D

@@ -618,7 +618,7 @@ void SelectAlignmentMenu::handleSelect(uint8_t index) {
     case 1:
       // update toolhead offset (tool tolerance setting) 
       // this is summed with previous offset setting
-      offset = (int32_t)(eeprom::getEeprom32(eeprom_offsets::TOOLHEAD_OFFSET_SETTINGS, 0)) + (int32_t)((xCounter-7)*0.1f * 1000);
+      offset = (int32_t)(eeprom::getEeprom32(eeprom_offsets::TOOLHEAD_OFFSET_SETTINGS, 0)) - (int32_t)((xCounter-7)*0.1f * 1000);
       ATOMIC_BLOCK(ATOMIC_RESTORESTATE){
         eeprom_write_block((uint8_t*)&offset, (uint8_t*)eeprom_offsets::TOOLHEAD_OFFSET_SETTINGS, 4);
       }
@@ -626,7 +626,7 @@ void SelectAlignmentMenu::handleSelect(uint8_t index) {
       break;
     case 2:
       // update toolhead offset (tool tolerance setting)
-      offset = (int32_t)(eeprom::getEeprom32(eeprom_offsets::TOOLHEAD_OFFSET_SETTINGS + 4, 0)) + (int32_t)((yCounter-7)*0.1f * 1000);
+      offset = (int32_t)(eeprom::getEeprom32(eeprom_offsets::TOOLHEAD_OFFSET_SETTINGS + 4, 0)) - (int32_t)((yCounter-7)*0.1f * 1000);
       ATOMIC_BLOCK(ATOMIC_RESTORESTATE){
         eeprom_write_block((uint8_t*)&offset, (uint8_t*)eeprom_offsets::TOOLHEAD_OFFSET_SETTINGS + 4, 4);
       }
@@ -2698,11 +2698,11 @@ UtilitiesMenu::UtilitiesMenu() {
 }
 void UtilitiesMenu::resetState(){
   singleTool = eeprom::isSingleTool();
-  //if(singleTool){
-  //  itemCount = 8;
- // }else{
- //   itemCount = 9;
- // }
+  if(singleTool){
+    itemCount = 9;
+  }else{
+    itemCount = 10;
+  }
 }
 
 void UtilitiesMenu::drawItem(uint8_t index, LiquidCrystalSerial& lcd, uint8_t line_number) {
@@ -2742,15 +2742,15 @@ void UtilitiesMenu::drawItem(uint8_t index, LiquidCrystalSerial& lcd, uint8_t li
       lcd.writeFromPgmspace(LED_BLINK_MSG);
     break;
   case 8:
-   // if(!singleTool){
-   //   lcd.writeFromPgmspace(NOZZLES_MSG);
-   // }else{
+      if(!singleTool){
+        lcd.writeFromPgmspace(NOZZLES_MSG);
+      }else{
+        lcd.writeFromPgmspace(EXIT_MSG);
+      }break;
+  case 9:
+    if(!singleTool){
       lcd.writeFromPgmspace(EXIT_MSG);
-    break;
-  //case 9:
-  //  if(!singleTool){
-  //    lcd.writeFromPgmspace(EXIT_MSG);
-  //  }break;
+    }break;
   }
 }
 
@@ -2796,19 +2796,17 @@ void UtilitiesMenu::handleSelect(uint8_t index) {
       lineUpdate = true;     
        break;
     case 8:
-      //if(!singleTool){
-        // restore defaults
-       // interface::pushScreen(&alignment);
-     // }else{
+      if(!singleTool){
+        interface::pushScreen(&alignment);
+      }else{
         interface::popScreen();
-     // }
+      }
       break;
-   // case 9:
-   //   if(!singleTool){
-        // restore defaults
-   //     interface::popScreen();
-   //   }
-   //   break;
+   case 9:
+     if(!singleTool){
+        interface::popScreen();
+     }
+     break;
     }
 }
 
