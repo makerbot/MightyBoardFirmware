@@ -104,6 +104,7 @@ void runHostSlice() {
 		if((buildState == BUILD_RUNNING) || (buildState == BUILD_PAUSED) || (buildState == BUILD_SLEEP)){
 			stopBuild();
 		}
+    command::ActivePause(false, command::SLEEP_TYPE_NONE);
 		do_host_reset = false;
 
 		// reset local board
