@@ -149,7 +149,8 @@ elif (os.environ.has_key('AVR32_HOME')):
 	avr_tools_path = os.environ['AVR32_HOME'] + '/bin'
 	avr_tools_conf =  os.environ['AVR32_HOME'] + "/etc/avrdude.conf"
 else:
-	lines = os.popen('/usr/bin/which avr-gcc-4.6.3').readlines()
+	lines = os.popen('/usr/bin/which avr-gcc').readlines()
+	#lines = os.popen('/usr/bin/which avr-gcc-4.6.3').readlines()
 	if(len(lines) > 0):
 		avr_tools_path = dirname(lines[0])
 		avr_tools_conf = "/etc/avrdude.conf"
@@ -160,6 +161,18 @@ else:
 
 if (fived == 'true'):
 	flags.append('-DFOURTH_STEPPER=1')
+
+## Verify we have a fresh enough avr-gcc version
+verline = os.popen(avr_tools_path+"/avr-g++ --version").readline()
+verChunk = verline.split()[2] #expecting line like 'avr-gcc (GCC) 4.5.3'
+if verChunk.split('.')[1] is not None:
+	if int(verChunk.split('.')[1]) <= 5:
+		print "-------------------------------------------------"
+		print "WARNING: avr-gcc versions less than 4.6.3 may have"
+		print "math issues. Do not trust this build completely!"
+		print "you are using: " + verline.strip()
+		print "-------------------------------------------------"
+		ignore = raw_input("press enter to continue")
 
 env=Environment(tools=['g++', 'gcc'],
     CC=avr_tools_path+"/avr-g++",
