@@ -267,7 +267,7 @@ ATOMIC_BLOCK(ATOMIC_RESTORESTATE){
   setDefaultAxisHomePositions();
   
   /// store the default axis lengths for the machine
-  eeprom_write_block((uint8_t*)&(replicator_axis_lengths::axis_lengths[0]), (uint8_t*)(eeprom_offsets::AXIS_LENGTHS), 20);
+  eeprom_write_block((uint8_t*)&(replicator_axis_lengths::axis_lengths[0]), (uint8_t*)(eeprom_offsets::AXIS_LENGTHS_MM), 20);
  
   /// store the default axis steps per mm for the machine
   eeprom_write_block((uint8_t*)&(replicator_axis_steps_per_mm::axis_steps_per_mm[0]), (uint8_t*)(eeprom_offsets::AXIS_STEPS_PER_MM), 20);
@@ -427,7 +427,7 @@ void eepromResetv61(){
   uint8_t heater_calibrate[] = {0,0,0};
   ATOMIC_BLOCK(ATOMIC_RESTORESTATE){
     /// store the default axis lengths for the machine
-    eeprom_write_block((uint8_t*)&(replicator_axis_lengths::axis_lengths[0]), (uint8_t*)(eeprom_offsets::AXIS_LENGTHS), 20);
+    eeprom_write_block((uint8_t*)&(replicator_axis_lengths::axis_lengths[0]), (uint8_t*)(eeprom_offsets::AXIS_LENGTHS_MM), 20);
    
     /// store the default axis steps per mm for the machine
     eeprom_write_block((uint8_t*)&(replicator_axis_steps_per_mm::axis_steps_per_mm[0]), (uint8_t*)(eeprom_offsets::AXIS_STEPS_PER_MM), 20);

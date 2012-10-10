@@ -175,9 +175,7 @@ const static uint16_t DIGI_POT_SETTINGS			= 0x0006;
 //$type:B
 const static uint16_t AXIS_HOME_DIRECTION 		= 0x000C;
 /// Default locations for the axis in step counts: 5 x 32 bit = 20 bytes
-//$BEGIN_ENTRY
-//$type:iiiii 
-const static uint16_t AXIS_HOME_POSITIONS_MM	= 0x000E;
+const static uint16_t AXIS_HOME_POSITIONS_STEPS	= 0x000E;
 /// Name of this machine: 16 bytes (16 bytes extra buffer) 
 //$BEGIN_ENTRY
 //$type:s  $length:16
@@ -248,8 +246,6 @@ const static uint16_t ACCELERATION_SETTINGS     = 0x016E;
 //$type:BB
 const static uint16_t BOT_STATUS_BYTES = 0x018A;
 /// axis lengths XYZ AB 5*32bit = 20 bytes
-//$BEGIN_ENTRY
-//$type:IIIII 
 const static uint16_t AXIS_LENGTHS				= 0x018C;
 /// total lifetime print hours, 3bytes
 //$BEGIN_ENTRY
@@ -281,10 +277,18 @@ const static uint16_t BOTSTEP_TYPE      = 0x0208;
 const static uint16_t HEATER_CALIBRATION = 0x020A;
 // flag that reconfigured eeprom fields have been updated
 const static uint16_t VERSION6_1_UPDATE_FLAG = 0x20E;
+/// axis lengths XYZ AB 5*32bit = 20 bytes
+//$BEGIN_ENTRY
+//$type:IIIII 
+const static uint16_t AXIS_LENGTHS_MM			= 0x0210;
+/// Default locations for the axis in step counts: 5 x 32 bit = 20 bytes
+//$BEGIN_ENTRY
+//$type:iiiii 
+const static uint16_t AXIS_HOME_POSITIONS_MM	= 0x0224;
 
 
 /// start of free space
-const static uint16_t FREE_EEPROM_STARTS        = 0x0210;
+const static uint16_t FREE_EEPROM_STARTS        = 0x0238;
 
 } 
 
@@ -313,7 +317,7 @@ const static uint16_t FREE_EEPROM_STARTS        = 0x0210;
  
 #define DEFAULT_SLOWDOWN_FLAG 0x01
  
-#define ACCELERATION_INIT_BIT 2
+#define ACCELERATION_INIT_BIT 7
  
 namespace acceleration_eeprom_offsets{
  
@@ -488,7 +492,7 @@ enum {
 }
 
 namespace eeprom {
-  const static uint8_t VERSION6_1_FLAG = 41;
+  const static uint8_t VERSION6_1_FLAG = 53;
   void fullResetEEPROM();
   void eepromResetv61(); 
 	void factoryResetEEPROM();
