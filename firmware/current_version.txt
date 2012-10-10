@@ -1,3 +1,5 @@
+6.1.1
+ * release update to 6.0 with vibration fix
 6.0.0
  * release version same as 20 but fixed name truncation issue
 6.0.20
