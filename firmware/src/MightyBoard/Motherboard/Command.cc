@@ -327,11 +327,14 @@ static void handleMovementCommand(const uint8_t &command) {
 			int32_t dda = pop32();
 
 			line_number++;
+
+      Point position = planner::getPosition();
+      uint32_t z_diff = abs(z - position[2]);			
 		
       // a temporary cludge to prevent long z moves when there
       // are moves left in the planner
       // this should only happen once per print
-      if((z > ZSTEPS_PER_MM*10) && !planner::isBufferEmpty()){
+      if((z_diff > ZSTEPS_PER_MM*10) && !planner::isBufferEmpty()){
         stall_for_planner_empty = true;
         stall_target = Point(x,y,z,a,b);
         stall_us = 0;
@@ -358,11 +361,14 @@ static void handleMovementCommand(const uint8_t &command) {
 			uint8_t relative = pop8();
 
 			line_number++;
-			
+
+      Point position = planner::getPosition();
+      uint32_t z_diff = abs(z - position[2]);			
+
       // a temporary cludge to prevent long z moves when there
       // are moves left in the planner
       // this should only happen once per print
-      if((z > ZSTEPS_PER_MM*10) && !planner::isBufferEmpty()){
+      if((z_diff > ZSTEPS_PER_MM*10) && !planner::isBufferEmpty()){
         stall_for_planner_empty = true;
         stall_target = Point(x,y,z,a,b);
         stall_us = us;
