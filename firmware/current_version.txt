@@ -1,3 +1,5 @@
+6.2.27.1.0
+ * edit eeprom map to fix downgrade breakage
 6.2.26.1.0
  * minor version number bumped to 2 to accomodate a bug fix on 6.0
 6.1.26.1.0
