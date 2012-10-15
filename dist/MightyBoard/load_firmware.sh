@@ -21,12 +21,14 @@ else
   PORT=$2
 fi
 
-if [$1 -eq "mighty_two*.hex"]
+echo "$FILENAME" | grep -q 'mighty_two'
+if [ $? -eq 0 ]
 then
-	BOOT8U2=Makerbot-usbserial-rep2.hex
+  BOOT8U2=Makerbot-usbserial-rep2.hex
 else
-	BOOT8U2=Makerbot-usbserial.hex
+  BOOT8U2=Makerbot-usbserial.hex
 fi
+
 echo $BOOT8U2
 
 while true; do
