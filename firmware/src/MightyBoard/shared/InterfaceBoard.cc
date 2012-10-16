@@ -35,6 +35,7 @@ void InterfaceBoard::init() {
   screen_locked = false;
   onboard_build = false;
   onboard_start_idx = 1;
+  user_wait_override = false;
 }
 
 void InterfaceBoard::resetLCD() {
@@ -96,8 +97,6 @@ void InterfaceBoard::queueScreen(ScreenType screen){
       break;
     case WELCOME_SCREEN:
       pushScreen(&welcomeScreen);
-    case CANCEL_SCREEN:
-      pushScreen(&cancelScreen);
       break;
 		default:
 			break;
@@ -174,16 +173,13 @@ void InterfaceBoard::doUpdate() {
 
     if(!screen_locked){
         if (buttons.getButton(button)) {
-            //if (button == ButtonArray::RESET){
-            //    host::stopBuild();
-            //    return;
             // respond to button press if waiting
-            // pass on to screen if a cancel screen is active
+            // pass on to screen if user_wait_override is set (Set by cancel screens)
             if((((1<<button) & waitingMask) != 0) &&
-                (screenStack[screenIndex] != &cancelScreen)){
+                !user_wait_override){
                  waitingMask = 0;
            // } else if (button == ButtonArray::EGG){
-                //pushScreen(&snake);
+             //   pushScreen(&snake);
             } else {
                 screenStack[screenIndex]->notifyButtonPressed(button);
             }
@@ -198,9 +194,9 @@ void InterfaceBoard::doUpdate() {
     }
 }
 
-//void InterfaceBoard::update(){
-//	screenStack[screenIndex]->update(lcd, true);
-//}
+void InterfaceBoard::setOverride(bool on){
+  user_wait_override = on;
+}
 
 // push screen to stack and call update
 void InterfaceBoard::pushScreen(Screen* newScreen) {
@@ -230,6 +226,7 @@ void InterfaceBoard::popScreen() {
 		screenIndex--;
 	}
  
+  user_wait_override = false;
   buttons.setButtonDelay(ButtonArray::SlowDelay);
 	screenStack[screenIndex]->update(lcd, true);
 }

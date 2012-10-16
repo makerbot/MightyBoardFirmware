@@ -55,7 +55,6 @@ private:
         MessageScreen messageScreen;		///< Screen to display messages
         SplashScreen splashScreen;       ///< version infor screen
         WelcomeScreen welcomeScreen;     ///< welcome screen
-        CancelBuildMenu cancelScreen;       /// < cancel screen
  
 //        SnakeMode snake;				        ///< Snake game
         
@@ -73,7 +72,7 @@ private:
 
         uint8_t waitingMask;            ///< Mask of buttons the interface is
                                         ///< waiting on.
-    
+        bool user_wait_override;        /// flag to override button waiting mask and pass button on to screen
         bool screen_locked;             /// set to true in case of catastrophic failure (ie heater cuttoff triggered)
         
         uint8_t onboard_start_idx;		/// screen stack index when onboard script is started
@@ -154,6 +153,9 @@ public:
         
         /// pop Error Message Screen
         void DoneWithMessage();
+
+        /// flag to ignore wait on button mask;
+        void setOverride(bool on);
 
         // return a pointer to the message screen
         MessageScreen* GetMessageScreen();
