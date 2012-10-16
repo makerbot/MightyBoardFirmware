@@ -227,11 +227,7 @@ bool processCommandPacket(const InPacket& from_host, OutPacket& to_host) {
 				to_host.append8(RC_OK);
 				return true;
 			}
-      if(currentState == HOST_STATE_CANCEL_BUILD){
-        to_host.append8(RC_CANCEL_BUILD);
-        return true;
-      }
-			if(sdcard::isPlaying() || utility::isPlaying()){
+			if(sdcard::isPlaying() || utility::isPlaying() || (currentState == HOST_STATE_CANCEL_BUILD)){
 				// ignore action commands if SD card build is playing
 				// or if ONBOARD script is playing
 				to_host.append8(RC_BOT_BUILDING);
@@ -590,6 +586,7 @@ bool processQueryPacket(const InPacket& from_host, OutPacket& to_host) {
 				if (currentState == HOST_STATE_BUILDING
 						|| currentState == HOST_STATE_BUILDING_FROM_SD
 						|| currentState == HOST_STATE_BUILDING_ONBOARD) {
+          buildState = BUILD_CANCELED;
           host::stopBuild();
 					Motherboard::getBoard().indicateError(ERR_RESET_DURING_BUILD);
 				}else{
