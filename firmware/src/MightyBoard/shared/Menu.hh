@@ -315,7 +315,7 @@ public:
 	void setXY(uint8_t xpos, uint8_t ypos) { x = xpos; y = ypos; }
 
 	void addMessage(CircularBuffer& buf);
-	void addMessage(char * msg);
+	void addMessage(const unsigned char * msg);
 	void clearMessage();
 	void setTimeout(uint8_t seconds);//, bool pop);
 	void refreshScreen();

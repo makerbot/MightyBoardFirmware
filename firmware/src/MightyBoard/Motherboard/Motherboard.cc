@@ -287,7 +287,7 @@ void Motherboard::startButtonWait(){
 }
 
 // set an error message on the interface and wait for user button press
-void Motherboard::errorResponse(char msg[], bool reset){
+void Motherboard::errorResponse(const unsigned char msg[], bool reset){
 	interfaceBoard.errorMessage(msg);
 	startButtonWait();
   Piezo::playTune(TUNE_ERROR);
