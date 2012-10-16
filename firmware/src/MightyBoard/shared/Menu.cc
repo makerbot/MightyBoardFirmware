@@ -1262,12 +1262,11 @@ void MessageScreen::addMessage(CircularBuffer& buf) {
 }
 
 
-void MessageScreen::addMessage(char msg[]) {
+void MessageScreen::addMessage(const unsigned char msg[]) {
 
-  char* letter = msg;
-  while (*letter != 0) {
-    message[cursor++] = *letter;
-    letter++;
+  unsigned char letter;
+  while ((letter = pgm_read_byte(msg++))) {
+    message[cursor++] = letter;
   }
     
   // ensure that message is always null-terminated
