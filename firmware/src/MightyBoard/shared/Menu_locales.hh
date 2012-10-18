@@ -262,8 +262,8 @@ static PROGMEM unsigned char SLEEP_WAIT_MSG[] = "Preparing for sleep:I'm complet
 static PROGMEM unsigned char SLEEP_PREP_MSG[] = "Preparing for sleep:I'm cooling my      heaters and going tomy wait position.";
 static PROGMEM unsigned char RESTARTING_MSG[] = "Restarting the Build";
 
-static PROGMEM unsigned char ERROR_STREAM_INCOMPATIBLE_REP1[] = "Warning:Build speedsfaster than 50mm/s  require s4g format  for best results.   "; 
-static PROGMEM unsigned char ERROR_STREAM_VERSION[] = "This is not the s4g version I work best with. For help see: makerbot.com/help   ";
+static PROGMEM unsigned char ERROR_STREAM_INCOMPATIBLE_REP1[] = "Warning:Build speedsfaster than 50mm/s  require x3g format  for best results.   "; 
+static PROGMEM unsigned char ERROR_STREAM_VERSION[] = "This is not the x3g version I work best with. For help see: makerbot.com/help   ";
 static PROGMEM unsigned char ERROR_BOT_TYPE_REP1[] = "I am a Replicator.  This build is for   another bot. See:   makerbot.com/help";
 static PROGMEM unsigned char ERROR_BOT_TYPE_REP2[] = "I am a Replicator 2.This build is for   another bot. See:   makerbot.com/help";
 static PROGMEM unsigned char ERROR_SRAM[] = "MY SRAM USAGE IS    OVER THE 8K LIMIT!  ";

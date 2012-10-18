@@ -1638,7 +1638,7 @@ void MonitorMode::update(LiquidCrystalSerial& lcd, bool forceRedraw) {
                 // assume the last 4 characters are '.s3g' and don't print those
                 while(name_length-- > 4)
                     lcd.write(*name++);
-                if(!((name[0] == '.') && (name[1] == 's') && ((name[2] == '3') || (name[2] == '4')) && (name[3] == 'g'))){
+                if(!((name[0] == '.') && ((name[1] == 's') || (name[1]=='x')) && (name[2] == '3') && (name[3] == 'g'))){
                     while(name_length-- >= 0)
                       lcd.write(*name++);
                 }
@@ -1699,7 +1699,7 @@ void MonitorMode::update(LiquidCrystalSerial& lcd, bool forceRedraw) {
                     // assume the last 4 characters are '.s3g' and don't print those
                     while(name_length-- > 4)
                         lcd.write(*name++);
-                    if(!((name[0] == '.') && (name[1] == 's') && ((name[2] == '3') || (name[2] == '4')) && (name[3] == 'g'))){
+                    if(!((name[0] == '.') && ((name[1] == 's') || (name[1]=='x')) && (name[2] == '3') && (name[3] == 'g'))){
                         while(name_length-- >= 0)
                           lcd.write(*name++);
                     }
@@ -3090,10 +3090,11 @@ void SDMenu::resetState() {
 
 //Returns true if the file is an s3g file
 //Keeping this in C instead of C++ saves 20 bytes
-bool isS34GFile(char *filename, uint8_t len) {
+bool isXS3GFile(char *filename, uint8_t len) {
     if ((len >= 4) && 
-        (filename[len-4]== '.') && (filename[len-3]== 's') &&
-        ((filename[len-2]== '3') || (filename[len-2] == '4'))  && 
+        (filename[len-4]== '.') && 
+        ((filename[len-3]== 's') || (filename[len-3] == 'x')) &&
+        (filename[len-2]== '3')  && 
         (filename[len-1]== 'g')) return true;
     return false;
 }
@@ -3138,7 +3139,7 @@ uint8_t SDMenu::countFiles() {
       break;
     }
 
-    if (isS34GFile(fnbuf,idx) && !(fnbuf[0] == '.')) count++;
+    if (isXS3GFile(fnbuf,idx) && !(fnbuf[0] == '.')) count++;
 
   } while (e == sdcard::SD_SUCCESS);
 
@@ -3185,7 +3186,7 @@ bool SDMenu::getFilename(uint8_t index, char buffer[], uint8_t buffer_size) {
         return false;
       }
       
-    } while ((e == sdcard::SD_SUCCESS) && (!isS34GFile(fnbuf,idx) || (fnbuf[0] == '.')));
+    } while ((e == sdcard::SD_SUCCESS) && (!isXS3GFile(fnbuf,idx) || (fnbuf[0] == '.')));
 
     if (e != sdcard::SD_SUCCESS) {
        return false;
@@ -3266,7 +3267,7 @@ void SDMenu::handleSelect(uint8_t index) {
   e = host::startBuildFromSD();
   
   uint8_t name_length = strlen(buildName);
-  if(buildName[name_length-2] == '3') {Motherboard::getBoard().errorResponse(ERROR_STREAM_INCOMPATIBLE_REP1);}
+  if(buildName[name_length-3] == 's') {Motherboard::getBoard().errorResponse(ERROR_STREAM_INCOMPATIBLE_REP1);}
 
   if (e != sdcard::SD_SUCCESS) {
       interface::popScreen();
