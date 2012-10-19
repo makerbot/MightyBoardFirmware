@@ -150,8 +150,8 @@ void setDefaultColor(){
 		 
 	 // set frequency to slowest and duty cyle to zero (off)
 	 uint8_t LEDColor = eeprom::getEeprom8(eeprom_offsets::LED_STRIP_SETTINGS, 1);
-	 uint32_t CustomColor = eeprom::getEeprom32(eeprom_offsets::LED_STRIP_SETTINGS + blink_eeprom_offsets::CUSTOM_COLOR_OFFSET, 0xFFFFFFFF);
-	
+	 uint32_t CustomColor = eeprom::getEeprom32(eeprom_offsets::LED_STRIP_SETTINGS + blink_eeprom_offsets::CUSTOM_COLOR, 0xFFFFFFFF);
+
 	// blink rate has to be set first in order for color to register,
 	// so set blink before each color
 	 

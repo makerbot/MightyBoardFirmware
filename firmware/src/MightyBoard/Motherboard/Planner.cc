@@ -283,18 +283,18 @@ namespace planner {
 		}
 		
 		// Master acceleration
-		setAcceleration((int32_t)eeprom::getEeprom16(eeprom_offsets::ACCELERATION_SETTINGS + acceleration_eeprom_offsets::ACCELERATION_RATE_OFFSET, DEFAULT_ACCELERATION));
+		setAcceleration((int32_t)eeprom::getEeprom16(eeprom_offsets::ACCELERATION_SETTINGS + acceleration_eeprom_offsets::MAX_ACCELERATION, DEFAULT_ACCELERATION));
 		
-		setAxisAcceleration((int32_t)eeprom::getEeprom16(eeprom_offsets::ACCELERATION_SETTINGS + acceleration_eeprom_offsets::AXIS_RATES_OFFSET+ 0, DEFAULT_X_ACCELERATION), 0);        
-		setAxisAcceleration((int32_t)eeprom::getEeprom16(eeprom_offsets::ACCELERATION_SETTINGS + acceleration_eeprom_offsets::AXIS_RATES_OFFSET+ 2, DEFAULT_Y_ACCELERATION), 1);
-		setAxisAcceleration((int32_t)eeprom::getEeprom16(eeprom_offsets::ACCELERATION_SETTINGS + acceleration_eeprom_offsets::AXIS_RATES_OFFSET+ 4, DEFAULT_Z_ACCELERATION), 2);
-		setAxisAcceleration((int32_t)eeprom::getEeprom16(eeprom_offsets::ACCELERATION_SETTINGS + acceleration_eeprom_offsets::AXIS_RATES_OFFSET+ 6, DEFAULT_A_ACCELERATION), 3);
-		setAxisAcceleration((int32_t)eeprom::getEeprom16(eeprom_offsets::ACCELERATION_SETTINGS + acceleration_eeprom_offsets::AXIS_RATES_OFFSET+ 8, DEFAULT_B_ACCELERATION), 4);
+		setAxisAcceleration((int32_t)eeprom::getEeprom16(eeprom_offsets::ACCELERATION_SETTINGS + acceleration_eeprom_offsets::MAX_ACCELERATION_AXIS+ 0, DEFAULT_X_ACCELERATION), 0);        
+		setAxisAcceleration((int32_t)eeprom::getEeprom16(eeprom_offsets::ACCELERATION_SETTINGS + acceleration_eeprom_offsets::MAX_ACCELERATION_AXIS+ 2, DEFAULT_Y_ACCELERATION), 1);
+		setAxisAcceleration((int32_t)eeprom::getEeprom16(eeprom_offsets::ACCELERATION_SETTINGS + acceleration_eeprom_offsets::MAX_ACCELERATION_AXIS+ 4, DEFAULT_Z_ACCELERATION), 2);
+		setAxisAcceleration((int32_t)eeprom::getEeprom16(eeprom_offsets::ACCELERATION_SETTINGS + acceleration_eeprom_offsets::MAX_ACCELERATION_AXIS+ 6, DEFAULT_A_ACCELERATION), 3);
+		setAxisAcceleration((int32_t)eeprom::getEeprom16(eeprom_offsets::ACCELERATION_SETTINGS + acceleration_eeprom_offsets::MAX_ACCELERATION_AXIS+ 8, DEFAULT_B_ACCELERATION), 4);
 
-		setMaxXYJerk(eeprom::getEepromFixed16(eeprom_offsets::ACCELERATION_SETTINGS + acceleration_eeprom_offsets::AXIS_JERK_OFFSET, DEFAULT_MAX_XY_JERK));
-		setMaxAxisJerk(eeprom::getEepromFixed16(eeprom_offsets::ACCELERATION_SETTINGS + acceleration_eeprom_offsets::AXIS_JERK_OFFSET + 4, DEFAULT_MAX_Z_JERK), 2);
-		setMaxAxisJerk(eeprom::getEepromFixed16(eeprom_offsets::ACCELERATION_SETTINGS + acceleration_eeprom_offsets::AXIS_JERK_OFFSET + 6, DEFAULT_MAX_A_JERK), 3);
-		setMaxAxisJerk(eeprom::getEepromFixed16(eeprom_offsets::ACCELERATION_SETTINGS + acceleration_eeprom_offsets::AXIS_JERK_OFFSET + 8, DEFAULT_MAX_B_JERK), 4);
+		setMaxXYJerk(eeprom::getEepromFixed16(eeprom_offsets::ACCELERATION_SETTINGS + acceleration_eeprom_offsets::MAX_SPEED_CHANGE, DEFAULT_MAX_XY_JERK));
+		setMaxAxisJerk(eeprom::getEepromFixed16(eeprom_offsets::ACCELERATION_SETTINGS + acceleration_eeprom_offsets::MAX_SPEED_CHANGE + 4, DEFAULT_MAX_Z_JERK), 2);
+		setMaxAxisJerk(eeprom::getEepromFixed16(eeprom_offsets::ACCELERATION_SETTINGS + acceleration_eeprom_offsets::MAX_SPEED_CHANGE + 6, DEFAULT_MAX_A_JERK), 3);
+		setMaxAxisJerk(eeprom::getEepromFixed16(eeprom_offsets::ACCELERATION_SETTINGS + acceleration_eeprom_offsets::MAX_SPEED_CHANGE + 8, DEFAULT_MAX_B_JERK), 4);
 
 		minimum_planner_speed = eeprom::getEeprom16(eeprom_offsets::ACCELERATION_SETTINGS + acceleration_eeprom_offsets::MINIMUM_SPEED, DEFAULT_MIN_SPEED);
 		

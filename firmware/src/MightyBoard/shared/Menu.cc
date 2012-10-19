@@ -145,7 +145,7 @@ HeaterPreheat::HeaterPreheat(){
 }
 
 void HeaterPreheat::resetState(){
-  uint8_t heatSet = eeprom::getEeprom8(eeprom_offsets::PREHEAT_SETTINGS + preheat_eeprom_offsets::PREHEAT_ON_OFF_OFFSET, 0);
+  uint8_t heatSet = eeprom::getEeprom8(eeprom_offsets::PREHEAT_SETTINGS + preheat_eeprom_offsets::PREHEAT_ON_OFF, 0);
   _rightActive = (heatSet & (1 << HEAT_MASK_RIGHT)) != 0;
   _platformActive = eeprom::hasHBP() && ((heatSet & (1 << HEAT_MASK_PLATFORM)) != 0);
   _leftActive = (heatSet & (1 << HEAT_MASK_LEFT)) != 0;
@@ -228,7 +228,7 @@ void HeaterPreheat::drawItem(uint8_t index, LiquidCrystalSerial& lcd, uint8_t li
 void HeaterPreheat::storeHeatByte(){
     uint8_t heatByte = (_rightActive*(1<<HEAT_MASK_RIGHT)) + (_leftActive*(1<<HEAT_MASK_LEFT)) + (_platformActive*(1<<HEAT_MASK_PLATFORM));
     ATOMIC_BLOCK(ATOMIC_RESTORESTATE){
-      eeprom_write_byte((uint8_t*)(eeprom_offsets::PREHEAT_SETTINGS + preheat_eeprom_offsets::PREHEAT_ON_OFF_OFFSET), heatByte);
+      eeprom_write_byte((uint8_t*)(eeprom_offsets::PREHEAT_SETTINGS + preheat_eeprom_offsets::PREHEAT_ON_OFF), heatByte);
     }
 }
 
@@ -243,12 +243,12 @@ void HeaterPreheat::handleSelect(uint8_t index) {
             if(preheatActive){
                 Motherboard::getBoard().resetUserInputTimeout();
                 /// _platformActive cannot be true if hbp is not presend (eeprom record)
-                temp = eeprom::getEeprom16(eeprom_offsets::PREHEAT_SETTINGS + preheat_eeprom_offsets::PREHEAT_PLATFORM_OFFSET,0) *_platformActive;
+                temp = eeprom::getEeprom16(eeprom_offsets::PREHEAT_SETTINGS + preheat_eeprom_offsets::PREHEAT_PLATFORM_TEMP,0) *_platformActive;
                 Motherboard::getBoard().getPlatformHeater().set_target_temperature(temp);
-                temp = eeprom::getEeprom16(eeprom_offsets::PREHEAT_SETTINGS + preheat_eeprom_offsets::PREHEAT_RIGHT_OFFSET,0) *_rightActive; 
+                temp = eeprom::getEeprom16(eeprom_offsets::PREHEAT_SETTINGS + preheat_eeprom_offsets::PREHEAT_RIGHT_TEMP,0) *_rightActive; 
                 Motherboard::getBoard().getExtruderBoard(0).getExtruderHeater().set_target_temperature(temp);
                 if(!singleTool){
-                    temp = eeprom::getEeprom16(eeprom_offsets::PREHEAT_SETTINGS + preheat_eeprom_offsets::PREHEAT_LEFT_OFFSET,0) *_leftActive;
+                    temp = eeprom::getEeprom16(eeprom_offsets::PREHEAT_SETTINGS + preheat_eeprom_offsets::PREHEAT_LEFT_TEMP,0) *_leftActive;
                     Motherboard::getBoard().getExtruderBoard(1).getExtruderHeater().set_target_temperature(temp);
                 }
                 if(Motherboard::getBoard().getPlatformHeater().isHeating()){
@@ -942,7 +942,7 @@ void FilamentScreen::setScript(FilamentScript script){
     filamentState = FILAMENT_HEATING;
     dual = false;
     startup = false;
-    helpText = eeprom::getEeprom8(eeprom_offsets::FILAMENT_HELP_SETTINGS, 1);
+    helpText = eeprom::getEeprom8(eeprom_offsets::FILAMENT_HELP_TEXT_ON, 1);
     /// load settings for correct tool and direction
     switch(script){
         case FILAMENT_STARTUP_DUAL:
@@ -2052,9 +2052,9 @@ void PreheatSettingsMenu::resetState(){
     itemCount = 3;
   }
     
-  counterRight = eeprom::getEeprom16(eeprom_offsets::PREHEAT_SETTINGS + preheat_eeprom_offsets::PREHEAT_RIGHT_OFFSET, 230);
-  counterLeft = eeprom::getEeprom16(eeprom_offsets::PREHEAT_SETTINGS + preheat_eeprom_offsets::PREHEAT_LEFT_OFFSET, 230);
-  counterPlatform = eeprom::getEeprom16(eeprom_offsets::PREHEAT_SETTINGS + preheat_eeprom_offsets::PREHEAT_PLATFORM_OFFSET, 110);
+  counterRight = eeprom::getEeprom16(eeprom_offsets::PREHEAT_SETTINGS + preheat_eeprom_offsets::PREHEAT_RIGHT_TEMP, 230);
+  counterLeft = eeprom::getEeprom16(eeprom_offsets::PREHEAT_SETTINGS + preheat_eeprom_offsets::PREHEAT_LEFT_TEMP, 230);
+  counterPlatform = eeprom::getEeprom16(eeprom_offsets::PREHEAT_SETTINGS + preheat_eeprom_offsets::PREHEAT_PLATFORM_TEMP, 110);
     
 }
 
@@ -2162,26 +2162,26 @@ void PreheatSettingsMenu::handleSelect(uint8_t index) {
         case 1:
             // store right tool setting
             ATOMIC_BLOCK(ATOMIC_RESTORESTATE){
-              eeprom_write_word((uint16_t*)(eeprom_offsets::PREHEAT_SETTINGS + preheat_eeprom_offsets::PREHEAT_RIGHT_OFFSET), counterRight);
+              eeprom_write_word((uint16_t*)(eeprom_offsets::PREHEAT_SETTINGS + preheat_eeprom_offsets::PREHEAT_RIGHT_TEMP), counterRight);
             }
             break;
         case 2:
             if(singleTool){
                 // store right tool setting
                 ATOMIC_BLOCK(ATOMIC_RESTORESTATE){
-                  eeprom_write_word((uint16_t*)(eeprom_offsets::PREHEAT_SETTINGS + preheat_eeprom_offsets::PREHEAT_RIGHT_OFFSET), counterRight);
+                  eeprom_write_word((uint16_t*)(eeprom_offsets::PREHEAT_SETTINGS + preheat_eeprom_offsets::PREHEAT_RIGHT_TEMP), counterRight);
                 }
             }else{
                 // store left tool setting
                 ATOMIC_BLOCK(ATOMIC_RESTORESTATE){
-                  eeprom_write_word((uint16_t*)(eeprom_offsets::PREHEAT_SETTINGS + preheat_eeprom_offsets::PREHEAT_LEFT_OFFSET), counterLeft);
+                  eeprom_write_word((uint16_t*)(eeprom_offsets::PREHEAT_SETTINGS + preheat_eeprom_offsets::PREHEAT_LEFT_TEMP), counterLeft);
                 }
             }
             break;
         case 3:
             // store platform setting
             ATOMIC_BLOCK(ATOMIC_RESTORESTATE){
-              eeprom_write_word((uint16_t*)(eeprom_offsets::PREHEAT_SETTINGS + preheat_eeprom_offsets::PREHEAT_PLATFORM_OFFSET), counterPlatform);
+              eeprom_write_word((uint16_t*)(eeprom_offsets::PREHEAT_SETTINGS + preheat_eeprom_offsets::PREHEAT_PLATFORM_TEMP), counterPlatform);
             }
             break;
   }
@@ -2233,7 +2233,7 @@ void ResetSettingsMenu::handleSelect(uint8_t index) {
 
 
 ActiveBuildMenu::ActiveBuildMenu(){
-#ifdef ACTIVE_COOLING_FAN
+#ifdef ACCELERATION_ACTIVE_COOLING_FAN
   itemCount = 8;
 #else
   itemCount = 7;
@@ -2318,9 +2318,9 @@ void ActiveBuildMenu::drawItem(uint8_t index, LiquidCrystalSerial& lcd, uint8_t 
                   break;
             }
             break;
-#ifdef ACTIVE_COOLING_FAN
+#ifdef ACCELERATION_ACTIVE_COOLING_FAN
           case 6:
-            lcd.writeFromPgmspace(ACTIVE_FAN_MSG);
+            lcd.writeFromPgmspace(ACCELERATION_ACTIVE_FAN_MSG);
             lcd.setCursor(14, line_number);
             if(FanOn){
               lcd.writeFromPgmspace(ON_MSG);
@@ -2405,7 +2405,7 @@ void ActiveBuildMenu::handleSelect(uint8_t index){
       }
       lineUpdate = true;
       break;
-#ifdef ACTIVE_COOLING_FAN
+#ifdef ACCELERATION_ACTIVE_COOLING_FAN
     case 6:
       FanOn = !FanOn;
       Motherboard::getBoard().setExtra(FanOn);
@@ -2561,7 +2561,7 @@ void BotStats::update(LiquidCrystalSerial& lcd, bool forceRedraw){
     lcd.writeFromPgmspace(LAST_TIME_MSG);
     
     /// TOTAL PRINT LIFETIME
-    uint16_t total_hours = eeprom::getEeprom16(eeprom_offsets::TOTAL_BUILD_TIME + build_time_offsets::HOURS_OFFSET,0);
+    uint16_t total_hours = eeprom::getEeprom16(eeprom_offsets::TOTAL_BUILD_TIME + build_time_offsets::HOURS,0);
     uint8_t digits = 1;
     for (uint32_t i = 10; i < 10000; i*=10){
       if(total_hours / i == 0){ break; }
@@ -2917,9 +2917,9 @@ void SettingsMenu::resetState(){
   singleExtruder = eeprom::getEeprom8(eeprom_offsets::TOOL_COUNT, 1);
   soundOn = eeprom::getEeprom8(eeprom_offsets::BUZZ_SETTINGS, 1);
   LEDColor = eeprom::getEeprom8(eeprom_offsets::LED_STRIP_SETTINGS, 0);
-  heatingLEDOn = eeprom::getEeprom8(eeprom_offsets::LED_STRIP_SETTINGS + blink_eeprom_offsets::LED_HEAT_OFFSET, 1);
-  helpOn = eeprom::getEeprom8(eeprom_offsets::FILAMENT_HELP_SETTINGS, 1);
-  accelerationOn = eeprom::getEeprom8(eeprom_offsets::ACCELERATION_SETTINGS + acceleration_eeprom_offsets::ACTIVE_OFFSET, 0x01);
+  heatingLEDOn = eeprom::getEeprom8(eeprom_offsets::LED_STRIP_SETTINGS + blink_eeprom_offsets::LED_HEAT_ON, 1);
+  helpOn = eeprom::getEeprom8(eeprom_offsets::FILAMENT_HELP_TEXT_ON, 1);
+  accelerationOn = eeprom::getEeprom8(eeprom_offsets::ACCELERATION_SETTINGS + acceleration_eeprom_offsets::ACCELERATION_ACTIVE, 0x01);
   HBPPresent = eeprom::getEeprom8(eeprom_offsets::HBP_PRESENT, 1);
 }
 
@@ -3074,21 +3074,21 @@ void SettingsMenu::handleSelect(uint8_t index) {
       heatingLEDOn = !heatingLEDOn;
       // update LEDHeatingflag
       ATOMIC_BLOCK(ATOMIC_RESTORESTATE){
-        eeprom_write_byte((uint8_t*)eeprom_offsets::LED_STRIP_SETTINGS + blink_eeprom_offsets::LED_HEAT_OFFSET, heatingLEDOn);
+        eeprom_write_byte((uint8_t*)eeprom_offsets::LED_STRIP_SETTINGS + blink_eeprom_offsets::LED_HEAT_ON, heatingLEDOn);
       }
       lineUpdate = 1;
       break;
     case 3:
       helpOn = !helpOn;
       ATOMIC_BLOCK(ATOMIC_RESTORESTATE){
-        eeprom_write_byte((uint8_t*)eeprom_offsets::FILAMENT_HELP_SETTINGS, helpOn);
+        eeprom_write_byte((uint8_t*)eeprom_offsets::FILAMENT_HELP_TEXT_ON, helpOn);
       }
       lineUpdate = 1;
       break;
     case 2:
       accelerationOn = !accelerationOn;
       ATOMIC_BLOCK(ATOMIC_RESTORESTATE){
-        eeprom_write_byte((uint8_t*)eeprom_offsets::ACCELERATION_SETTINGS + acceleration_eeprom_offsets::ACTIVE_OFFSET, accelerationOn);
+        eeprom_write_byte((uint8_t*)eeprom_offsets::ACCELERATION_SETTINGS + acceleration_eeprom_offsets::ACCELERATION_ACTIVE, accelerationOn);
       }
       lineUpdate = 1;
       break;

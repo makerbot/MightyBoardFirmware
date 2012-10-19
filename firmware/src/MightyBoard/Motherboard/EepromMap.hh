@@ -26,23 +26,23 @@
 namespace cooler_eeprom_offsets{
 //$BEGIN_ENTRY
 //$type:B 
-const static uint16_t ENABLE_OFFSET   =     0;
+const static uint16_t ENABLE   =     0;
 //$BEGIN_ENTRY
 //$type:B 
-const static uint16_t SETPOINT_C_OFFSET  =  1;
+const static uint16_t SETPOINT_C  =  1;
 }
 
 /** EEPROM storage offsets for PID data */
 namespace pid_eeprom_offsets{
 //$BEGIN_ENTRY
 //$type:H $floating_point:True
-const static uint16_t P_TERM_OFFSET = 0;
+const static uint16_t P_TERM = 0;
 //$BEGIN_ENTRY
 //$type:H $floating_point:True
-const static uint16_t I_TERM_OFFSET = 2;
+const static uint16_t I_TERM = 2;
 //$BEGIN_ENTRY
 //$type:H $floating_point:True
-const static uint16_t D_TERM_OFFSET = 4;
+const static uint16_t D_TERM = 4;
 }
 
 /** 
@@ -238,7 +238,7 @@ const static uint16_t PREHEAT_SETTINGS = 0x0158;
 /// 1 byte,  0x01 for help menus on, 0x00 for off
 //$BEGIN_ENTRY
 //$type:B 
-const static uint16_t FILAMENT_HELP_SETTINGS = 0x0160;
+const static uint16_t FILAMENT_HELP_TEXT_ON = 0x0160;
 /// This indicates how far out of tolerance the toolhead0 toolhead1 distance is
 /// in steps.  3 x 32 bits = 12 bytes
 //$BEGIN_ENTRY
@@ -288,16 +288,16 @@ const static uint16_t FREE_EEPROM_STARTS        = 0x01A6;
 namespace acceleration_eeprom_offsets{
 //$BEGIN_ENTRY
 //$type:B 
-const static uint16_t ACTIVE_OFFSET	= 0x00;
+const static uint16_t ACCELERATION_ACTIVE	= 0x00;
 //$BEGIN_ENTRY
 //$type:H 
-const static uint16_t ACCELERATION_RATE_OFFSET = 0x02;
+const static uint16_t MAX_ACCELERATION = 0x02;
 //$BEGIN_ENTRY
 //$type:HHHHH
-const static uint16_t AXIS_RATES_OFFSET = 0x04;
+const static uint16_t MAX_ACCELERATION_AXIS = 0x04;
 //$BEGIN_ENTRY
 //$type:HHHHH $floating_point:True
-const static uint16_t AXIS_JERK_OFFSET = 0x0E;
+const static uint16_t MAX_SPEED_CHANGE = 0x0E;
 //$BEGIN_ENTRY
 //$type:H 
 const static uint16_t MINIMUM_SPEED = 0x18;
@@ -309,23 +309,23 @@ const static uint16_t DEFAULTS_FLAG = 0x1A;
 namespace build_time_offsets{
 //$BEGIN_ENTRY
 //$type:H 
-	const static uint16_t HOURS_OFFSET	 = 0x00;
+	const static uint16_t HOURS	 = 0x00;
 //$BEGIN_ENTRY
 //$type:B 
-	const static uint16_t MINUTES_OFFSET = 0x02;
+	const static uint16_t MINUTES = 0x02;
 }
 
 // buzz on/off settings
 namespace buzz_eeprom_offsets{
 //$BEGIN_ENTRY
 //$type:HH 
-const static uint16_t BASIC_BUZZ_OFFSET		= 0x00;
+const static uint16_t SOUND_ON		= 0x00;
 //$BEGIN_ENTRY
 //$type:HH 
-const static uint16_t ERROR_BUZZ_OFFSET 	= 0x04;
+const static uint16_t ERROR_BUZZ 	= 0x04;
 //$BEGIN_ENTRY
 //$type:HH
-const static uint16_t DONE_BUZZ_OFFSET		= 0x08;
+const static uint16_t DONE_BUZZ		= 0x08;
 }
 
 /** blink/LED EERROM offset values */
@@ -334,13 +334,13 @@ const static uint16_t DONE_BUZZ_OFFSET		= 0x08;
 namespace blink_eeprom_offsets{
 //$BEGIN_ENTRY
 //$type:B  
-const static uint16_t BASIC_COLOR_OFFSET	= 0x00;
+const static uint16_t BASIC_COLOR	= 0x00;
 //$BEGIN_ENTRY
 //$type:B  
-const static uint16_t LED_HEAT_OFFSET	= 0x02;
+const static uint16_t LED_HEAT_ON	= 0x02;
 //$BEGIN_ENTRY
 //$type:BBB  
-const static uint16_t CUSTOM_COLOR_OFFSET 	= 0x04;
+const static uint16_t CUSTOM_COLOR 	= 0x04;
 }
 
 
@@ -348,32 +348,32 @@ const static uint16_t CUSTOM_COLOR_OFFSET 	= 0x04;
 namespace therm_eeprom_offsets{
 //$BEGIN_ENTRY
 //$type:i  
-const static uint16_t THERM_R0_OFFSET                   = 0x00;
+const static uint16_t THERM_R0                   = 0x00;
 //$BEGIN_ENTRY
 //$type:i  
-const static uint16_t THERM_T0_OFFSET                   = 0x04;
+const static uint16_t THERM_T0                   = 0x04;
 //$BEGIN_ENTRY
 //$type:i  
-const static uint16_t THERM_BETA_OFFSET                 = 0x08;
+const static uint16_t THERM_BETA                 = 0x08;
 //$BEGIN_ENTRY
 //$type:H $mult:40
-const static uint16_t THERM_DATA_OFFSET                 = 0x10;
+const static uint16_t THERM_DATA                 = 0x10;
 }
 
 /** preheat EERROM offset values and on/off settings for each heater */
 namespace preheat_eeprom_offsets{
 //$BEGIN_ENTRY
 //$type:H  
-const static uint16_t PREHEAT_RIGHT_OFFSET                = 0x00;
+const static uint16_t PREHEAT_RIGHT_TEMP         = 0x00;
 //$BEGIN_ENTRY
 //$type:H  
-const static uint16_t PREHEAT_LEFT_OFFSET                = 0x02;
+const static uint16_t PREHEAT_LEFT_TEMP          = 0x02;
 //$BEGIN_ENTRY
 //$type:H  
-const static uint16_t PREHEAT_PLATFORM_OFFSET           = 0x04;
+const static uint16_t PREHEAT_PLATFORM_TEMP     = 0x04;
 //$BEGIN_ENTRY
 //$type:B  
-const static uint16_t PREHEAT_ON_OFF_OFFSET             = 0x06;
+const static uint16_t PREHEAT_ON_OFF             = 0x06;
 }
 
 /**

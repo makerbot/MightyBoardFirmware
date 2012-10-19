@@ -336,7 +336,7 @@ void Motherboard::HeatingAlerts(){
             setTemp += (int16_t)(getExtruderBoard(1).getExtruderHeater().get_set_temperature());
         }
              
-		if((setTemp != 0) && eeprom::getEeprom8(eeprom_offsets::LED_STRIP_SETTINGS + blink_eeprom_offsets::LED_HEAT_OFFSET, 1)
+		if((setTemp != 0) && eeprom::getEeprom8(eeprom_offsets::LED_STRIP_SETTINGS + blink_eeprom_offsets::LED_HEAT_ON, 1)
           && (eeprom::getEeprom8(eeprom_offsets::LED_STRIP_SETTINGS, LED_DEFAULT_OFF) != LED_DEFAULT_OFF)){
 			int32_t mult = 255;
 			if(!heating_lights_active){

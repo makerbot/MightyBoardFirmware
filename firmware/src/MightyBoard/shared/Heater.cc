@@ -91,9 +91,9 @@ void Heater::reset() {
 	is_paused = false;
 	is_disabled = false;
 
-	float p = eeprom::getEepromFixed16(eeprom_base+pid_eeprom_offsets::P_TERM_OFFSET,DEFAULT_P);
-	float i = eeprom::getEepromFixed16(eeprom_base+pid_eeprom_offsets::I_TERM_OFFSET,DEFAULT_I);
-	float d = eeprom::getEepromFixed16(eeprom_base+pid_eeprom_offsets::D_TERM_OFFSET,DEFAULT_D);
+	float p = eeprom::getEepromFixed16(eeprom_base+pid_eeprom_offsets::P_TERM,DEFAULT_P);
+	float i = eeprom::getEepromFixed16(eeprom_base+pid_eeprom_offsets::I_TERM,DEFAULT_I);
+	float d = eeprom::getEepromFixed16(eeprom_base+pid_eeprom_offsets::D_TERM,DEFAULT_D);
 
 	pid.reset();
 	if (p == 0 && i == 0 && d == 0) {
