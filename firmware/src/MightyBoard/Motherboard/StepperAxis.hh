@@ -98,7 +98,7 @@ struct dda {
         bool    eAxis;          //True if this is the e axis
         char    direction;      //Direction of the dda, 1 = forward, -1 = backwards
         bool    stepperDir;     //The direction the stepper gets sent in
-	bool	enabled;	//True if this dda is enabled, 0 if target is reached or
+        bool	  enabled;	//True if this dda is enabled, 0 if target is reached or
 				//this axis isn't moving. (Z and 1 extruder frequently don't move)
 				//This variable acts to speed up processing.
 
