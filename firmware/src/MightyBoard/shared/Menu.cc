@@ -2198,6 +2198,11 @@ void ResetSettingsMenu::handleSelect(uint8_t index) {
   }
 }
 
+#ifdef ACTIVE_COOLING_FAN
+  const static uint8_t FanIdx = 4;
+#else
+  const static uint8_t FanIdx = 3;
+#endif
 
 ActiveBuildMenu::ActiveBuildMenu(){
 #ifdef ACTIVE_COOLING_FAN
@@ -2209,7 +2214,7 @@ ActiveBuildMenu::ActiveBuildMenu(){
   for (uint8_t i = 0; i < itemCount; i++){
     counter_item[i] = 0;
   }
-  counter_item[5] = 1;
+  counter_item[FanIdx+1] = 1;
 }
     
 void ActiveBuildMenu::resetState(){
@@ -2221,12 +2226,10 @@ void ActiveBuildMenu::resetState(){
   FanOn = EX_FAN.getValue();
 }
 
+
 void ActiveBuildMenu::drawItem(uint8_t index, LiquidCrystalSerial& lcd, uint8_t line_number){
   
   switch (index) {
-        case 2:
-            lcd.writeFromPgmspace(STATS_MSG);
-            break;
         case 0:
             if(is_paused){
               lcd.writeFromPgmspace(UNPAUSE_MSG);
@@ -2237,7 +2240,7 @@ void ActiveBuildMenu::drawItem(uint8_t index, LiquidCrystalSerial& lcd, uint8_t 
         case 1:
             lcd.writeFromPgmspace(CANCEL_BUILD_MSG);
             break;
-        case 4:
+        case 2:
             lcd.writeFromPgmspace(CHANGE_FILAMENT_MSG);
             break;
         case 3:
@@ -2247,10 +2250,10 @@ void ActiveBuildMenu::drawItem(uint8_t index, LiquidCrystalSerial& lcd, uint8_t 
               lcd.writeFromPgmspace(RESTART_MSG);
             }
             break;
-        case 5:
+        case FanIdx+1:
           lcd.writeFromPgmspace(LED_MSG);
           lcd.setCursor(11,line_number);
-          if(selectIndex == 5)
+          if(selectIndex == FanIdx+1)
             lcd.writeFromPgmspace(ARROW_MSG);
           else
             lcd.writeFromPgmspace(NO_ARROW_MSG);
@@ -2286,7 +2289,7 @@ void ActiveBuildMenu::drawItem(uint8_t index, LiquidCrystalSerial& lcd, uint8_t 
             }
             break;
 #ifdef ACTIVE_COOLING_FAN
-          case 6:
+          case FanIdx:
             lcd.writeFromPgmspace(ACTIVE_FAN_MSG);
             lcd.setCursor(14, line_number);
             if(FanOn){
@@ -2295,10 +2298,11 @@ void ActiveBuildMenu::drawItem(uint8_t index, LiquidCrystalSerial& lcd, uint8_t 
               lcd.writeFromPgmspace(OFF_MSG);
             }
             break;
-          case 7:
-#else
-          case 6:
 #endif
+          case FanIdx+2:
+              lcd.writeFromPgmspace(STATS_MSG);
+              break;
+          case FanIdx+3:
             lcd.writeFromPgmspace(BACK_TO_MONITOR_MSG);
             break;
   }
@@ -2307,7 +2311,7 @@ void ActiveBuildMenu::drawItem(uint8_t index, LiquidCrystalSerial& lcd, uint8_t 
 void ActiveBuildMenu::handleCounterUpdate(uint8_t index, bool up){
   
   switch (index){
-    case 5:
+    case FanIdx + 1:
       // update left counter
       if(up)
           LEDColor++;
@@ -2331,10 +2335,10 @@ void ActiveBuildMenu::handleCounterUpdate(uint8_t index, bool up){
 void ActiveBuildMenu::handleSelect(uint8_t index){
   
   switch (index) {
-    case 2:
+    case FanIdx +2:
       interface::pushScreen(&build_stats_screen);
       break;
-    case 4:
+    case 2:
       host::pauseBuild(false);
       is_paused = false;
       interface::pushScreen(&filamentMenu);
@@ -2370,15 +2374,13 @@ void ActiveBuildMenu::handleSelect(uint8_t index){
       lineUpdate = true;
       break;
 #ifdef ACTIVE_COOLING_FAN
-    case 6:
+    case FanIdx:
       FanOn = !FanOn;
       Motherboard::getBoard().setExtra(FanOn);
       lineUpdate = true;
       break;
-    case 7:
-#else
-    case 6:
 #endif
+    case FanIdx+3:
       host::pauseBuild(false);
       interface::popScreen();
       break;
