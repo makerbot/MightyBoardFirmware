@@ -186,7 +186,7 @@ const static uint16_t AXIS_HOME_POSITIONS_STEPS	= 0x000E;
 //$type:s  $length:16
 const static uint16_t MACHINE_NAME				= 0x0022;
 /// Tool count : 2 bytes
-//$:BEGIN_ENTRY
+//$BEGIN_ENTRY
 //$type:B 
 const static uint16_t TOOL_COUNT 				= 0x0042;
 /// Hardware ID. Must exactly match the USB VendorId/ProductId pair: 4 bytes
