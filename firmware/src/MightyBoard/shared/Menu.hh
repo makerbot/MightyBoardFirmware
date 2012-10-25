@@ -427,6 +427,7 @@ private:
     int toggleCounter;
     bool helpText;   
     bool needsRedraw;
+    uint16_t filament_heat_temp[2];
     
     void startMotor();
     void stopMotor();

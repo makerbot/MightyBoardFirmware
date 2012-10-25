@@ -194,12 +194,13 @@ const static int16_t ab_mm_per_second_20 = 520;
 uint16_t extruder_temp[2];
 uint16_t platform_temp;
 Point sleep_position;
+bool fan_state = false;
 
 void startSleep(){
 
 	// record current position
 	sleep_position = steppers::getStepperPosition();
-	
+  fan_state = EX_FAN.getValue();
 	Motherboard &board = Motherboard::getBoard();
 	
 	// retract
@@ -228,6 +229,9 @@ void startSleep(){
 	
 	steppers::setTarget(z_pos, z_mm_per_second_18);
 	steppers::setTarget(wait_pos, xy_mm_per_second_80);
+  
+  // turn off fan
+  board.setExtra(false);
 }
 
 void stopSleep(){
@@ -241,7 +245,9 @@ void stopSleep(){
 	z_pos[Z_AXIS] = sleep_position[Z_AXIS];
 	steppers::setTarget(z_pos, z_mm_per_second_18);
 	/// move back to paused position
-	steppers::setTarget(sleep_position, xy_mm_per_second_80);	
+	steppers::setTarget(sleep_position, xy_mm_per_second_80);
+
+  Motherboard::getBoard().setExtra(fan_state);	
 }
 
 void sleepReheat(){

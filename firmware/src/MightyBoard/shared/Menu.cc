@@ -53,7 +53,6 @@ InfoMenu info;
 //#define HOST_TOOL_RESPONSE_TIMEOUT_MS 50
 //#define HOST_TOOL_RESPONSE_TIMEOUT_MICROS (1000L*HOST_TOOL_RESPONSE_TIMEOUT_MS)
 
-#define FILAMENT_HEAT_TEMP 230
 
 bool ready_fail = false;
 bool cancel_process = false;
@@ -681,7 +680,7 @@ void FilamentScreen::update(LiquidCrystalSerial& lcd, bool forceRedraw) {
       
       int16_t setTemp = (int16_t)(Motherboard::getBoard().getExtruderBoard(toolID).getExtruderHeater().get_set_temperature());
       /// check for externally manipulated temperature (eg by RepG)
-      if(setTemp < FILAMENT_HEAT_TEMP){
+      if(setTemp < filament_heat_temp[toolID]){
         Motherboard::getBoard().StopProgressBar();
         interface::popScreen();
         Motherboard::getBoard().errorResponse(ERROR_TEMP_RESET_EXTERNALLY);
@@ -711,7 +710,7 @@ void FilamentScreen::update(LiquidCrystalSerial& lcd, bool forceRedraw) {
     else{
       int16_t setTemp = (int16_t)(Motherboard::getBoard().getExtruderBoard(toolID).getExtruderHeater().get_set_temperature());
       // check for externally manipulated temperature (eg by RepG)
-      if(setTemp < FILAMENT_HEAT_TEMP){
+      if(setTemp < filament_heat_temp[toolID]){
         Motherboard::getBoard().StopProgressBar();
         interface::popScreen();
         Motherboard::getBoard().errorResponse(ERROR_TEMP_RESET_EXTERNALLY);
@@ -746,13 +745,13 @@ void FilamentScreen::update(LiquidCrystalSerial& lcd, bool forceRedraw) {
         current_temp = board.getExtruderBoard(toolID).getExtruderHeater().get_current_temperature();
         uint16_t heat_temp;
         /// don't cool the bot down if it is already hot
-        heat_temp = current_temp > FILAMENT_HEAT_TEMP ? current_temp : FILAMENT_HEAT_TEMP;
+        heat_temp = current_temp > filament_heat_temp[toolID] ? current_temp : filament_heat_temp[toolID];
         board.getExtruderBoard(toolID).getExtruderHeater().Pause(false);
         board.getExtruderBoard(toolID).getExtruderHeater().set_target_temperature(heat_temp);
         if(dual){
           current_temp = board.getExtruderBoard(1).getExtruderHeater().get_current_temperature();
           /// don't cool the bot down if it is already hot
-          heat_temp = current_temp > FILAMENT_HEAT_TEMP ? current_temp : FILAMENT_HEAT_TEMP;
+          heat_temp = current_temp > filament_heat_temp[1] ? current_temp : filament_heat_temp[1];
           board.getExtruderBoard(1).getExtruderHeater().Pause(false);
           board.getExtruderBoard(1).getExtruderHeater().set_target_temperature(heat_temp);      
         }
@@ -913,6 +912,8 @@ void FilamentScreen::setScript(FilamentScript script){
     dual = false;
     startup = false;
     helpText = eeprom::getEeprom8(eeprom_offsets::FILAMENT_HELP_TEXT_ON, 1);
+    filament_heat_temp[1] = eeprom::getEeprom16(eeprom_offsets::PREHEAT_SETTINGS + preheat_eeprom_offsets::PREHEAT_LEFT_TEMP, 230);
+    filament_heat_temp[0] = eeprom::getEeprom16(eeprom_offsets::PREHEAT_SETTINGS + preheat_eeprom_offsets::PREHEAT_RIGHT_TEMP, 230);
     /// load settings for correct tool and direction
     switch(script){
         case FILAMENT_STARTUP_DUAL:
@@ -1008,6 +1009,8 @@ void FilamentScreen::reset() {
     filamentSuccess = SUCCESS;
     filamentTimer = Timeout();
     cancel_process = false;
+    filament_heat_temp[0] = 230;
+    filament_heat_temp[1] = 230;
 }
 
 ReadyMenu::ReadyMenu() {
