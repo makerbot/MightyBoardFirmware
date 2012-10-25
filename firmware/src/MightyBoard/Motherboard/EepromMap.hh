@@ -25,23 +25,23 @@
 /** EEPROM storage offsets for cooling fan data */
 namespace cooler_eeprom_offsets{
 //$BEGIN_ENTRY
-//$type:B 
+//$type:B $constraints:l,0,1
 const static uint16_t ENABLE   =     0;
 //$BEGIN_ENTRY
-//$type:B 
+//$type:B $constraints:m,0,300
 const static uint16_t SETPOINT_C  =  1;
 }
 
 /** EEPROM storage offsets for PID data */
 namespace pid_eeprom_offsets{
 //$BEGIN_ENTRY
-//$type:H $floating_point:True
+//$type:H $floating_point:True $constraints:m,0,100
 const static uint16_t P_TERM = 0;
 //$BEGIN_ENTRY
-//$type:H $floating_point:True
+//$type:H $floating_point:True $constraints:m,0,1
 const static uint16_t I_TERM = 2;
 //$BEGIN_ENTRY
-//$type:H $floating_point:True
+//$type:H $floating_point:True $constraints:m,0,100
 const static uint16_t D_TERM = 4;
 }
 
@@ -107,7 +107,7 @@ namespace toolhead_eeprom_offsets {
 
 //// Feature map: 2 bytes
 //$BEGIN_ENTRY
-//$type:H 
+//$type:H  $constraints:a
 const static uint16_t FEATURES			= 0x0000;
 /// Backoff stop time, in ms: 2 bytes
 const static uint16_t BACKOFF_STOP_TIME         = 0x0002;
@@ -119,11 +119,9 @@ const static uint16_t BACKOFF_FORWARD_TIME      = 0x0006;
 const static uint16_t BACKOFF_TRIGGER_TIME      = 0x0008;
 /// Extruder heater base location: 6 bytes
 //$BEGIN_ENTRY
-//$eeprom_map:pid_eeprom_offsets
+//$eeprom_map:pid_eeprom_offsets 
 const static uint16_t EXTRUDER_PID_BASE         = 0x000A;
 /// HBP heater base location: 6 bytes data
-//$BEGIN_ENTRY
-//$eeprom_map:pid_eeprom_offsets
 const static uint16_t HBP_PID_BASE              = 0x0010;
 /// Extra features word: 2 bytes
 const static uint16_t EXTRA_FEATURES            = 0x0016;
@@ -145,17 +143,17 @@ const static uint16_t COOLING_FAN_SETTINGS 	= 	0x001A;
 namespace eeprom_offsets {
 /// Firmware Version, low byte: 1 byte
 //$BEGIN_ENTRY
-//$type:B 
+//$type:B $constraints:m,0,100
 const static uint16_t VERSION_LOW				= 0x0000;
 /// Firmware Version, high byte: 1 byte
 //$BEGIN_ENTRY
-//$type:B 
+//$type:B $constraints:m,0,10
 const static uint16_t VERSION_HIGH				= 0x0001;
 /// Axis inversion flags: 1 byte.
 /// Axis N (where X=0, Y=1, etc.) is inverted if the Nth bit is set.
 /// Bit 7 is used for HoldZ OFF: 1 = off, 0 = on
 //$BEGIN_ENTRY
-//$type:B 
+//$type:B  $constraints:a
 const static uint16_t AXIS_INVERSION			= 0x0002;
 /// Endstop inversion flags: 1 byte.
 /// The endstops for axis N (where X=0, Y=1, etc.) are considered
@@ -164,39 +162,41 @@ const static uint16_t AXIS_INVERSION			= 0x0002;
 /// that endstops are not present.
 /// Ordinary endstops (H21LOB et. al.) are inverted.
 //$BEGIN_ENTRY
-//$type:B 
+//$type:B $constraints:a
 const static uint16_t ENDSTOP_INVERSION			= 0x0004;
 /// Digital Potentiometer Settings : 5 Bytes
 //$BEGIN_ENTRY
-//$type:BBBBB 
+//$type:BBBBB $constraints:a 
 const static uint16_t DIGI_POT_SETTINGS			= 0x0006;
 /// axis home direction (1 byte)
 //$BEGIN_ENTRY
-//$type:B
+//$type:B $constraints:a
 const static uint16_t AXIS_HOME_DIRECTION 		= 0x000C;
 /// Default locations for the axis in step counts: 5 x 32 bit = 20 bytes
 const static uint16_t AXIS_HOME_POSITIONS_STEPS	= 0x000E;
 /// Name of this machine: 16 bytes (16 bytes extra buffer) 
 //$BEGIN_ENTRY
-//$type:s  $length:16
+//$type:s  $length:16 $constraints:a
 const static uint16_t MACHINE_NAME				= 0x0022;
 /// Tool count : 2 bytes
 //$:BEGIN_ENTRY
-//$type:B 
+//$type:B  $constraints:l,1,2
 const static uint16_t TOOL_COUNT 				= 0x0042;
 /// Hardware ID. Must exactly match the USB VendorId/ProductId pair: 4 bytes
+//$BEGIN_ENTRY
+//$type:HH $ingnore $constraints:
 const static uint16_t VID_PID_INFO				= 0x0044;
 /// Version Number for internal releases
 //$BEGIN_ENTRY
-//$type:H 
+//$type:H  $constraints:m,0,100
 const static uint16_t INTERNAL_VERSION			= 0x0048;
 /// Version number to be tagged with Git Commit
 //$BEGIN_ENTRY
-//$type:H 
+//$type:H $constraints:a 
 const static uint16_t COMMIT_VERSION			= 0x004A;
 /// HBP Present or not
 //$BEGIN_ENTRY
-//$type:B 
+//$type:B $constraints:l,0,1
 const static uint16_t HBP_PRESENT				= 0x004C;
 /// 38 bytes padding
 /// Thermistor table 0: 128 bytes
@@ -223,6 +223,8 @@ const static uint16_t LED_STRIP_SETTINGS		= 0x0140;
 //$eeprom_map:buzz_eeprom_offsets
 const static uint16_t BUZZ_SETTINGS		= 0x014A;
 ///  1 byte. 0x01 for 'never booted before' 0x00 for 'have been booted before)
+//$BEGIN_ENTRY
+//$type:B $ingnore $constraints:l,0,1
 const static uint16_t FIRST_BOOT_FLAG  = 0x0156;
 /// 7 bytes, short int x 3 entries, 1 byte on/off
 //$BEGIN_ENTRY
@@ -230,12 +232,12 @@ const static uint16_t FIRST_BOOT_FLAG  = 0x0156;
 const static uint16_t PREHEAT_SETTINGS = 0x0158;
 /// 1 byte,  0x01 for help menus on, 0x00 for off
 //$BEGIN_ENTRY
-//$type:B 
+//$type:B $constraints:l,0,1 
 const static uint16_t FILAMENT_HELP_TEXT_ON = 0x0160;
 /// This indicates how far out of tolerance the toolhead0 toolhead1 distance is
 /// in steps.  3 x 32 bits = 12 bytes
 //$BEGIN_ENTRY
-//$type:iii 
+//$type:iii $constraints:m,-50,50
 const static uint16_t TOOLHEAD_OFFSET_SETTINGS = 0x0162;
 /// Acceleraton settings 22 bytes: 1 byte (on/off), 2 bytes default acceleration rate, 
 //$BEGIN_ENTRY
