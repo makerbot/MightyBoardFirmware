@@ -267,7 +267,7 @@ const static uint16_t BOTSTEP_TYPE      = 0x01A4;
 
 
 /// start of free space
-const static uint16_t FREE_EEPROM_STARTS        = 0x0238;
+const static uint16_t FREE_EEPROM_STARTS        = 0x01A6;
 
 } 
 
