@@ -450,6 +450,7 @@ enum {
 }
 
 namespace eeprom {
+  void fullResetEEPROM();
 	void factoryResetEEPROM();
 	void setToolHeadCount(uint8_t count);
   void setDefaultSettings();
