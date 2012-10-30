@@ -196,12 +196,13 @@ void Motherboard::reset(bool hard_reset) {
 #ifdef MODEL_REPLICATOR2 
   therm_sensor.init();
 	therm_sensor_timeout.start(THERMOCOUPLE_UPDATE_RATE);
-	// turn off the active cooling fan
-	setExtra(false);  
 #else
   extruder_manage_timeout.start(SAMPLE_INTERVAL_MICROS_THERMOCOUPLE);
 #endif
   
+	// turn off the active cooling fan
+	setExtra(false);  
+
   // initialize the extruders
   Extruder_One.reset();
   Extruder_Two.reset();

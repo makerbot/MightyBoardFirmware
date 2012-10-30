@@ -195,12 +195,14 @@ const static int16_t ab_mm_per_second_20 = 520;
 uint16_t extruder_temp[2];
 uint16_t platform_temp;
 Point sleep_position;
+bool fan_state= false;
 
 void startSleep(){
 
 	// record current position
 	sleep_position = steppers::getPosition();
-	
+  fan_state = EX_FAN.getValue();	
+
 	Motherboard &board = Motherboard::getBoard();
 	
 	// retract
@@ -228,6 +230,8 @@ void startSleep(){
 	
 	planner::addMoveToBuffer(z_pos, z_mm_per_second_18);
 	planner::addMoveToBuffer(wait_pos, xy_mm_per_second_80);
+
+  board.setExtra(false);
 }
 
 void stopSleep(){
@@ -242,6 +246,7 @@ void stopSleep(){
 	planner::addMoveToBuffer(z_pos, z_mm_per_second_18);
 	/// move back to paused position
 	planner::addMoveToBuffer(sleep_position, xy_mm_per_second_80);	
+  Motherboard::getBoard().setExtra(fan_state);
 }
 
 void sleepReheat(){
@@ -564,8 +569,17 @@ void runCommandSlice() {
 					if (command_buffer.getLength() >= 2) {
 						pop8(); // remove the command code
 						uint8_t axes = pop8();
+            line_number++;
 						}
-				}
+				}else if (command == HOST_CMD_SET_BUILD_PERCENT){
+          if (command_buffer.getLength() >= 3){
+            pop8(); // remove the command code
+            uint8_t percent = pop8();
+            uint8_t ignore = pop8(); // remove the reserved byte
+            line_number++;
+            interface::setBuildPercentage(percent);
+          }
+        }
 			}
 		}
 	}
