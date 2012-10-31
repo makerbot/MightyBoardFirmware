@@ -145,7 +145,7 @@ HeaterPreheat::HeaterPreheat(){
 }
 
 void HeaterPreheat::resetState(){
-  uint8_t heatSet = eeprom::getEeprom8(eeprom_offsets::PREHEAT_SETTINGS + preheat_eeprom_offsets::PREHEAT_ON_OFF_OFFSET, 0);
+  uint8_t heatSet = eeprom::getEeprom8(eeprom_offsets::PREHEAT_SETTINGS + preheat_eeprom_offsets::PREHEAT_ON_OFF, 0);
   _rightActive = (heatSet & (1 << HEAT_MASK_RIGHT)) != 0;
   _platformActive = eeprom::hasHBP() && ((heatSet & (1 << HEAT_MASK_PLATFORM)) != 0);
   _leftActive = (heatSet & (1 << HEAT_MASK_LEFT)) != 0;
@@ -228,7 +228,7 @@ void HeaterPreheat::drawItem(uint8_t index, LiquidCrystalSerial& lcd, uint8_t li
 void HeaterPreheat::storeHeatByte(){
     uint8_t heatByte = (_rightActive*(1<<HEAT_MASK_RIGHT)) + (_leftActive*(1<<HEAT_MASK_LEFT)) + (_platformActive*(1<<HEAT_MASK_PLATFORM));
     ATOMIC_BLOCK(ATOMIC_RESTORESTATE){
-      eeprom_write_byte((uint8_t*)(eeprom_offsets::PREHEAT_SETTINGS + preheat_eeprom_offsets::PREHEAT_ON_OFF_OFFSET), heatByte);
+      eeprom_write_byte((uint8_t*)(eeprom_offsets::PREHEAT_SETTINGS + preheat_eeprom_offsets::PREHEAT_ON_OFF), heatByte);
     }
 }
 
@@ -243,12 +243,12 @@ void HeaterPreheat::handleSelect(uint8_t index) {
             if(preheatActive){
                 Motherboard::getBoard().resetUserInputTimeout();
                 /// _platformActive cannot be true if hbp is not presend (eeprom record)
-                temp = eeprom::getEeprom16(eeprom_offsets::PREHEAT_SETTINGS + preheat_eeprom_offsets::PREHEAT_PLATFORM_OFFSET,0) *_platformActive;
+                temp = eeprom::getEeprom16(eeprom_offsets::PREHEAT_SETTINGS + preheat_eeprom_offsets::PREHEAT_PLATFORM_TEMP,0) *_platformActive;
                 Motherboard::getBoard().getPlatformHeater().set_target_temperature(temp);
-                temp = eeprom::getEeprom16(eeprom_offsets::PREHEAT_SETTINGS + preheat_eeprom_offsets::PREHEAT_RIGHT_OFFSET,0) *_rightActive; 
+                temp = eeprom::getEeprom16(eeprom_offsets::PREHEAT_SETTINGS + preheat_eeprom_offsets::PREHEAT_RIGHT_TEMP,0) *_rightActive; 
                 Motherboard::getBoard().getExtruderBoard(0).getExtruderHeater().set_target_temperature(temp);
                 if(!singleTool){
-                    temp = eeprom::getEeprom16(eeprom_offsets::PREHEAT_SETTINGS + preheat_eeprom_offsets::PREHEAT_LEFT_OFFSET,0) *_leftActive;
+                    temp = eeprom::getEeprom16(eeprom_offsets::PREHEAT_SETTINGS + preheat_eeprom_offsets::PREHEAT_LEFT_TEMP,0) *_leftActive;
                     Motherboard::getBoard().getExtruderBoard(1).getExtruderHeater().set_target_temperature(temp);
                 }
                 if(Motherboard::getBoard().getPlatformHeater().isHeating()){
@@ -604,7 +604,7 @@ void SelectAlignmentMenu::drawItem(uint8_t index, LiquidCrystalSerial& lcd, uint
             else
         lcd.writeFromPgmspace(NO_ARROW_MSG);
             lcd.setCursor(17, line_number);
-            lcd.writeInt(yCounter, line_number);
+            lcd.writeInt(yCounter, 2);
             break;
          case 3:
       lcd.writeFromPgmspace(DONE_MSG);
@@ -942,7 +942,7 @@ void FilamentScreen::setScript(FilamentScript script){
     filamentState = FILAMENT_HEATING;
     dual = false;
     startup = false;
-    helpText = eeprom::getEeprom8(eeprom_offsets::FILAMENT_HELP_SETTINGS, 1);
+    helpText = eeprom::getEeprom8(eeprom_offsets::FILAMENT_HELP_TEXT_ON, 1);
     /// load settings for correct tool and direction
     switch(script){
         case FILAMENT_STARTUP_DUAL:
@@ -2052,9 +2052,9 @@ void PreheatSettingsMenu::resetState(){
     itemCount = 3;
   }
     
-  counterRight = eeprom::getEeprom16(eeprom_offsets::PREHEAT_SETTINGS + preheat_eeprom_offsets::PREHEAT_RIGHT_OFFSET, 230);
-  counterLeft = eeprom::getEeprom16(eeprom_offsets::PREHEAT_SETTINGS + preheat_eeprom_offsets::PREHEAT_LEFT_OFFSET, 230);
-  counterPlatform = eeprom::getEeprom16(eeprom_offsets::PREHEAT_SETTINGS + preheat_eeprom_offsets::PREHEAT_PLATFORM_OFFSET, 110);
+  counterRight = eeprom::getEeprom16(eeprom_offsets::PREHEAT_SETTINGS + preheat_eeprom_offsets::PREHEAT_RIGHT_TEMP, 230);
+  counterLeft = eeprom::getEeprom16(eeprom_offsets::PREHEAT_SETTINGS + preheat_eeprom_offsets::PREHEAT_LEFT_TEMP, 230);
+  counterPlatform = eeprom::getEeprom16(eeprom_offsets::PREHEAT_SETTINGS + preheat_eeprom_offsets::PREHEAT_PLATFORM_TEMP, 110);
     
 }
 
@@ -2162,26 +2162,26 @@ void PreheatSettingsMenu::handleSelect(uint8_t index) {
         case 1:
             // store right tool setting
             ATOMIC_BLOCK(ATOMIC_RESTORESTATE){
-              eeprom_write_word((uint16_t*)(eeprom_offsets::PREHEAT_SETTINGS + preheat_eeprom_offsets::PREHEAT_RIGHT_OFFSET), counterRight);
+              eeprom_write_word((uint16_t*)(eeprom_offsets::PREHEAT_SETTINGS + preheat_eeprom_offsets::PREHEAT_RIGHT_TEMP), counterRight);
             }
             break;
         case 2:
             if(singleTool){
                 // store right tool setting
                 ATOMIC_BLOCK(ATOMIC_RESTORESTATE){
-                  eeprom_write_word((uint16_t*)(eeprom_offsets::PREHEAT_SETTINGS + preheat_eeprom_offsets::PREHEAT_RIGHT_OFFSET), counterRight);
+                  eeprom_write_word((uint16_t*)(eeprom_offsets::PREHEAT_SETTINGS + preheat_eeprom_offsets::PREHEAT_RIGHT_TEMP), counterRight);
                 }
             }else{
                 // store left tool setting
                 ATOMIC_BLOCK(ATOMIC_RESTORESTATE){
-                  eeprom_write_word((uint16_t*)(eeprom_offsets::PREHEAT_SETTINGS + preheat_eeprom_offsets::PREHEAT_LEFT_OFFSET), counterLeft);
+                  eeprom_write_word((uint16_t*)(eeprom_offsets::PREHEAT_SETTINGS + preheat_eeprom_offsets::PREHEAT_LEFT_TEMP), counterLeft);
                 }
             }
             break;
         case 3:
             // store platform setting
             ATOMIC_BLOCK(ATOMIC_RESTORESTATE){
-              eeprom_write_word((uint16_t*)(eeprom_offsets::PREHEAT_SETTINGS + preheat_eeprom_offsets::PREHEAT_PLATFORM_OFFSET), counterPlatform);
+              eeprom_write_word((uint16_t*)(eeprom_offsets::PREHEAT_SETTINGS + preheat_eeprom_offsets::PREHEAT_PLATFORM_TEMP), counterPlatform);
             }
             break;
   }
@@ -2231,6 +2231,11 @@ void ResetSettingsMenu::handleSelect(uint8_t index) {
   }
 }
 
+#ifdef ACTIVE_COOLING_FAN
+  const static uint8_t FanIdx = 4;
+#else
+  const static uint8_t FanIdx = 3;
+#endif
 
 ActiveBuildMenu::ActiveBuildMenu(){
 #ifdef ACTIVE_COOLING_FAN
@@ -2242,7 +2247,7 @@ ActiveBuildMenu::ActiveBuildMenu(){
   for (uint8_t i = 0; i < itemCount; i++){
     counter_item[i] = 0;
   }
-  counter_item[5] = 1;
+  counter_item[FanIdx+1] = 1;
 }
     
 void ActiveBuildMenu::resetState(){
@@ -2257,7 +2262,7 @@ void ActiveBuildMenu::resetState(){
 void ActiveBuildMenu::drawItem(uint8_t index, LiquidCrystalSerial& lcd, uint8_t line_number){
   
   switch (index) {
-        case 2:
+        case FanIdx+2:
             lcd.writeFromPgmspace(STATS_MSG);
             break;
         case 0:
@@ -2270,7 +2275,7 @@ void ActiveBuildMenu::drawItem(uint8_t index, LiquidCrystalSerial& lcd, uint8_t 
         case 1:
             lcd.writeFromPgmspace(CANCEL_BUILD_MSG);
             break;
-        case 4:
+        case 2:
             lcd.writeFromPgmspace(CHANGE_FILAMENT_MSG);
             break;
         case 3:
@@ -2280,10 +2285,10 @@ void ActiveBuildMenu::drawItem(uint8_t index, LiquidCrystalSerial& lcd, uint8_t 
               lcd.writeFromPgmspace(RESTART_MSG);
             }
             break;
-        case 5:
+        case FanIdx+1:
           lcd.writeFromPgmspace(LED_MSG);
           lcd.setCursor(11,line_number);
-          if(selectIndex == 5)
+          if(selectIndex == FanIdx+1)
             lcd.writeFromPgmspace(ARROW_MSG);
           else
             lcd.writeFromPgmspace(NO_ARROW_MSG);
@@ -2319,7 +2324,7 @@ void ActiveBuildMenu::drawItem(uint8_t index, LiquidCrystalSerial& lcd, uint8_t 
             }
             break;
 #ifdef ACTIVE_COOLING_FAN
-          case 6:
+          case FanIdx:
             lcd.writeFromPgmspace(ACTIVE_FAN_MSG);
             lcd.setCursor(14, line_number);
             if(FanOn){
@@ -2328,10 +2333,8 @@ void ActiveBuildMenu::drawItem(uint8_t index, LiquidCrystalSerial& lcd, uint8_t 
               lcd.writeFromPgmspace(OFF_MSG);
             }
             break;
-          case 7:
-#else
-          case 6:
 #endif
+          case FanIdx+3:
             lcd.writeFromPgmspace(BACK_TO_MONITOR_MSG);
             break;
   }
@@ -2344,7 +2347,7 @@ void ActiveBuildMenu::pop(void){
 void ActiveBuildMenu::handleCounterUpdate(uint8_t index, bool up){
   
   switch (index){
-    case 5:
+    case FanIdx+1:
       // update left counter
       if(up)
           LEDColor++;
@@ -2368,10 +2371,10 @@ void ActiveBuildMenu::handleCounterUpdate(uint8_t index, bool up){
 void ActiveBuildMenu::handleSelect(uint8_t index){
   
   switch (index) {
-    case 2:
+    case FanIdx + 2:
       interface::pushScreen(&build_stats_screen);
       break;
-    case 4:
+    case 2:
       host::pauseBuild(false);
       is_paused = false;
       interface::pushScreen(&filamentMenu);
@@ -2406,15 +2409,14 @@ void ActiveBuildMenu::handleSelect(uint8_t index){
       lineUpdate = true;
       break;
 #ifdef ACTIVE_COOLING_FAN
-    case 6:
+    case FanIdx:
       FanOn = !FanOn;
       Motherboard::getBoard().setExtra(FanOn);
       lineUpdate = true;
       break;
-    case 7:
-#else
-    case 6:
 #endif
+    case FanIdx+3:
+      host::pauseBuild(false);
       interface::popScreen();
       break;
        
@@ -2503,7 +2505,7 @@ void BuildStats::update(LiquidCrystalSerial& lcd, bool forceRedraw){
       if(line_number > command::MAX_LINE_COUNT){
         lcd.setCursor(9,3);
         /// 10 digits is max for a uint32_t.  If we change the line_count to allow overflow, we'll need to update the digit count here
-        lcd.writeInt(command::MAX_LINE_COUNT, 10);
+        lcd.writeInt32(command::MAX_LINE_COUNT, 9);
         lcd.setCursor(19,3);
         lcd.writeString("+");
       }else{
@@ -2514,7 +2516,7 @@ void BuildStats::update(LiquidCrystalSerial& lcd, bool forceRedraw){
           digits ++;
         }     
         lcd.setCursor(20-digits,3);
-        lcd.writeInt(line_number, digits);
+        lcd.writeInt32(line_number, digits);
       }
       break;
     default:
@@ -2561,7 +2563,7 @@ void BotStats::update(LiquidCrystalSerial& lcd, bool forceRedraw){
     lcd.writeFromPgmspace(LAST_TIME_MSG);
     
     /// TOTAL PRINT LIFETIME
-    uint16_t total_hours = eeprom::getEeprom16(eeprom_offsets::TOTAL_BUILD_TIME + build_time_offsets::HOURS_OFFSET,0);
+    uint16_t total_hours = eeprom::getEeprom16(eeprom_offsets::TOTAL_BUILD_TIME + build_time_offsets::HOURS,0);
     uint8_t digits = 1;
     for (uint32_t i = 10; i < 10000; i*=10){
       if(total_hours / i == 0){ break; }
@@ -2723,11 +2725,11 @@ UtilitiesMenu::UtilitiesMenu() {
 }
 void UtilitiesMenu::resetState(){
   singleTool = eeprom::isSingleTool();
-  //if(singleTool){
-  //  itemCount = 8;
- // }else{
- //   itemCount = 9;
- // }
+  if(singleTool){
+    itemCount = 9;
+  }else{
+   itemCount = 10;
+  }
 }
 
 void UtilitiesMenu::drawItem(uint8_t index, LiquidCrystalSerial& lcd, uint8_t line_number) {
@@ -2772,15 +2774,15 @@ void UtilitiesMenu::drawItem(uint8_t index, LiquidCrystalSerial& lcd, uint8_t li
       lcd.writeFromPgmspace(LED_BLINK_MSG);
     break;
   case 8:
-   // if(!singleTool){
-   //   lcd.writeFromPgmspace(NOZZLES_MSG);
-   // }else{
+    if(!singleTool){
+      lcd.writeFromPgmspace(NOZZLES_MSG);
+    }else{
       lcd.writeFromPgmspace(EXIT_MSG);
-    break;
-  //case 9:
-  //  if(!singleTool){
-  //    lcd.writeFromPgmspace(EXIT_MSG);
-  //  }break;
+    }break;
+  case 9:
+    if(!singleTool){
+      lcd.writeFromPgmspace(EXIT_MSG);
+    }break;
   }
 }
 
@@ -2826,19 +2828,17 @@ void UtilitiesMenu::handleSelect(uint8_t index) {
       lineUpdate = true;     
        break;
     case 8:
-      //if(!singleTool){
-        // restore defaults
-       // interface::pushScreen(&alignment);
-     // }else{
+      if(!singleTool){
+        interface::pushScreen(&alignment);
+      }else{
         interface::popScreen();
-     // }
+      }
       break;
-   // case 9:
-   //   if(!singleTool){
-        // restore defaults
-   //     interface::popScreen();
-   //   }
-   //   break;
+    case 9:
+      if(!singleTool){
+        interface::popScreen();
+      }
+      break;
     }
 }
 
@@ -2917,9 +2917,9 @@ void SettingsMenu::resetState(){
   singleExtruder = eeprom::getEeprom8(eeprom_offsets::TOOL_COUNT, 1);
   soundOn = eeprom::getEeprom8(eeprom_offsets::BUZZ_SETTINGS, 1);
   LEDColor = eeprom::getEeprom8(eeprom_offsets::LED_STRIP_SETTINGS, 0);
-  heatingLEDOn = eeprom::getEeprom8(eeprom_offsets::LED_STRIP_SETTINGS + blink_eeprom_offsets::LED_HEAT_OFFSET, 1);
-  helpOn = eeprom::getEeprom8(eeprom_offsets::FILAMENT_HELP_SETTINGS, 1);
-  accelerationOn = eeprom::getEeprom8(eeprom_offsets::ACCELERATION_SETTINGS + acceleration_eeprom_offsets::ACTIVE_OFFSET, 0x01);
+  heatingLEDOn = eeprom::getEeprom8(eeprom_offsets::LED_STRIP_SETTINGS + blink_eeprom_offsets::LED_HEAT_ON, 1);
+  helpOn = eeprom::getEeprom8(eeprom_offsets::FILAMENT_HELP_TEXT_ON, 1);
+  accelerationOn = eeprom::getEeprom8(eeprom_offsets::ACCELERATION_SETTINGS + acceleration_eeprom_offsets::ACCELERATION_ACTIVE, 0x01);
   HBPPresent = eeprom::getEeprom8(eeprom_offsets::HBP_PRESENT, 1);
 }
 
@@ -3074,21 +3074,21 @@ void SettingsMenu::handleSelect(uint8_t index) {
       heatingLEDOn = !heatingLEDOn;
       // update LEDHeatingflag
       ATOMIC_BLOCK(ATOMIC_RESTORESTATE){
-        eeprom_write_byte((uint8_t*)eeprom_offsets::LED_STRIP_SETTINGS + blink_eeprom_offsets::LED_HEAT_OFFSET, heatingLEDOn);
+        eeprom_write_byte((uint8_t*)eeprom_offsets::LED_STRIP_SETTINGS + blink_eeprom_offsets::LED_HEAT_ON, heatingLEDOn);
       }
       lineUpdate = 1;
       break;
     case 3:
       helpOn = !helpOn;
       ATOMIC_BLOCK(ATOMIC_RESTORESTATE){
-        eeprom_write_byte((uint8_t*)eeprom_offsets::FILAMENT_HELP_SETTINGS, helpOn);
+        eeprom_write_byte((uint8_t*)eeprom_offsets::FILAMENT_HELP_TEXT_ON, helpOn);
       }
       lineUpdate = 1;
       break;
     case 2:
       accelerationOn = !accelerationOn;
       ATOMIC_BLOCK(ATOMIC_RESTORESTATE){
-        eeprom_write_byte((uint8_t*)eeprom_offsets::ACCELERATION_SETTINGS + acceleration_eeprom_offsets::ACTIVE_OFFSET, accelerationOn);
+        eeprom_write_byte((uint8_t*)eeprom_offsets::ACCELERATION_SETTINGS + acceleration_eeprom_offsets::ACCELERATION_ACTIVE, accelerationOn);
       }
       lineUpdate = 1;
       break;

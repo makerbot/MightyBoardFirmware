@@ -196,12 +196,13 @@ void Motherboard::reset(bool hard_reset) {
 #ifdef MODEL_REPLICATOR2 
   therm_sensor.init();
 	therm_sensor_timeout.start(THERMOCOUPLE_UPDATE_RATE);
-	// turn off the active cooling fan
-	setExtra(false);  
 #else
   extruder_manage_timeout.start(SAMPLE_INTERVAL_MICROS_THERMOCOUPLE);
 #endif
   
+	// turn off the active cooling fan
+	setExtra(false);  
+
   // initialize the extruders
   Extruder_One.reset();
   Extruder_Two.reset();
@@ -336,7 +337,7 @@ void Motherboard::HeatingAlerts(){
             setTemp += (int16_t)(getExtruderBoard(1).getExtruderHeater().get_set_temperature());
         }
              
-		if((setTemp != 0) && eeprom::getEeprom8(eeprom_offsets::LED_STRIP_SETTINGS + blink_eeprom_offsets::LED_HEAT_OFFSET, 1)
+		if((setTemp != 0) && eeprom::getEeprom8(eeprom_offsets::LED_STRIP_SETTINGS + blink_eeprom_offsets::LED_HEAT_ON, 1)
           && (eeprom::getEeprom8(eeprom_offsets::LED_STRIP_SETTINGS, LED_DEFAULT_OFF) != LED_DEFAULT_OFF)){
 			int32_t mult = 255;
 			if(!heating_lights_active){

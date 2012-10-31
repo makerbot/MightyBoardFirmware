@@ -195,7 +195,7 @@ bool isTableSet(uint16_t off) {
 /// initialize thermocouple tables
 /// this functionality is legacy
 void initThermistorTables() {
-	has_table[0] = isTableSet(eeprom_offsets::THERM_TABLE + therm_eeprom_offsets::THERM_DATA_OFFSET);
+	has_table[0] = isTableSet(eeprom_offsets::THERM_TABLE + therm_eeprom_offsets::THERM_DATA);
 	//has_table[1] = isTableSet(eeprom::THERM_TABLE_1 + eeprom::THERM_DATA_OFFSET);
 }
 

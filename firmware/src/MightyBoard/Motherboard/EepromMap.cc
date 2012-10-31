@@ -52,7 +52,7 @@ namespace eeprom {
 void setDefaultCoolingFan(uint16_t eeprom_base){
 
 	uint8_t fan_settings[] = {1, DEFAULT_COOLING_FAN_SETPOINT_C};
-    eeprom_write_block( fan_settings, (uint8_t*)(eeprom_base + cooler_eeprom_offsets::ENABLE_OFFSET),2);
+    eeprom_write_block( fan_settings, (uint8_t*)(eeprom_base + cooler_eeprom_offsets::ENABLE),2);
 }
 
 
@@ -62,9 +62,9 @@ void setDefaultCoolingFan(uint16_t eeprom_base){
  */
 void setDefaultPID(uint16_t eeprom_base)
 {
-	setEepromFixed16(( eeprom_base + pid_eeprom_offsets::P_TERM_OFFSET ), DEFAULT_P_VALUE);
-	setEepromFixed16(( eeprom_base + pid_eeprom_offsets::I_TERM_OFFSET ), DEFAULT_I_VALUE);
-	setEepromFixed16(( eeprom_base + pid_eeprom_offsets::D_TERM_OFFSET ), DEFAULT_D_VALUE);
+	setEepromFixed16(( eeprom_base + pid_eeprom_offsets::P_TERM ), DEFAULT_P_VALUE);
+	setEepromFixed16(( eeprom_base + pid_eeprom_offsets::I_TERM ), DEFAULT_I_VALUE);
+	setEepromFixed16(( eeprom_base + pid_eeprom_offsets::D_TERM ), DEFAULT_D_VALUE);
 }
 
 
@@ -107,12 +107,12 @@ void setDefaultsExtruder(int index,uint16_t eeprom_base)
  */
 void SetDefaultsThermal(uint16_t eeprom_base)
 {
-	eeprom_write_dword( (uint32_t*)(eeprom_base + therm_eeprom_offsets::THERM_R0_OFFSET), THERM_R0_DEFAULT_VALUE);
-	eeprom_write_dword( (uint32_t*)(eeprom_base + therm_eeprom_offsets::THERM_T0_OFFSET), THERM_T0_DEFAULT_VALUE);
-	eeprom_write_dword( (uint32_t*)(eeprom_base + therm_eeprom_offsets::THERM_BETA_OFFSET), THERM_BETA_DEFAULT_VALUE);
+	eeprom_write_dword( (uint32_t*)(eeprom_base + therm_eeprom_offsets::THERM_R0), THERM_R0_DEFAULT_VALUE);
+	eeprom_write_dword( (uint32_t*)(eeprom_base + therm_eeprom_offsets::THERM_T0), THERM_T0_DEFAULT_VALUE);
+	eeprom_write_dword( (uint32_t*)(eeprom_base + therm_eeprom_offsets::THERM_BETA), THERM_BETA_DEFAULT_VALUE);
 	/// write the default thermal table.
 	eeprom_write_block( (const uint8_t*)default_therm_table,
-			(uint8_t*)(eeprom_base + therm_eeprom_offsets::THERM_DATA_OFFSET), sizeof(uint16_t)*2*NUMTEMPS);
+			(uint8_t*)(eeprom_base + therm_eeprom_offsets::THERM_DATA), sizeof(uint16_t)*2*NUMTEMPS);
 
 }
 
@@ -133,11 +133,11 @@ void setDefaultLedEffects(uint16_t eeprom_base)
 	Color colors;
 
 	// default color is white
-	eeprom_write_byte((uint8_t*)(eeprom_base + blink_eeprom_offsets::BASIC_COLOR_OFFSET), LED_DEFAULT_WHITE);
-	eeprom_write_byte((uint8_t*)(eeprom_base + blink_eeprom_offsets::LED_HEAT_OFFSET), 1);
+	eeprom_write_byte((uint8_t*)(eeprom_base + blink_eeprom_offsets::BASIC_COLOR), LED_DEFAULT_WHITE);
+	eeprom_write_byte((uint8_t*)(eeprom_base + blink_eeprom_offsets::LED_HEAT_ON), 1);
     
 	colors.red=0xFF; colors.green =colors.blue =0x00;
-	eeprom_write_block((void*)&colors,(uint8_t*)(eeprom_base + blink_eeprom_offsets::CUSTOM_COLOR_OFFSET),sizeof(colors));
+	eeprom_write_block((void*)&colors,(uint8_t*)(eeprom_base + blink_eeprom_offsets::CUSTOM_COLOR),sizeof(colors));
 }
     /**
      *
@@ -151,10 +151,10 @@ void setCustomColor(uint8_t red, uint8_t green, uint8_t blue){
 	Color colors;
 
  ATOMIC_BLOCK(ATOMIC_RESTORESTATE){  	
-	eeprom_write_byte((uint8_t*)(eeprom_offsets::LED_STRIP_SETTINGS + blink_eeprom_offsets::BASIC_COLOR_OFFSET), LED_DEFAULT_CUSTOM);
+	eeprom_write_byte((uint8_t*)(eeprom_offsets::LED_STRIP_SETTINGS + blink_eeprom_offsets::BASIC_COLOR), LED_DEFAULT_CUSTOM);
 	
 	colors.red=red; colors.green = green; colors.blue =blue;
-	eeprom_write_block((void*)&colors,(uint8_t*)(eeprom_offsets::LED_STRIP_SETTINGS + blink_eeprom_offsets::CUSTOM_COLOR_OFFSET),sizeof(colors));
+	eeprom_write_block((void*)&colors,(uint8_t*)(eeprom_offsets::LED_STRIP_SETTINGS + blink_eeprom_offsets::CUSTOM_COLOR),sizeof(colors));
 }
 }
 
@@ -176,7 +176,7 @@ void eeprom_write_sound(Sound sound, uint16_t dest)
 void setDefaultBuzzEffects(uint16_t eeprom_base)
 {
 	Sound blare = {NOTE_B2, 500};
-	eeprom_write_sound(blare,eeprom_base + buzz_eeprom_offsets::BASIC_BUZZ_OFFSET);
+	eeprom_write_sound(blare,eeprom_base + buzz_eeprom_offsets::SOUND_ON);
 }
     
 /**
@@ -185,10 +185,10 @@ void setDefaultBuzzEffects(uint16_t eeprom_base)
  */
 void setDefaultsPreheat(uint16_t eeprom_base)
 {
-    eeprom_write_word((uint16_t*)(eeprom_base + preheat_eeprom_offsets::PREHEAT_RIGHT_OFFSET), 230);
-    eeprom_write_word((uint16_t*)(eeprom_base + preheat_eeprom_offsets::PREHEAT_LEFT_OFFSET), 230);
-    eeprom_write_word((uint16_t*)(eeprom_base + preheat_eeprom_offsets::PREHEAT_PLATFORM_OFFSET), 110);
-    eeprom_write_byte((uint8_t*)(eeprom_base + preheat_eeprom_offsets::PREHEAT_ON_OFF_OFFSET), (1<<HEAT_MASK_RIGHT) + (1<<HEAT_MASK_PLATFORM));
+    eeprom_write_word((uint16_t*)(eeprom_base + preheat_eeprom_offsets::PREHEAT_RIGHT_TEMP), 230);
+    eeprom_write_word((uint16_t*)(eeprom_base + preheat_eeprom_offsets::PREHEAT_LEFT_TEMP), 230);
+    eeprom_write_word((uint16_t*)(eeprom_base + preheat_eeprom_offsets::PREHEAT_PLATFORM_TEMP), 110);
+    eeprom_write_byte((uint8_t*)(eeprom_base + preheat_eeprom_offsets::PREHEAT_ON_OFF), (1<<HEAT_MASK_RIGHT) + (1<<HEAT_MASK_PLATFORM));
 }
 
 
@@ -200,20 +200,20 @@ void setDefaultsPreheat(uint16_t eeprom_base)
 void setDefaultsAcceleration()
 {
  ATOMIC_BLOCK(ATOMIC_RESTORESTATE){  
-    eeprom_write_byte((uint8_t*)(eeprom_offsets::ACCELERATION_SETTINGS + acceleration_eeprom_offsets::ACTIVE_OFFSET), 0x01);
-    eeprom_write_word((uint16_t*)(eeprom_offsets::ACCELERATION_SETTINGS + acceleration_eeprom_offsets::ACCELERATION_RATE_OFFSET), DEFAULT_ACCELERATION);
+    eeprom_write_byte((uint8_t*)(eeprom_offsets::ACCELERATION_SETTINGS + acceleration_eeprom_offsets::ACCELERATION_ACTIVE), 0x01);
+    eeprom_write_word((uint16_t*)(eeprom_offsets::ACCELERATION_SETTINGS + acceleration_eeprom_offsets::MAX_ACCELERATION), DEFAULT_ACCELERATION);
     
-    eeprom_write_word((uint16_t*)(eeprom_offsets::ACCELERATION_SETTINGS + acceleration_eeprom_offsets::AXIS_RATES_OFFSET + 0), DEFAULT_X_ACCELERATION);
-	eeprom_write_word((uint16_t*)(eeprom_offsets::ACCELERATION_SETTINGS + acceleration_eeprom_offsets::AXIS_RATES_OFFSET + 2), DEFAULT_Y_ACCELERATION);        
-	eeprom_write_word((uint16_t*)(eeprom_offsets::ACCELERATION_SETTINGS + acceleration_eeprom_offsets::AXIS_RATES_OFFSET + 4), DEFAULT_Z_ACCELERATION);
-	eeprom_write_word((uint16_t*)(eeprom_offsets::ACCELERATION_SETTINGS + acceleration_eeprom_offsets::AXIS_RATES_OFFSET + 6), DEFAULT_A_ACCELERATION);
-	eeprom_write_word((uint16_t*)(eeprom_offsets::ACCELERATION_SETTINGS + acceleration_eeprom_offsets::AXIS_RATES_OFFSET + 8), DEFAULT_B_ACCELERATION);
+    eeprom_write_word((uint16_t*)(eeprom_offsets::ACCELERATION_SETTINGS + acceleration_eeprom_offsets::MAX_ACCELERATION_AXIS + 0), DEFAULT_X_ACCELERATION);
+	eeprom_write_word((uint16_t*)(eeprom_offsets::ACCELERATION_SETTINGS + acceleration_eeprom_offsets::MAX_ACCELERATION_AXIS + 2), DEFAULT_Y_ACCELERATION);        
+	eeprom_write_word((uint16_t*)(eeprom_offsets::ACCELERATION_SETTINGS + acceleration_eeprom_offsets::MAX_ACCELERATION_AXIS + 4), DEFAULT_Z_ACCELERATION);
+	eeprom_write_word((uint16_t*)(eeprom_offsets::ACCELERATION_SETTINGS + acceleration_eeprom_offsets::MAX_ACCELERATION_AXIS + 6), DEFAULT_A_ACCELERATION);
+	eeprom_write_word((uint16_t*)(eeprom_offsets::ACCELERATION_SETTINGS + acceleration_eeprom_offsets::MAX_ACCELERATION_AXIS + 8), DEFAULT_B_ACCELERATION);
 
-	setEepromFixed16((eeprom_offsets::ACCELERATION_SETTINGS + acceleration_eeprom_offsets::AXIS_JERK_OFFSET + 0), DEFAULT_MAX_XY_JERK);
-	setEepromFixed16((eeprom_offsets::ACCELERATION_SETTINGS + acceleration_eeprom_offsets::AXIS_JERK_OFFSET + 2), DEFAULT_MAX_XY_JERK);
-	setEepromFixed16((eeprom_offsets::ACCELERATION_SETTINGS + acceleration_eeprom_offsets::AXIS_JERK_OFFSET + 4), DEFAULT_MAX_Z_JERK);
-	setEepromFixed16((eeprom_offsets::ACCELERATION_SETTINGS + acceleration_eeprom_offsets::AXIS_JERK_OFFSET + 6), DEFAULT_MAX_A_JERK);
-	setEepromFixed16((eeprom_offsets::ACCELERATION_SETTINGS + acceleration_eeprom_offsets::AXIS_JERK_OFFSET + 8), DEFAULT_MAX_B_JERK);
+	setEepromFixed16((eeprom_offsets::ACCELERATION_SETTINGS + acceleration_eeprom_offsets::MAX_SPEED_CHANGE + 0), DEFAULT_MAX_XY_JERK);
+	setEepromFixed16((eeprom_offsets::ACCELERATION_SETTINGS + acceleration_eeprom_offsets::MAX_SPEED_CHANGE + 2), DEFAULT_MAX_XY_JERK);
+	setEepromFixed16((eeprom_offsets::ACCELERATION_SETTINGS + acceleration_eeprom_offsets::MAX_SPEED_CHANGE + 4), DEFAULT_MAX_Z_JERK);
+	setEepromFixed16((eeprom_offsets::ACCELERATION_SETTINGS + acceleration_eeprom_offsets::MAX_SPEED_CHANGE + 6), DEFAULT_MAX_A_JERK);
+	setEepromFixed16((eeprom_offsets::ACCELERATION_SETTINGS + acceleration_eeprom_offsets::MAX_SPEED_CHANGE + 8), DEFAULT_MAX_B_JERK);
 	
 	eeprom_write_word((uint16_t*)(eeprom_offsets::ACCELERATION_SETTINGS + acceleration_eeprom_offsets::MINIMUM_SPEED), DEFAULT_MIN_SPEED);
 	
@@ -269,7 +269,7 @@ ATOMIC_BLOCK(ATOMIC_RESTORESTATE){
     
     setDefaultsAcceleration();
 	
-	eeprom_write_byte((uint8_t*)eeprom_offsets::FILAMENT_HELP_SETTINGS, 1);
+	eeprom_write_byte((uint8_t*)eeprom_offsets::FILAMENT_HELP_TEXT_ON, 1);
 
     /// Thermal table settings
     SetDefaultsThermal(eeprom_offsets::THERM_TABLE);
@@ -326,8 +326,8 @@ void setDefaultSettings(){
     setDefaultLedEffects(eeprom_offsets::LED_STRIP_SETTINGS);
     setDefaultBuzzEffects(eeprom_offsets::BUZZ_SETTINGS);
     setDefaultsPreheat(eeprom_offsets::PREHEAT_SETTINGS);
-    eeprom_write_byte((uint8_t*)eeprom_offsets::FILAMENT_HELP_SETTINGS, 1);
-    eeprom_write_byte((uint8_t*)(eeprom_offsets::ACCELERATION_SETTINGS + acceleration_eeprom_offsets::ACTIVE_OFFSET), 0x00);
+    eeprom_write_byte((uint8_t*)eeprom_offsets::FILAMENT_HELP_TEXT_ON, 1);
+    eeprom_write_byte((uint8_t*)(eeprom_offsets::ACCELERATION_SETTINGS + acceleration_eeprom_offsets::ACCELERATION_ACTIVE), 0x00);
     setToolHeadCount(1);
     // HBP settings
   #ifdef MODEL_REPLICATOR
@@ -351,8 +351,8 @@ void storeToolheadToleranceDefaults(){
 
 void updateBuildTime(uint8_t new_hours, uint8_t new_minutes){
 	
-	uint16_t hours = eeprom::getEeprom16(eeprom_offsets::TOTAL_BUILD_TIME + build_time_offsets::HOURS_OFFSET,0);
-	uint8_t minutes = eeprom::getEeprom8(eeprom_offsets::TOTAL_BUILD_TIME + build_time_offsets::MINUTES_OFFSET,0);
+	uint16_t hours = eeprom::getEeprom16(eeprom_offsets::TOTAL_BUILD_TIME + build_time_offsets::HOURS,0);
+	uint8_t minutes = eeprom::getEeprom8(eeprom_offsets::TOTAL_BUILD_TIME + build_time_offsets::MINUTES,0);
 	
 	uint8_t total_minutes = new_minutes + minutes;
 	minutes = total_minutes % 60;
@@ -364,8 +364,8 @@ void updateBuildTime(uint8_t new_hours, uint8_t new_minutes){
 
  ATOMIC_BLOCK(ATOMIC_RESTORESTATE){  	
 	// update build time
-	eeprom_write_word((uint16_t*)(eeprom_offsets::TOTAL_BUILD_TIME + build_time_offsets::HOURS_OFFSET), hours + new_hours);
-	eeprom_write_byte((uint8_t*)(eeprom_offsets::TOTAL_BUILD_TIME + build_time_offsets::MINUTES_OFFSET), minutes);
+	eeprom_write_word((uint16_t*)(eeprom_offsets::TOTAL_BUILD_TIME + build_time_offsets::HOURS), hours + new_hours);
+	eeprom_write_byte((uint8_t*)(eeprom_offsets::TOTAL_BUILD_TIME + build_time_offsets::MINUTES), minutes);
 }
 }
 
@@ -396,8 +396,8 @@ void fullResetEEPROM() {
 #endif
 	
 	// set build time to zero
-	eeprom_write_word((uint16_t*)(eeprom_offsets::TOTAL_BUILD_TIME + build_time_offsets::HOURS_OFFSET), 0);
-	eeprom_write_byte((uint8_t*)(eeprom_offsets::TOTAL_BUILD_TIME + build_time_offsets::MINUTES_OFFSET), 0);
+	eeprom_write_word((uint16_t*)(eeprom_offsets::TOTAL_BUILD_TIME + build_time_offsets::HOURS), 0);
+	eeprom_write_byte((uint8_t*)(eeprom_offsets::TOTAL_BUILD_TIME + build_time_offsets::MINUTES), 0);
 
 	eeprom_write_byte((uint8_t*)(eeprom_offsets::TOTAL_BUILD_TIME), BOTSTEP_16_STEP);
 }
