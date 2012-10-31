@@ -676,17 +676,16 @@ namespace planner {
 	void addMoveToBuffer(const Point& target, const int32_t &us_per_step)
 	{
 		Point offset_target;
-		offset_target = target + *tool_offsets;
-		
+    offset_target = target + *tool_offsets;
+
 		/// Clip Z axis so that plate cannot attempt to move out of build area
 		/// other axis clipping will be added in a future revision
 		if(offset_target[Z_AXIS] > axes[Z_AXIS].max_length){
 			offset_target[Z_AXIS] = axes[Z_AXIS].max_length;
 		}
-
 			
 		planNextMove(offset_target, us_per_step, offset_target - position);
-		position = target;
+		position = offset_target;
 
 	}
 
@@ -938,7 +937,7 @@ namespace planner {
 
 	void definePosition(const Point& new_position)
 	{
-		position = new_position;
+		position = new_position + *tool_offsets;
 		
 		/// Clip Z axis so that plate cannot attempt to move out of build area
 		/// other axis clipping will be added in a future revision
@@ -946,7 +945,7 @@ namespace planner {
 			position[Z_AXIS] = axes[Z_AXIS].max_length;
 		}
 		
-		steppers::definePosition(new_position);
+		steppers::definePosition(position);
 		
 		// reset speed
 		for (int i = 0; i < STEPPER_COUNT; i++) {
