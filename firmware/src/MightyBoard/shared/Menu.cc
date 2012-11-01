@@ -651,7 +651,7 @@ void SelectAlignmentMenu::handleSelect(uint8_t index) {
     case 1:
       // update toolhead offset (tool tolerance setting) 
       // this is summed with previous offset setting
-      offset = (int32_t)(eeprom::getEeprom32(eeprom_offsets::TOOLHEAD_OFFSET_SETTINGS, 0)) + (int32_t)((xCounter-7)*XSTEPS_PER_MM *0.1f * 10);
+      offset = (int32_t)(eeprom::getEeprom32(eeprom_offsets::TOOLHEAD_OFFSET_SETTINGS, 0)) - (int32_t)((xCounter-7)*XSTEPS_PER_MM *0.1f * 10);
       ATOMIC_BLOCK(ATOMIC_RESTORESTATE){
         eeprom_write_block((uint8_t*)&offset, (uint8_t*)eeprom_offsets::TOOLHEAD_OFFSET_SETTINGS, 4);
       }
@@ -659,7 +659,7 @@ void SelectAlignmentMenu::handleSelect(uint8_t index) {
       break;
     case 2:
       // update toolhead offset (tool tolerance setting)
-      offset = (int32_t)(eeprom::getEeprom32(eeprom_offsets::TOOLHEAD_OFFSET_SETTINGS + 4, 0)) + (int32_t)((yCounter-7)*YSTEPS_PER_MM *0.1f * 10);
+      offset = (int32_t)(eeprom::getEeprom32(eeprom_offsets::TOOLHEAD_OFFSET_SETTINGS + 4, 0)) - (int32_t)((yCounter-7)*YSTEPS_PER_MM *0.1f * 10);
       ATOMIC_BLOCK(ATOMIC_RESTORESTATE){
         eeprom_write_block((uint8_t*)&offset, (uint8_t*)eeprom_offsets::TOOLHEAD_OFFSET_SETTINGS + 4, 4);
       }

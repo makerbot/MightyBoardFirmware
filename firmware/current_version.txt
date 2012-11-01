@@ -1,5 +1,7 @@
 6.2.0
  * release candidate for 6.2
+6.2.3
+ * beta release 2
 6.2.1
  * update with level build plate script fixed for Replicator 2
 6.1.1

@@ -176,7 +176,8 @@ void eeprom_write_sound(Sound sound, uint16_t dest)
 void setDefaultBuzzEffects(uint16_t eeprom_base)
 {
 	Sound blare = {NOTE_B2, 500};
-	eeprom_write_sound(blare,eeprom_base + buzz_eeprom_offsets::SOUND_ON);
+	//eeprom_write_sound(blare,eeprom_base + buzz_eeprom_offsets::SOUND_ON);
+  eeprom_write_byte((uint8_t*)(eeprom_base + buzz_eeprom_offsets::SOUND_ON), 1);
 }
     
 /**
@@ -399,7 +400,7 @@ void fullResetEEPROM() {
 	eeprom_write_word((uint16_t*)(eeprom_offsets::TOTAL_BUILD_TIME + build_time_offsets::HOURS), 0);
 	eeprom_write_byte((uint8_t*)(eeprom_offsets::TOTAL_BUILD_TIME + build_time_offsets::MINUTES), 0);
 
-	eeprom_write_byte((uint8_t*)(eeprom_offsets::TOTAL_BUILD_TIME), BOTSTEP_16_STEP);
+	eeprom_write_byte((uint8_t*)(eeprom_offsets::BOTSTEP_TYPE), BOTSTEP_16_STEP);
 }
 	
 	factoryResetEEPROM();
