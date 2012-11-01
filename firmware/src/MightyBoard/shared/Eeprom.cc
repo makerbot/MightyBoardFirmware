@@ -28,10 +28,9 @@ void init() {
        prom_version[1] = firmware_version / 100;
        ATOMIC_BLOCK(ATOMIC_RESTORESTATE){  
        eeprom_write_block(prom_version,(uint8_t*)eeprom_offsets::VERSION_LOW,2);
-	   }
+       }
        
        // special upgrade for version 6.0
-		if (prom_version[0] == 0 && prom_version[1]==6){
 			int32_t x_nozzle_offset = getEeprom32(eeprom_offsets::TOOLHEAD_OFFSET_SETTINGS, 0);
 			/// check to make sure we have not already applied this fix 
 			/// old offsets were 1mm or less, new offsets are around 33mm
@@ -42,10 +41,9 @@ void init() {
 				ATOMIC_BLOCK(ATOMIC_RESTORESTATE){  
 				eeprom_write_block((uint8_t*)&(x_nozzle_offset),(uint8_t*)(eeprom_offsets::TOOLHEAD_OFFSET_SETTINGS), 4 );
 				}
+        //Update XHomeOffsets to update incorrect settings for single/dual machines
+        setDefaultAxisHomePositions(); 
 			}	
-			//Update XHomeOffsets to update incorrect settings for single/dual machines
-			setDefaultAxisHomePositions(); 
-		}      
 }
 
 uint8_t getEeprom8(const uint16_t location, const uint8_t default_value) {

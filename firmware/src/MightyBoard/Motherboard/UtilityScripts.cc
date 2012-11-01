@@ -28,7 +28,7 @@
 /// the script lengths are given by the output of the loadDataFile.py script
  static uint16_t Lengths[4]  PROGMEM = { 95, /// Home Axes
                                          LEVEL_PLATE_LEN,
-                                         4630}; /// nozzle (toolhead) calibrate
+                                         4618}; /// nozzle (toolhead) calibrate
                             
 HOME_AXES_SCRIPT
 NOZZLE_CALIBRATE
