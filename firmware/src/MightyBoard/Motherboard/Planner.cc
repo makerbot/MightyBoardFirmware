@@ -962,6 +962,6 @@ namespace planner {
 
 	const Point getPosition()
 	{
-		return position;
+		return position - *tool_offsets;
 	}
 }

@@ -200,7 +200,7 @@ bool fan_state= false;
 void startSleep(){
 
 	// record current position
-	sleep_position = steppers::getPosition();
+	sleep_position = planner::getPosition();
   fan_state = EX_FAN.getValue();	
 
 	Motherboard &board = Motherboard::getBoard();
@@ -236,7 +236,7 @@ void startSleep(){
 
 void stopSleep(){
 	// move to build position
-	Point z_pos = Point(steppers::getPosition());
+	Point z_pos = Point(planner::getPosition());
 	/// set filament position to sleep_position
 	z_pos[A_AXIS] = sleep_position[A_AXIS];
 	z_pos[B_AXIS] = sleep_position[B_AXIS];
