@@ -218,7 +218,7 @@ void Motherboard::reset(bool hard_reset) {
 	// turn off the active cooling fan
 	setExtra(false);  
 #else
-  //cutoff.init();
+  cutoff.init();
   extruder_manage_timeout.start(SAMPLE_INTERVAL_MICROS_THERMOCOUPLE);
 #endif
   
