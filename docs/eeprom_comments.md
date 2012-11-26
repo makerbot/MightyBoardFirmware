@@ -24,6 +24,7 @@ Info flags, all on second comment line:
     eeprom_map (optional): name the namespace that contains the detail for this entry.  if this option is used, no other flags are required.  eg:
         //$BEGIN_ENTRY
         //$eeprom_map:cooler_eeprom_offsets
+    axis_expand (optional): eeprom field is a byte entry representing an XYZAB axis map
 
    
 There are two informational entries in the eeprom_info namespace:
