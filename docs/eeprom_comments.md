@@ -4,7 +4,7 @@ We notate the eeprom map so that it can be parsed by python and converted to a j
 We comment each line of EepromMap.hh.  Here is an example:
 
     //$BEGIN_ENTRY
-    //$type:H $floating_point:True $constraints:m,0,100 
+    //$type:H $floating_point:True $constraints:m,0,100 tooltip:here is a tooltip with spaces and no quotes
 
 Start of entry flag:
 
@@ -30,11 +30,13 @@ Info flags, all on second comment line:
 There are two informational entries in the eeprom_info namespace:
 
     //$BEGIN_INFO_ENTRY
-    //$software_variant:0x01
+    //$name:software_variant value:0x01
    
     //$BEGIN_INFO_ENTRY
-    //$dependent_toolhead_map:None
+    //$name:dependent_toolhead_map value:None
 
      
 The first states the software varaint of the eeprom map (see advanced version command in https://github.com/makerbot/s3g/blob/master/doc/s3gProtocol.md)   
 The second provides the name of the toolhead eeprom map if applicable.  
+
+More information entries can be added with any number of variable entries, though "name" and "value" are compulsory.
