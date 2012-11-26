@@ -21,12 +21,12 @@ GCC_VERSION=4.6.2
 AVR_LIBC_VERSION=1.8.0
 AVRDUDE_VERSION=5.10
 
-MPC_PREFIX=/home/dave/opt/mpc-${MPC_VERSION}
+MPC_PREFIX=${HOME}/opt/mpc-${MPC_VERSION}
 
 echo "########################"
-echo APT-GETing GMP, MPFR, MPC
+echo apt-geting GMP, MPFR, MPC, Scons, avrdude
 echo "########################"
-sudo apt-get install libgmp-dev libmpfr-dev libmpc-dev
+sudo apt-get install libgmp-dev libmpfr-dev libmpc-dev scons avrdude
 echo DONE
 
 wget -N -P incoming http://ftp.gnu.org/gnu/binutils/binutils-${BINUTILS_VERSION}.tar.bz2
@@ -93,8 +93,15 @@ fi
 # then
 # 	gzip -dc incoming/avrdude-${AVRDUDE_VERSION}.tar.gz | tar xf -
 # 	cd avrdude-${AVRDUDE_VERSION}
-# 	./configure --prefix=/home/dave/opt/avrdude-${AVRDUDE_VERSION}
+# 	./configure --prefix=${HOME}/opt/avrdude-${AVRDUDE_VERSION}
 # 	make
 # 	make install
 # 	cd ..
 # fi
+
+echo "#################################################################"
+echo NB: "[avr-]gcc/g++" has been built to ${HOME}/opt/avr/bin.
+echo To permanently add ${HOME}/opt/avr/bin to your PATH, please edit
+echo ~/.bash_profile and prefix PATH with ${HOME}/opt/avr/bin.
+echo "#################################################################"
+
