@@ -2244,14 +2244,14 @@ void ActiveBuildMenu::drawItem(uint8_t index, LiquidCrystalSerial& lcd, uint8_t 
             lcd.writeFromPgmspace(CANCEL_BUILD_MSG);
             break;
         case 2:
-            if(steppers::isZHomed()){
+            if(!steppers::isZHomed()){
                 lcd.writeFromPgmspace(WAIT_FOR_HOMING_MSG);
             } else {
                 lcd.writeFromPgmspace(CHANGE_FILAMENT_MSG);
             }
             break;
         case 3:
-            if(steppers::isZHomed()){
+            if(!steppers::isZHomed()){
                 lcd.writeFromPgmspace(WAIT_FOR_HOMING_MSG);
             } else {
                 if(!is_sleeping){
