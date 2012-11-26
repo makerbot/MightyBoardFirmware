@@ -198,9 +198,10 @@ bool fan_state = false;
 
 void startSleep(){
 
-	// record current position
-	sleep_position = steppers::getStepperPosition();
-  fan_state = EX_FAN.getValue();
+    if(steppers::isZHomed()){
+        // record current position
+        sleep_position = steppers::getStepperPosition();
+        fan_state = EX_FAN.getValue();
 	Motherboard &board = Motherboard::getBoard();
 	
 	// retract
@@ -242,6 +243,7 @@ void startSleep(){
         steppers::setAxisPotValue(i, value);
     }
   board.setExtra(false);
+}
 }
 
 void stopSleep(){
