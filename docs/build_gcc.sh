@@ -102,6 +102,6 @@ fi
 echo "#################################################################"
 echo NB: "[avr-]gcc/g++" has been built to ${HOME}/opt/avr/bin.
 echo To permanently add ${HOME}/opt/avr/bin to your PATH, please edit
-echo ~/.bash_profile and prefix PATH with ${HOME}/opt/avr/bin.
+echo ~/.bashrc and prefix PATH with ${HOME}/opt/avr/bin.
 echo "#################################################################"
 
