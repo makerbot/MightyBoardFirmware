@@ -21,6 +21,7 @@
 
 #include <stdint.h>
 #include "Packet.hh"
+#include "lib_sd/sd_raw.h"
 
 /// Interface to the SD card library. Provides straightforward functions for
 /// listing directory contents, and reading and writing jobs to files.
@@ -41,6 +42,10 @@ namespace sdcard {
       SD_ERR_GENERIC          = 8,  ///< General error
       SD_ERR_VOLUME_TOO_BIG	  = 10  ///< the SD card filesystem is too large
     } SdErrorCode;
+
+    /// Change the sd card clock speed
+    /// \param[in] clock_val desired clock speed.  Accepted values are defined by SDClockVals
+    void changeSDClock(SDClockVals clock_val);
 
     /// Reset the SD card subsystem.
     void reset();

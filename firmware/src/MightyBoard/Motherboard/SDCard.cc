@@ -23,7 +23,6 @@
 #include <string.h>
 #include "lib_sd/sd-reader_config.h"
 #include "lib_sd/fat.h"
-#include "lib_sd/sd_raw.h"
 #include "lib_sd/partition.h"
 #include "Menu_locales.hh"
 
@@ -162,6 +161,13 @@ SdErrorCode directoryNextEntry(char* buffer, uint8_t bufsize, uint8_t * fileLeng
 	}
 	return SD_SUCCESS;
 }
+
+
+void changeSDClock(SDClockVals clock_val){
+  sd_set_clock_val(clock_val);
+
+}
+
 
 bool findFileInDir(const char* name, struct fat_dir_entry_struct* dir_entry)
 {

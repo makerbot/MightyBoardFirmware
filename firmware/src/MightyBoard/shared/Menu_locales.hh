@@ -278,6 +278,14 @@ static PROGMEM unsigned char ERROR_INVALID_PLATFORM[] = "INVALID COMMAND:    I r
 static PROGMEM unsigned char ERROR_INVALID_TOOL[] = "INVALID TOOL:       I received a commandfor Tool #2, but I  only have one Tool. ";
 static PROGMEM unsigned char ACTIVE_FAN_MSG[]		 = "Filament Fan        ";
 
+// sd card clock speeds for debugging / emissions testing
+static PROGMEM unsigned char SD_CLOCK_2_MSG[] = "2MHz  ";
+static PROGMEM unsigned char SD_CLOCK_1_MSG[] = "1MHz  ";
+static PROGMEM unsigned char SD_CLOCK_4_MSG[] = "4MHz  ";
+static PROGMEM unsigned char SD_CLOCK_8_MSG[] = "8MHz  ";
+static PROGMEM unsigned char SD_CLOCK_500_MSG[] = "500kHz";
+static PROGMEM unsigned char SD_CARD_CLOCK_MSG[] = "SD Clock   ";
+
 
 /// the gcode and s3g files for these scripts are located in firmware/s3g_scripts
 /// the script loadDataFile.py converts s3g files to byte arrays to store in PROGMEM

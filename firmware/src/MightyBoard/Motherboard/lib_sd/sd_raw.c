@@ -170,6 +170,41 @@ static void sd_raw_send_byte(uint8_t b);
 static uint8_t sd_raw_rec_byte();
 static uint8_t sd_raw_send_command(uint8_t command, uint32_t arg);
 
+SDClockVals clock_val = SD8_MHz;
+
+void sd_set_clock_val(SDClockVals clock_in){
+  clock_val = clock_in;
+}
+
+void set_clock_speed(){
+
+  switch(clock_val){
+    case SD8_MHz:
+      SPCR &= ~((1 << SPR1) | (1 << SPR0)); /* Clock Frequency: f_OSC / 4 */
+      SPSR |= (1 << SPI2X); /* Doubled Clock Frequency: f_OSC / 2 */
+      break;
+    case SD4_MHz:
+      SPCR &= ~((1 << SPR1) | (1 << SPR0)); /* Clock Frequency: f_OSC / 4 */
+      SPSR &= ~(1 << SPI2X); /* No Doubled Clock Frequency */
+      break;
+    case SD2_MHz:
+      SPCR &= ~(1 << SPR1);
+      SPCR |= (1 << SPR0); /* Clock Frequency: f_OSC / 16 */
+      SPSR |= (1 << SPI2X); /* Doubled Clock Frequency: f_OSC / 8 */
+      break;
+    case SD1_MHz:
+      SPCR &= ~(1 << SPR1);
+      SPCR |= (1 << SPR0); /* Clock Frequency: f_OSC / 16 */
+      SPSR &= ~(1 << SPI2X); /* No Doubled Clock Frequency */
+      break;
+    case SD500_kHz:
+      SPCR |= (1 << SPR1);
+      SPCR &= ~(1 << SPR0); /* Clock Frequency: f_OSC / 64 */
+      SPSR |= (1 << SPI2X); /* Doubled Clock Frequency: f_OSC / 32 */
+      break;
+  }
+}
+
 /**
  * \ingroup sd_raw
  * Initializes memory card communication.
@@ -322,10 +357,8 @@ uint8_t sd_raw_init()
     unselect_card();
     
     
-
+    set_clock_speed();
     /* switch to highest SPI frequency possible */
-    SPCR &= ~((1 << SPR1) | (1 << SPR0)); /* Clock Frequency: f_OSC / 4 */
-    SPSR |= (1 << SPI2X); /* Doubled Clock Frequency: f_OSC / 2 */
 
 #if !SD_RAW_SAVE_RAM
     /* the first block is likely to be accessed first, so precache it here */
