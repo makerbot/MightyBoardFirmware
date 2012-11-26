@@ -231,10 +231,31 @@ void startSleep(){
 	steppers::setTarget(wait_pos, xy_mm_per_second_80);
   
   // turn off fan
+    // Lower pot values for sleep
+    uint8_t value = 20;
+    for(uint8_t i = 0; i < 2; ++i)
+    {
+        steppers::setAxisPotValue(i, value);
+    }
+    for(uint8_t i = 3; i < 5; ++i)
+    {
+        steppers::setAxisPotValue(i, value);
+    }
   board.setExtra(false);
 }
 
 void stopSleep(){
+    // Raise pot values for printing
+    uint8_t value = 127;
+    for(uint8_t i = 0; i < 2; ++i)
+    {
+        steppers::setAxisPotValue(i, value);
+    }
+    for(uint8_t i = 3; i < 5; ++i)
+    {
+        steppers::setAxisPotValue(i, value);
+    }
+
 	// move to build position
 	Point z_pos = Point(steppers::getStepperPosition());
 	/// set filament position to sleep_position
