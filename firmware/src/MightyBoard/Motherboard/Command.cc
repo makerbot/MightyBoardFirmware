@@ -213,12 +213,19 @@ void startSleep(){
 	extruder_temp[0] = board.getExtruderBoard(0).getExtruderHeater().get_set_temperature();
 	extruder_temp[1] = board.getExtruderBoard(1).getExtruderHeater().get_set_temperature();
 	platform_temp = board.getPlatformHeater().get_set_temperature();
+
+    uint8_t pot_value = 20;
 	
 	if(cold_pause){
 		// cool heaters
 		board.getExtruderBoard(0).getExtruderHeater().set_target_temperature(0);
 		board.getExtruderBoard(1).getExtruderHeater().set_target_temperature(0);
 		board.getPlatformHeater().set_target_temperature(0);
+        // Set the axes pot values only if we are cold pausing, otherwise we need them
+        for(uint8_t i = 3; i < 5; ++i)
+        {
+            steppers::setAxisPotValue(i, pot_value);
+        }
 	}
 	
 	// move to wait position
@@ -232,15 +239,10 @@ void startSleep(){
 	steppers::setTarget(wait_pos, xy_mm_per_second_80);
   
   // turn off fan
-    // Lower pot values for sleep
-    uint8_t value = 20;
+    // Lower pot values for the x/y axes
     for(uint8_t i = 0; i < 2; ++i)
     {
-        steppers::setAxisPotValue(i, value);
-    }
-    for(uint8_t i = 3; i < 5; ++i)
-    {
-        steppers::setAxisPotValue(i, value);
+        steppers::setAxisPotValue(i, pot_value);
     }
   board.setExtra(false);
 }
