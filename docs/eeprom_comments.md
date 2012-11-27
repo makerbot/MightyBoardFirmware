@@ -20,12 +20,11 @@ Info flags, all on second comment line:
         l: comma separated list of valid options
     units (optional): a string to display on the UI, stating the unit type of the eeprom field
     tooltip (optional):  a description for the entry
-    ignore (optional): use this flag for entries that exist but should not be displayed to the user.  Either because they are deprecated, or because they are not changeable.  
+    ignore (optional): use this for entries that exist but should not be displayed to the user.  Either because they are deprecated, or because they are not changeable.  Due to the nature of the parser, this flag must be set to True when used ($ignore:True)
     eeprom_map (optional): name the namespace that contains the detail for this entry.  if this option is used, no other flags are required.  eg:
         //$BEGIN_ENTRY
         //$eeprom_map:cooler_eeprom_offsets
-    axis_expand (optional): eeprom field is a byte entry representing an XYZAB axis map
-
+    axis_expand (optional): eeprom field is a byte entry representing an XYZAB axis map. Due to the nature of the parser, this flag must be set to True when used ($axis_expand:True).
    
 There are two informational entries in the eeprom_info namespace:
 
