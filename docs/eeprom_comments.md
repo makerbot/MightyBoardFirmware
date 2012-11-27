@@ -13,6 +13,7 @@ Start of entry flag:
 Info flags, all on second comment line:
 
     type (required): a character in python struct format indicating the data type of the eeprom field 
+    mult (required): Sometimes its a bit intractable to write out 40 B characters, so the mult variable is a form of shorthand that tells us that the actual "type" of this entry is <type> * <mult>
     floating_point (optional): true if the eeprom field is a float (note we use a fake 16 bit float type) 
     contraints (required): used by eeprom_verifier.py to assess whether the eeprom map contains valid entries. 
         a: any entry could be valid
