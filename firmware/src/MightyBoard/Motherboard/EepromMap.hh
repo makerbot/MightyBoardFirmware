@@ -270,7 +270,7 @@ const static uint16_t BOT_STATUS_BYTES = 0x018A;
 const static uint16_t AXIS_LENGTHS				= 0x018C;
 /// total lifetime print hours, 3bytes
 //$BEGIN_ENTRY
-//$eeprom_map: build_time_offsets
+//$eeprom_map:build_time_offsets
 const static uint16_t TOTAL_BUILD_TIME			= 0x01A0;
 /// axis steps per mm XYZAB 5*32bit = 20 bytes
 //$BEGIN_ENTRY
