@@ -142,6 +142,7 @@ int main() {
   INTERFACE_POWER.setDirection(true);
   INTERFACE_POWER.setValue(false);
 #endif
+  board.init();
 	reset(true);
 	sei();
 	    

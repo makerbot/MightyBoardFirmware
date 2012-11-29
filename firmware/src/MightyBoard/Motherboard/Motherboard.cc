@@ -76,6 +76,41 @@ Motherboard::Motherboard() :
                             TIMSK5 &= ~(1<<OCIE5A)
  
 
+void Motherboard::init(){
+  SoftI2cManager::getI2cManager().init();
+
+
+	// Check if the interface board is attached
+	hasInterfaceBoard = interface::isConnected();
+
+  // Configure the debug pins.
+  DEBUG_PIN.setDirection(true);
+  DEBUG_PIN1.setDirection(true);
+  DEBUG_PIN2.setDirection(true);
+  DEBUG_PIN3.setDirection(true);	
+  DEBUG_PIN4.setDirection(true);
+  DEBUG_PIN5.setDirection(true);
+  DEBUG_PIN6.setDirection(true);
+		
+#ifdef MODEL_REPLICATOR2 
+  therm_sensor.init();
+	therm_sensor_timeout.start(THERMOCOUPLE_UPDATE_RATE);
+#else
+  cutoff.init();
+  extruder_manage_timeout.start(SAMPLE_INTERVAL_MICROS_THERMOCOUPLE);
+#endif
+
+  // initialize the extruders
+  Extruder_One.reset();
+  Extruder_Two.reset();
+    
+  HBP_HEAT.setDirection(true);
+	platform_thermistor.init();
+	platform_heater.reset();
+	platform_timeout.start(SAMPLE_INTERVAL_MICROS_THERMISTOR);
+
+}
+
 void Motherboard::initClocks(){
 
   // set up piezo timer
@@ -134,7 +169,6 @@ void Motherboard::reset(bool hard_reset) {
 
 	// Init steppers
 	uint8_t axis_invert = eeprom::getEeprom8(eeprom_offsets::AXIS_INVERSION, 0);
-  SoftI2cManager::getI2cManager().init();
 	// Z holding indicates that when the Z axis is not in
 	// motion, the machine should continue to power the stepper
 	// coil to ensure that the Z stage does not shift.
@@ -150,11 +184,7 @@ void Motherboard::reset(bool hard_reset) {
 	UART::getHostUART().in.reset();
 	
 	micros = 0;
-
   initClocks();
-
-	// Check if the interface board is attached
-	hasInterfaceBoard = interface::isConnected();
 
 	if (hasInterfaceBoard) {
 		// Make sure our interface board is initialized
@@ -173,7 +203,6 @@ void Motherboard::reset(bool hard_reset) {
             // otherwise start with the splash screen.
             interfaceBoard.queueScreen(InterfaceBoard::SPLASH_SCREEN);
         
-        
         if(hard_reset)
           _delay_us(3000000);
 
@@ -190,56 +219,27 @@ void Motherboard::reset(bool hard_reset) {
   // do not clear heater fail messages, the user should not be able to soft reboot from heater fail
   if(hard_reset)
   {
-		// Configure the debug pins.
-		DEBUG_PIN.setDirection(true);
-		DEBUG_PIN1.setDirection(true);
-		DEBUG_PIN2.setDirection(true);
-		DEBUG_PIN3.setDirection(true);	
-    DEBUG_PIN4.setDirection(true);
-    DEBUG_PIN5.setDirection(true);
-    DEBUG_PIN6.setDirection(true);
-		
 		RGB_LED::init();
 		
 		Piezo::playTune(TUNE_STARTUP);
 		
 		heatShutdown = false;
 		heatFailMode = HEATER_FAIL_NONE;
-
-#ifdef MODEL_REPLICATOR2 
-    therm_sensor.init();
-#endif
-
   } 	
   
   board_status = STATUS_NONE;
 #ifdef MODEL_REPLICATOR2 
-	therm_sensor_timeout.start(THERMOCOUPLE_UPDATE_RATE);
 	// turn off the active cooling fan
 	setExtra(false);  
-#else
-  cutoff.init();
-  extruder_manage_timeout.start(SAMPLE_INTERVAL_MICROS_THERMOCOUPLE);
 #endif
-  
-  // initialize the extruders
-  Extruder_One.reset();
-  Extruder_Two.reset();
-    
-  HBP_HEAT.setDirection(true);
-	platform_thermistor.init();
-	platform_heater.reset();
-    
-  Extruder_One.getExtruderHeater().set_target_temperature(0);
-	Extruder_Two.getExtruderHeater().set_target_temperature(0);
-	platform_heater.set_target_temperature(0);	
-	platform_timeout.start(SAMPLE_INTERVAL_MICROS_THERMISTOR);
-	
+
 	// disable extruder two if sigle tool machine
 	Extruder_Two.getExtruderHeater().disable(eeprom::isSingleTool());
 	
 	// disable platform heater if no HBP
 	platform_heater.disable(!eeprom::hasHBP());
+
+	user_input_timeout.start(restart_timeout);
 	
 	RGB_LED::setDefaultColor(); 
 	buttonWait = false;	
@@ -507,7 +507,7 @@ void Motherboard::runMotherboardSlice() {
 	
 	// if no user input for USER_INPUT_TIMEOUT, shutdown heaters and warn user
     // don't do this if a heat failure has occured ( in this case heaters are already shutdown and separate error messaging used)
-	if(user_input_timeout.hasElapsed() && !heatShutdown && (host::getHostState() != host::HOST_STATE_BUILDING_FROM_SD) && (host::getHostState() != host::HOST_STATE_BUILDING))
+	if(user_input_timeout.hasElapsed()) && !heatShutdown && (host::getHostState() != host::HOST_STATE_BUILDING_FROM_SD) && (host::getHostState() != host::HOST_STATE_BUILDING))
 	{
         // clear timeout
 		user_input_timeout.clear();

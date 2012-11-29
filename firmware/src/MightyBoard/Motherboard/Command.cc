@@ -372,6 +372,8 @@ static void handleMovementCommand(const uint8_t &command) {
    }
 }
 
+bool start_build_flag = false;
+
 bool processExtruderCommandPacket() {
   Motherboard& board = Motherboard::getBoard();
   uint8_t	id = pop8();
@@ -380,7 +382,15 @@ bool processExtruderCommandPacket() {
 
   switch (command) {
 		case SLAVE_CMD_SET_TEMP:
+      /// we are clearing temps here for the beginning of a print instead of in reset because we want them to be set to zero temperature for as short a time as possible.
+      if(start_build_flag){
+        board.getExtruderBoard(id).getExtruderHeater().set_target_temperature(0);
+        board.getExtruderBoard(id).getExtruderHeater().set_target_temperature(0);
+        board.getPlatformHeater().set_target_temperature(0);
+        start_build_flag = false;
+      }
 			board.getExtruderBoard(id).getExtruderHeater().set_target_temperature(pop16());
+
 			/// if platform is actively heating and extruder is not cooling down, pause extruder
 			if(board.getPlatformHeater().isHeating() && !board.getPlatformHeater().isCooling() && !board.getExtruderBoard(id).getExtruderHeater().isCooling()){
 				check_temp_state = true;
@@ -999,6 +1009,7 @@ void runCommandSlice() {
 					pop32(); //int buildSteps = pop32();
 					line_number++;
 					host::handleBuildStartNotification(command_buffer);		
+          start_build_flag = true;
 				}
 			} else if ( command == HOST_CMD_BUILD_END_NOTIFICATION) {
 				if (command_buffer.getLength() >= 2){
