@@ -906,7 +906,7 @@ void runCommandSlice() {
 					uint8_t axes = pop8();
 					line_number++;
 
-					Point newPoint = Point(0,0,0,0,0); //steppers::getStepperPosition();
+					Point newPoint = steppers::getStepperPosition();
 
 					for (uint8_t i = 0; i < STEPPER_COUNT; i++) {
 						if ( axes & (1 << i) ) {
