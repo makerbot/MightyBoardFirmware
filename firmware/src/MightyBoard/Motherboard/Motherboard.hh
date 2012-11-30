@@ -121,6 +121,7 @@ private:
 	bool heating_lights_active;
 	int16_t currentTemp;
   int16_t setTemp; 
+  int16_t div_temp;
   bool toggleBlink;
   bool progress_active;
 	uint8_t progress_line;
@@ -189,8 +190,6 @@ public:
 	
 	bool isHeating();
 
-  // set the heater timeout on reset
-  void setRestartTimeout(int timeout);
 };
 
 

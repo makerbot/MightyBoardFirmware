@@ -204,6 +204,7 @@ static PROGMEM unsigned char TOOL_COUNT_MSG[]   =     "Tool Count         ";
 static PROGMEM unsigned char SOUND_MSG[] =            "Sound              ";
 static PROGMEM unsigned char LED_MSG[] =              "LED Color          ";
 static PROGMEM unsigned char LED_HEAT_MSG[] =         "Heat LEDs          ";
+static PROGMEM unsigned char HEAT_TIMEOUT_MSG[] =     "Heat Hold      m   ";
 static PROGMEM unsigned char HELP_SCREENS_MSG[] =     "Help Text          ";
 static PROGMEM unsigned char EXIT_MSG[] =             "exit menu          ";
 static PROGMEM unsigned char ACCELERATE_MSG[] = 	   "Accelerate         ";

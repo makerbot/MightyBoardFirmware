@@ -79,9 +79,11 @@ Motherboard::Motherboard() :
 void Motherboard::init(){
   SoftI2cManager::getI2cManager().init();
 
-
 	// Check if the interface board is attached
 	hasInterfaceBoard = interface::isConnected();
+
+  micros = 0;
+  initClocks();
 
   // Configure the debug pins.
   DEBUG_PIN.setDirection(true);
@@ -186,7 +188,6 @@ void Motherboard::reset(bool hard_reset) {
 	UART::getHostUART().in.reset();
 	
 	micros = 0;
-  initClocks();
 
   // get heater timeout from eeprom - the value is stored in minutes 
   restart_timeout = eeprom::getEeprom8(eeprom_offsets::HEATER_TIMEOUT_ON_CANCEL, 0) * ONE_MINUTE;
@@ -233,6 +234,10 @@ void Motherboard::reset(bool hard_reset) {
   } 	
   
   board_status = STATUS_NONE;
+  // turn preheat status on during reset to reflect potential remaining heat states.
+  // the flag it will be cleared immediately in the motherboard slice if the temperatures are set to zero.
+  board_status |= STATUS_PREHEATING;
+
 #ifdef MODEL_REPLICATOR2 
 	// turn off the active cooling fan
 	setExtra(false);  
@@ -250,6 +255,7 @@ void Motherboard::reset(bool hard_reset) {
 	buttonWait = false;	
 	currentTemp = 0;
   setTemp = 0; 
+  div_temp = 0;
   heating_lights_active = false;
   progress_active = false;
   progress_line = 0;
@@ -262,10 +268,6 @@ void Motherboard::reset(bool hard_reset) {
        interface::popScreen();  
   }
 
-}
-
-void Motherboard::setRestartTimeout(int timeout){
-  restart_timeout = timeout;
 }
 
 /// Get the number of microseconds that have passed since
@@ -377,13 +379,17 @@ bool Motherboard::isHeating(){
 void Motherboard::HeatingAlerts(){
     
     setTemp = 0;
+    div_temp = 0;
     currentTemp = 0;
+    int16_t top_temp = 0;
     
     /// show heating progress
+    // TODO: top temp should use preheat temps stored in eeprom instead of a hard coded value
     if(isHeating()){
         if(getPlatformHeater().isHeating()){
             currentTemp += getPlatformHeater().getDelta()*2;
             setTemp += (int16_t)(getPlatformHeater().get_set_temperature())*2;
+            top_temp += 230;
         }else{
           /// clear extruder paused states if needed
           if(getExtruderBoard(0).getExtruderHeater().isPaused()){getExtruderBoard(0).getExtruderHeater().Pause(false);}
@@ -392,13 +398,21 @@ void Motherboard::HeatingAlerts(){
         if(getExtruderBoard(0).getExtruderHeater().isHeating()  && !getExtruderBoard(0).getExtruderHeater().isPaused()){
             currentTemp += getExtruderBoard(0).getExtruderHeater().getDelta();
             setTemp += (int16_t)(getExtruderBoard(0).getExtruderHeater().get_set_temperature());
+            top_temp += 230;
         }
         if(getExtruderBoard(1).getExtruderHeater().isHeating() && !getExtruderBoard(1).getExtruderHeater().isPaused()){
             currentTemp += getExtruderBoard(1).getExtruderHeater().getDelta();
             setTemp += (int16_t)(getExtruderBoard(1).getExtruderHeater().get_set_temperature());
+            top_temp += 110;
         }
+
+      if(setTemp < currentTemp){
+        {  div_temp = (top_temp - setTemp);}
+      } else {
+        div_temp = setTemp;
+      }
              
-		if((setTemp != 0) && eeprom::getEeprom8(eeprom_offsets::LED_STRIP_SETTINGS + blink_eeprom_offsets::LED_HEAT_ON, 1)
+		if((div_temp != 0) && eeprom::getEeprom8(eeprom_offsets::LED_STRIP_SETTINGS + blink_eeprom_offsets::LED_HEAT_ON, 1)
           && (eeprom::getEeprom8(eeprom_offsets::LED_STRIP_SETTINGS, LED_DEFAULT_OFF) != LED_DEFAULT_OFF)){
 			int32_t mult = 255;
 			if(!heating_lights_active){
@@ -407,7 +421,7 @@ void Motherboard::HeatingAlerts(){
 #endif
 				heating_lights_active = true;
 			}
-			RGB_LED::setColor((mult*(setTemp - currentTemp))/setTemp, 0, (mult*currentTemp)/setTemp, false);
+			RGB_LED::setColor((mult*abs((setTemp - currentTemp)))/div_temp, 0, (mult*currentTemp)/div_temp, false);
 		}
 	}else{
 		if(heating_lights_active){
@@ -427,6 +441,7 @@ void Motherboard::StartProgressBar(uint8_t line, uint8_t start_char, uint8_t end
 	progress_end_char = end_char;
 	progress_last_index = 0;
 }
+
 void Motherboard::StopProgressBar(){
 
 	progress_active = false;
@@ -445,8 +460,8 @@ uint8_t Motherboard::HeatProgressBar(uint8_t line, uint8_t start_char, uint8_t e
 		return 0;
 	}
 		
-	if(setTemp > 0){
-		heatIndex = (abs((setTemp - currentTemp)) * (end_char - start_char)) / setTemp;		
+	if(div_temp > 0){
+		heatIndex = (abs((setTemp - currentTemp)) * (end_char - start_char)) / div_temp;		
 	}
 	if (lastHeatIndex > heatIndex){
 		lcd.setCursor(start_char,line);

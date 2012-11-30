@@ -125,6 +125,8 @@ void SplashScreen::reset() {
   
 }
 
+bool preheatActive = false;
+
 HeaterPreheat::HeaterPreheat(){
   itemCount = 4;
   reset();
@@ -883,16 +885,14 @@ void FilamentScreen::update(LiquidCrystalSerial& lcd, bool forceRedraw) {
         break;
       case FILAMENT_EXIT:
         stopMotor();
-        /// shut the heaters off if we are not in the middle of a build
-        if(host::getHostState() == host::HOST_STATE_READY){
-          Motherboard::getBoard().getExtruderBoard(0).getExtruderHeater().set_target_temperature(0);
-          Motherboard::getBoard().getExtruderBoard(1).getExtruderHeater().set_target_temperature(0);
-        }
         Motherboard::getBoard().setBoardStatus(Motherboard::STATUS_ONBOARD_PROCESS, false);
         Motherboard::getBoard().StopProgressBar();
         interface::popScreen();
         if(startup){
           host::stopBuild();
+          /// shut the heaters off if we are in the startup script
+          Motherboard::getBoard().getExtruderBoard(0).getExtruderHeater().set_target_temperature(0);
+          Motherboard::getBoard().getExtruderBoard(1).getExtruderHeater().set_target_temperature(0);
         }
         break;
       /// filament motor has been running for 5 minutes
@@ -964,11 +964,6 @@ void FilamentScreen::notifyButtonPressed(ButtonArray::ButtonName button) {
                   }
                   else{
                     stopMotor();
-                    /// shut the heaters off if we are not in the middle of a build
-                    if(host::getHostState() == host::HOST_STATE_READY){
-                      Motherboard::getBoard().getExtruderBoard(0).getExtruderHeater().set_target_temperature(0);
-                      Motherboard::getBoard().getExtruderBoard(1).getExtruderHeater().set_target_temperature(0);
-                    }
                     Motherboard::getBoard().setBoardStatus(Motherboard::STATUS_ONBOARD_PROCESS, false);
                     Motherboard::getBoard().StopProgressBar();
                     interface::popScreen();
@@ -977,16 +972,11 @@ void FilamentScreen::notifyButtonPressed(ButtonArray::ButtonName button) {
                 /// exit out of filament menu system
                 case FILAMENT_EXIT:
                   stopMotor();
-                  /// shut the heaters off if we are not in the middle of a build
-                  if(host::getHostState() == host::HOST_STATE_READY){
-                    Motherboard::getBoard().getExtruderBoard(0).getExtruderHeater().set_target_temperature(0);
-                    Motherboard::getBoard().getExtruderBoard(1).getExtruderHeater().set_target_temperature(0);
-                  }
                   Motherboard::getBoard().setBoardStatus(Motherboard::STATUS_ONBOARD_PROCESS, false);
                   Motherboard::getBoard().StopProgressBar();
                   interface::popScreen();
-                            break;
-                        default:
+                  break;
+                default:
                   needsRedraw = true;
                   break;
             }
@@ -1009,8 +999,8 @@ void FilamentScreen::reset() {
     filamentSuccess = SUCCESS;
     filamentTimer = Timeout();
     cancel_process = false;
-    filament_heat_temp[0] = 230;
-    filament_heat_temp[1] = 230;
+    filament_heat_temp[1] = eeprom::getEeprom16(eeprom_offsets::PREHEAT_SETTINGS + preheat_eeprom_offsets::PREHEAT_LEFT_TEMP, 230);
+    filament_heat_temp[0] = eeprom::getEeprom16(eeprom_offsets::PREHEAT_SETTINGS + preheat_eeprom_offsets::PREHEAT_RIGHT_TEMP, 230);
 }
 
 ReadyMenu::ReadyMenu() {
@@ -1191,6 +1181,13 @@ void FilamentMenu::drawItem(uint8_t index, LiquidCrystalSerial& lcd, uint8_t lin
             break;
   }
     
+}
+
+void FilamentMenu::pop_actions(){
+    if(!preheatActive){
+        Motherboard::getBoard().getExtruderBoard(0).getExtruderHeater().set_target_temperature(0);
+        Motherboard::getBoard().getExtruderBoard(1).getExtruderHeater().set_target_temperature(0);
+    }
 }
 
 void FilamentMenu::handleSelect(uint8_t index) {
@@ -2630,6 +2627,7 @@ void CancelBuildMenu::handleSelect(uint8_t index) {
       if((host::getHostState() != host::HOST_STATE_BUILDING_ONBOARD) && (Motherboard::getBoard().GetBoardStatus() & Motherboard::STATUS_ONBOARD_PROCESS)){
         cancel_process = true;
         host::pauseBuild(false);
+        Motherboard::getBoard().interfaceBlink(0,0);
         interface::popScreen();
       }else{
         // Cancel build
@@ -2878,12 +2876,13 @@ void InfoMenu::handleSelect(uint8_t index) {
 
 
 SettingsMenu::SettingsMenu() {
-  itemCount = 8;
+  itemCount = 9;
   reset();
   for (uint8_t i = 0; i < itemCount; i++){
     counter_item[i] = 0;
   }
   counter_item[1] = 1;
+  counter_item[3] = 1;
 }
 
 void SettingsMenu::resetState(){
@@ -2894,6 +2893,7 @@ void SettingsMenu::resetState(){
   helpOn = eeprom::getEeprom8(eeprom_offsets::FILAMENT_HELP_TEXT_ON, 1);
   accelerationOn = eeprom::getEeprom8(eeprom_offsets::ACCELERATION_SETTINGS + acceleration_eeprom_offsets::ACCELERATION_ACTIVE, 0x01);
   HBPPresent = eeprom::getEeprom8(eeprom_offsets::HBP_PRESENT, 1);
+  heaterTimeout = eeprom::getEeprom8(eeprom_offsets::HEATER_TIMEOUT_ON_CANCEL, 0);
 }
 
 void SettingsMenu::drawItem(uint8_t index, LiquidCrystalSerial& lcd, uint8_t line_number) {
@@ -2914,8 +2914,8 @@ void SettingsMenu::drawItem(uint8_t index, LiquidCrystalSerial& lcd, uint8_t lin
          lcd.writeFromPgmspace(ARROW_MSG);
       else
         lcd.writeFromPgmspace(NO_ARROW_MSG);
-        lcd.setCursor(14,line_number);
-        switch(LEDColor){
+      lcd.setCursor(14,line_number);
+      switch(LEDColor){
                 case LED_DEFAULT_RED:
                     lcd.writeFromPgmspace(RED_COLOR_MSG);
                     break;
@@ -2945,7 +2945,7 @@ void SettingsMenu::drawItem(uint8_t index, LiquidCrystalSerial& lcd, uint8_t lin
                   break;
        }
        break;
-    case 6:
+    case 7:
       lcd.writeFromPgmspace(PLATFORM_EXIST_MSG);
       lcd.setCursor(14, line_number);
       if(HBPPresent){
@@ -2954,7 +2954,7 @@ void SettingsMenu::drawItem(uint8_t index, LiquidCrystalSerial& lcd, uint8_t lin
         lcd.writeFromPgmspace(NO_MSG);
       }
       break;
-    case 5:
+    case 6:
       lcd.writeFromPgmspace(TOOL_COUNT_MSG);
       lcd.setCursor(14,line_number);
       if(singleExtruder == 1)
@@ -2962,7 +2962,7 @@ void SettingsMenu::drawItem(uint8_t index, LiquidCrystalSerial& lcd, uint8_t lin
       else
           lcd.writeFromPgmspace(TOOL_DUAL_MSG);
       break;
-    case 4:
+    case 5:
       lcd.writeFromPgmspace(LED_HEAT_MSG);
       lcd.setCursor(14,line_number);
       if(heatingLEDOn)
@@ -2971,6 +2971,16 @@ void SettingsMenu::drawItem(uint8_t index, LiquidCrystalSerial& lcd, uint8_t lin
           lcd.writeFromPgmspace(OFF_MSG);
       break;
     case 3:
+      lcd.writeFromPgmspace(HEAT_TIMEOUT_MSG);
+      lcd.setCursor(11,line_number);
+      if(selectIndex == 3)
+         lcd.writeFromPgmspace(ARROW_MSG);
+      else
+        lcd.writeFromPgmspace(NO_ARROW_MSG);
+      lcd.setCursor(14,line_number);
+      lcd.writeInt(heaterTimeout, 2);
+      break;
+    case 4:
       lcd.writeFromPgmspace(HELP_SCREENS_MSG);
       lcd.setCursor(14,line_number);
       if(helpOn)
@@ -2986,7 +2996,7 @@ void SettingsMenu::drawItem(uint8_t index, LiquidCrystalSerial& lcd, uint8_t lin
       else
           lcd.writeFromPgmspace(OFF_MSG);
       break;
-    case 7:
+    case 8:
       lcd.writeFromPgmspace(EXIT_MSG);
       break;
   }
@@ -3011,7 +3021,23 @@ void SettingsMenu::handleCounterUpdate(uint8_t index, bool up){
         }
         RGB_LED::setDefaultColor(); 
         break;
-  }
+      case 3:
+        // update left counter
+        if(up)
+            heaterTimeout++;
+        else
+            heaterTimeout--;
+        // keep within appropriate boundaries
+        if(heaterTimeout > 30)
+            heaterTimeout = 0;
+        else if(heaterTimeout < 0)
+            heaterTimeout = 30;
+      
+        ATOMIC_BLOCK(ATOMIC_RESTORESTATE){
+          eeprom_write_byte((uint8_t*)eeprom_offsets::HEATER_TIMEOUT_ON_CANCEL, heaterTimeout);
+        }
+        break;
+    }
     
 }
 
@@ -3034,7 +3060,14 @@ void SettingsMenu::handleSelect(uint8_t index) {
       RGB_LED::setDefaultColor();
       lineUpdate = 1;
       break;
-    case 5:
+    case 3:
+      // update LED preferences
+      ATOMIC_BLOCK(ATOMIC_RESTORESTATE){
+        eeprom_write_byte((uint8_t*)eeprom_offsets::HEATER_TIMEOUT_ON_CANCEL, heaterTimeout);
+      }
+      lineUpdate = 1;
+      break;
+    case 6:
       // update tool count
       singleExtruder = !singleExtruder;
       eeprom::setToolHeadCount(singleExtruder ? 1 : 2);
@@ -3043,7 +3076,7 @@ void SettingsMenu::handleSelect(uint8_t index) {
       }
       lineUpdate = 1;
       break;
-    case 4:
+    case 5:
       heatingLEDOn = !heatingLEDOn;
       // update LEDHeatingflag
       ATOMIC_BLOCK(ATOMIC_RESTORESTATE){
@@ -3051,7 +3084,7 @@ void SettingsMenu::handleSelect(uint8_t index) {
       }
       lineUpdate = 1;
       break;
-    case 3:
+    case 4:
       helpOn = !helpOn;
       ATOMIC_BLOCK(ATOMIC_RESTORESTATE){
         eeprom_write_byte((uint8_t*)eeprom_offsets::FILAMENT_HELP_TEXT_ON, helpOn);
@@ -3065,7 +3098,7 @@ void SettingsMenu::handleSelect(uint8_t index) {
       }
       lineUpdate = 1;
       break;
-    case 6:
+    case 7:
       // update hbp setting
       HBPPresent = !HBPPresent;
       ATOMIC_BLOCK(ATOMIC_RESTORESTATE){
@@ -3075,7 +3108,7 @@ void SettingsMenu::handleSelect(uint8_t index) {
       Motherboard::getBoard().getPlatformHeater().disable(!HBPPresent);
       lineUpdate = 1;
       break;
-    case 7:
+    case 8:
       interface::popScreen();
       break;
     }
