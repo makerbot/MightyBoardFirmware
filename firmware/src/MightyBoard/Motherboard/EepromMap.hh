@@ -318,9 +318,12 @@ const static uint16_t AXIS_HOME_POSITIONS_MM	= 0x0224;
 //$type:iii $constraints:m,-2000,35000 $unit:mmX1000
 const static uint16_t TOOLHEAD_OFFSET_SETTINGS_MM = 0x0238;
 
+//$BEGIN_ENTRY
+//$type:B $contraints:m,0,30 $units:minutes
+const static uint16_t HEATER_TIMEOUT_ON_CANCEL = 0x0244;
 
 /// start of free space
-const static uint16_t FREE_EEPROM_STARTS        = 0x0244;
+const static uint16_t FREE_EEPROM_STARTS        = 0x0246;
 
 } 
 

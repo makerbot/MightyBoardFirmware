@@ -373,6 +373,7 @@ static void handleMovementCommand(const uint8_t &command) {
 }
 
 bool start_build_flag = false;
+bool platform_on_flag = false;
 
 bool processExtruderCommandPacket() {
   Motherboard& board = Motherboard::getBoard();
@@ -384,9 +385,13 @@ bool processExtruderCommandPacket() {
 		case SLAVE_CMD_SET_TEMP:
       /// we are clearing temps here for the beginning of a print instead of in reset because we want them to be set to zero temperature for as short a time as possible.
       if(start_build_flag){
-        board.getExtruderBoard(id).getExtruderHeater().set_target_temperature(0);
-        board.getExtruderBoard(id).getExtruderHeater().set_target_temperature(0);
-        board.getPlatformHeater().set_target_temperature(0);
+        board.getExtruderBoard(0).getExtruderHeater().reset();
+        board.getExtruderBoard(1).getExtruderHeater().reset();
+        // don't reset the platform if we have received a platform temp command
+        if (!platform_on_flag){
+          board.getPlatformHeater().reset();
+        }
+        platform_on_flag = false;
         start_build_flag = false;
       }
 			board.getExtruderBoard(id).getExtruderHeater().set_target_temperature(pop16());
@@ -418,6 +423,7 @@ bool processExtruderCommandPacket() {
 			return true;
 		case SLAVE_CMD_SET_PLATFORM_TEMP:
 			board.setUsingPlatform(true);
+      if(start_build_flag){ platform_on_flag = true;}
 			board.getPlatformHeater().set_target_temperature(pop16());
 			// pause extruder heaters platform is heating up
 			bool pause_state; /// avr-gcc doesn't allow cross-initializtion of variables within a switch statement

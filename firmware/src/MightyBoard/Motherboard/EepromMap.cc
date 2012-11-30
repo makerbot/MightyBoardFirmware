@@ -264,6 +264,7 @@ ATOMIC_BLOCK(ATOMIC_RESTORESTATE){
   eeprom_write_byte((uint8_t*)eeprom_offsets::ENDSTOP_INVERSION, endstop_invert);
   eeprom_write_byte((uint8_t*)eeprom_offsets::AXIS_HOME_DIRECTION, home_direction);
     
+  eeprom_write_byte((uint8_t*)eeprom_offsets::HEATER_TIMEOUT_ON_CANCEL, 0);
   setDefaultAxisHomePositions();
   
   /// store the default axis lengths for the machine

@@ -127,7 +127,9 @@ private:
 	uint8_t progress_start_char;
 	uint8_t progress_end_char;
 	uint8_t progress_last_index;
-    
+  
+  micros_t restart_timeout;  
+  
   void HeatingAlerts();
 
 
@@ -186,6 +188,9 @@ public:
 	void StopProgressBar();
 	
 	bool isHeating();
+
+  // set the heater timeout on reset
+  void setRestartTimeout(int timeout);
 };
 
 

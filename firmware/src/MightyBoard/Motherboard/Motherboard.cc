@@ -161,6 +161,8 @@ void Motherboard::initClocks(){
 #endif
 }
 
+ #define ONE_MINUTE 60000000
+
 /// Reset the motherboard to its initial state.
 /// This only resets the board, and does not send a reset
 /// to any attached toolheads.
@@ -185,6 +187,9 @@ void Motherboard::reset(bool hard_reset) {
 	
 	micros = 0;
   initClocks();
+
+  // get heater timeout from eeprom - the value is stored in minutes 
+  restart_timeout = eeprom::getEeprom8(eeprom_offsets::HEATER_TIMEOUT_ON_CANCEL, 0) * ONE_MINUTE;
 
 	if (hasInterfaceBoard) {
 		// Make sure our interface board is initialized
@@ -257,6 +262,10 @@ void Motherboard::reset(bool hard_reset) {
        interface::popScreen();  
   }
 
+}
+
+void Motherboard::setRestartTimeout(int timeout){
+  restart_timeout = timeout;
 }
 
 /// Get the number of microseconds that have passed since
@@ -507,7 +516,7 @@ void Motherboard::runMotherboardSlice() {
 	
 	// if no user input for USER_INPUT_TIMEOUT, shutdown heaters and warn user
     // don't do this if a heat failure has occured ( in this case heaters are already shutdown and separate error messaging used)
-	if(user_input_timeout.hasElapsed()) && !heatShutdown && (host::getHostState() != host::HOST_STATE_BUILDING_FROM_SD) && (host::getHostState() != host::HOST_STATE_BUILDING))
+	if(user_input_timeout.hasElapsed() && !heatShutdown && (host::getHostState() != host::HOST_STATE_BUILDING_FROM_SD) && (host::getHostState() != host::HOST_STATE_BUILDING))
 	{
         // clear timeout
 		user_input_timeout.clear();
@@ -516,9 +525,11 @@ void Motherboard::runMotherboardSlice() {
 		board_status &= ~STATUS_PREHEATING;
 		
 		// alert user if heaters are not already set to 0
-		if((Extruder_One.getExtruderHeater().get_set_temperature() > 0) ||
+    // we do not want to display the warning if heaters are reset due to a restart and the restart_timeout is set to 0
+  	if(((Extruder_One.getExtruderHeater().get_set_temperature() > 0) ||
 			(Extruder_Two.getExtruderHeater().get_set_temperature() > 0) ||
-			(platform_heater.get_set_temperature() > 0)){
+			(platform_heater.get_set_temperature() > 0)) &&
+       !((restart_timeout == 0) && user_input_timeout.getCurrentElapsed() < USER_INPUT_TIMEOUT)) {
 				interfaceBoard.errorMessage(HEATER_INACTIVITY_MSG);//37
 				startButtonWait();
                 // turn LEDs blue
