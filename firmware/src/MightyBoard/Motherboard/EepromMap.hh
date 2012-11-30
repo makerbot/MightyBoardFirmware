@@ -303,7 +303,7 @@ const static uint16_t HEATER_CALIBRATION = 0x020A;
 // flag that reconfigured eeprom fields have been updated
 //$BEGIN_ENTRY
 //$type:B $ignore:True $constraints:a
-const static uint16_t VERSION6_1_UPDATE_FLAG = 0x20E;
+const static uint16_t VERSION7_UPDATE_FLAG = 0x20E;
 /// axis lengths XYZ AB 5*32bit = 20 bytes
 //$BEGIN_ENTRY
 //$type:IIIII $constraints:a $unit:mm
@@ -327,7 +327,7 @@ const static uint16_t FREE_EEPROM_STARTS        = 0x0246;
 
 } 
 
-
+#define VERSION7_FLAG 40
 
 #define DEFAULT_MAX_ACCELERATION_AXIS_X 500
 #define DEFAULT_MAX_ACCELERATION_AXIS_Y 500
@@ -539,9 +539,8 @@ enum {
 }
 
 namespace eeprom {
-  const static uint8_t VERSION6_1_FLAG = 53;
   void fullResetEEPROM();
-  void eepromResetv61(); 
+  void eepromResetv7(); 
 	void factoryResetEEPROM();
 	void setToolHeadCount(uint8_t count);
   void setDefaultSettings();

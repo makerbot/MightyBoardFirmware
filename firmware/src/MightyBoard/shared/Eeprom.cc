@@ -35,33 +35,14 @@ void init() {
        prom_version[1] = firmware_version / 100;
        ATOMIC_BLOCK(ATOMIC_RESTORESTATE){  
        eeprom_write_block(prom_version,(uint8_t*)eeprom_offsets::VERSION_LOW,2);
-	   }
+       }
+       // special upgrade for version 7.0
+       if (getEeprom8(eeprom_offsets::VERSION7_UPDATE_FLAG, 0) != VERSION7_FLAG){
+          
+          // reset everything related to steps and lengths
+          eepromResetv7();
+       }
        
-       // special upgrade for version 6.1
-     if (getEeprom8(eeprom_offsets::VERSION6_1_UPDATE_FLAG, 0) != eeprom::VERSION6_1_FLAG){
-        
-        // reset everything related to steps and lengths
-        eepromResetv61();
-        // check if toolhead offsets have been updated
-        int32_t x_nozzle_offset = getEeprom32(eeprom_offsets::TOOLHEAD_OFFSET_SETTINGS, 0);
-        /// check to make sure we have not already applied this fix 
-        /// old offsets were 1mm or less, new offsets are around 33mm
-        /// we use 30mm offset as a check (we store offsets in mm * 1000)
-        if(x_nozzle_offset  < 30000){
-          //Add the full toolhead offset.  This was formerly stored in RepG  
-          // we assume that any upgrades using this will be replicator 1 machines
-#ifdef MODEL_REPLICATOR
-          const static float X_STEPS_PER_MM = 94.139704f;
-#else
-          const static float X_STEPS_PER_MM = 88.5731f;
-#endif
-          x_nozzle_offset =  (x_nozzle_offset * 100) / X_STEPS_PER_MM;
-          x_nozzle_offset = x_nozzle_offset + (33L * 1000);
-          ATOMIC_BLOCK(ATOMIC_RESTORESTATE){  
-            eeprom_write_block((uint8_t*)&(x_nozzle_offset),(uint8_t*)(eeprom_offsets::TOOLHEAD_OFFSET_SETTINGS), 4 );
-          }
-        }	
-		}      
 }
 
 #if defined(ERASE_EEPROM_ON_EVERY_BOOT) || defined(EEPROM_MENU_ENABLE)
