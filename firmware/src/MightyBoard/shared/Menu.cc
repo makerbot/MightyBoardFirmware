@@ -140,6 +140,7 @@ void HeaterPreheat::resetState(){
   singleTool = eeprom::isSingleTool();
   if(singleTool){ _leftActive = false; }
   Motherboard &board = Motherboard::getBoard();
+  
   if(((board.getExtruderBoard(0).getExtruderHeater().get_set_temperature() > 0) && _rightActive) ||
       ((board.getExtruderBoard(1).getExtruderHeater().get_set_temperature() > 0) && _leftActive) ||
       ((board.getPlatformHeater().get_set_temperature() >0) && _platformActive))
