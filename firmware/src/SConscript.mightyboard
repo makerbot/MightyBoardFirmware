@@ -149,8 +149,8 @@ elif (os.environ.has_key('AVR32_HOME')):
 	avr_tools_path = os.environ['AVR32_HOME'] + '/bin'
 	avr_tools_conf =  os.environ['AVR32_HOME'] + "/etc/avrdude.conf"
 else:
-	lines = os.popen('/usr/bin/which avr-gcc').readlines()
-	#lines = os.popen('/usr/bin/which avr-gcc-4.6.3').readlines()
+	lines = os.popen('which avr-gcc').readlines()
+	#lines = os.popen('which avr-gcc-4.6.3').readlines()
 	if(len(lines) > 0):
 		avr_tools_path = dirname(lines[0])
 		avr_tools_conf = "/etc/avrdude.conf"
@@ -193,8 +193,7 @@ env.Append(BUILDERS={'Hex':Builder(action=avr_tools_path+"/avr-objcopy -O ihex -
 env.Elf(elf_name, objs) 
 env.Hex(hex_name, elf_name)
 
-
-lines = os.popen('/usr/bin/which avrdude').readlines()
+lines = os.popen('which avrdude').readlines()
 if(len(lines) > 0):
   avrdude_path = dirname(lines[0])
   avr_tools_conf = "/etc/avrdude.conf"

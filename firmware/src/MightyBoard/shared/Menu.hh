@@ -100,7 +100,8 @@ public:
         /// press at a time, and will discard any other events.
         /// \param button Button that was pressed
   virtual void notifyButtonPressed(ButtonArray::ButtonName button) = 0;
-        
+
+  virtual void pop_actions() {return;} 
 };
 
 
@@ -597,7 +598,6 @@ private:
     void resetState();
      
     bool singleTool;
-    bool preheatActive;
 
 };
 
@@ -621,10 +621,11 @@ private:
     
     uint8_t  singleExtruder;
     uint8_t  soundOn;
-    int8_t LEDColor;
+    int8_t   LEDColor;
+    int8_t   heaterTimeout;
     uint8_t  heatingLEDOn;
     uint8_t  helpOn;
-	uint8_t  accelerationOn;
+    uint8_t  accelerationOn;
     uint8_t  HBPPresent;
     
 };
@@ -632,6 +633,7 @@ private:
 class FilamentMenu: public Menu {
 public:
 	FilamentMenu();
+  void pop_actions();
     
     
 protected:

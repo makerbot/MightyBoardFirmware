@@ -264,6 +264,7 @@ ATOMIC_BLOCK(ATOMIC_RESTORESTATE){
   eeprom_write_byte((uint8_t*)eeprom_offsets::ENDSTOP_INVERSION, endstop_invert);
   eeprom_write_byte((uint8_t*)eeprom_offsets::AXIS_HOME_DIRECTION, home_direction);
     
+  eeprom_write_byte((uint8_t*)eeprom_offsets::HEATER_TIMEOUT_ON_CANCEL, 0);
   setDefaultAxisHomePositions();
   
   /// store the default axis lengths for the machine
@@ -273,15 +274,12 @@ ATOMIC_BLOCK(ATOMIC_RESTORESTATE){
   eeprom_write_block((uint8_t*)&(replicator_axis_steps_per_mm::axis_steps_per_mm[0]), (uint8_t*)(eeprom_offsets::AXIS_STEPS_PER_MM), 20);
 
   /// store the default axis max feedrates for the machine
-  eeprom_write_block((uint8_t*)&(replicator_axis_max_feedrates::axis_max_feedrates[0]), (uint8_t*)(eeprom_offsets::AXIS_MAX_FEEDRATES), 20);
+  eeprom_write_block((uint8_t*)&(replicator_axis_max_feedrates::axis_max_feedrates[0]), (uint8_t*)(eeprom_offsets::AXIS_MAX_FEEDRATES), 10);
 
   setDefaultsAcceleration();
 
   eeprom_write_byte((uint8_t*)eeprom_offsets::FILAMENT_HELP_TEXT_ON, 1);
 
-  /// Thermal table settings
-  SetDefaultsThermal(eeprom_offsets::THERM_TABLE);
-  
   /// Preheat heater settings
   setDefaultsPreheat(eeprom_offsets::PREHEAT_SETTINGS);
 
@@ -337,6 +335,7 @@ void setDefaultSettings(){
     eeprom_write_byte((uint8_t*)eeprom_offsets::FILAMENT_HELP_TEXT_ON, 1);
     eeprom_write_byte((uint8_t*)(eeprom_offsets::ACCELERATION_SETTINGS + acceleration_eeprom_offsets::ACCELERATION_ACTIVE), 0x01);
     setToolHeadCount(1);
+    eeprom_write_byte((uint8_t*)eeprom_offsets::HEATER_TIMEOUT_ON_CANCEL, 0);
     // HBP settings
   #ifdef MODEL_REPLICATOR
     eeprom_write_byte((uint8_t*)eeprom_offsets::HBP_PRESENT, 1);
@@ -352,7 +351,7 @@ void storeToolheadToleranceDefaults(){
  ATOMIC_BLOCK(ATOMIC_RESTORESTATE){ 
 	// assume t0 to t1 distance is in specifications (0 steps tolerance error)
 	uint32_t offsets[3] = {33L*1000,0,0};
-	eeprom_write_block((uint8_t*)&(offsets[0]),(uint8_t*)(eeprom_offsets::TOOLHEAD_OFFSET_SETTINGS), 12 );
+	eeprom_write_block((uint8_t*)&(offsets[0]),(uint8_t*)(eeprom_offsets::TOOLHEAD_OFFSET_SETTINGS_MM), 12 );
 }
 	
 }
@@ -415,14 +414,14 @@ void fullResetEEPROM() {
 
   /// store the heater calibration bytes
   eeprom_write_block((uint8_t*)&(heater_calibrate[0]), (uint8_t*)(eeprom_offsets::HEATER_CALIBRATION), 3);
+
+  eeprom_write_byte((uint8_t*)(eeprom_offsets::VERSION7_UPDATE_FLAG), VERSION7_FLAG);
  
-  // write the update byte for version 6.1   
-  eeprom_write_byte((uint8_t*)(eeprom_offsets::VERSION6_1_UPDATE_FLAG), VERSION6_1_FLAG);
  }
 }
 
 // we changed the way things are stored in EEPROM.  we need to make sure bots update accordingly
-void eepromResetv61(){
+void eepromResetv7(){
   
   uint8_t heater_calibrate[] = {0,0,0};
   ATOMIC_BLOCK(ATOMIC_RESTORESTATE){
@@ -433,7 +432,7 @@ void eepromResetv61(){
     eeprom_write_block((uint8_t*)&(replicator_axis_steps_per_mm::axis_steps_per_mm[0]), (uint8_t*)(eeprom_offsets::AXIS_STEPS_PER_MM), 20);
 
     /// store the default axis max feedrates for the machine
-    eeprom_write_block((uint8_t*)&(replicator_axis_max_feedrates::axis_max_feedrates[0]), (uint8_t*)(eeprom_offsets::AXIS_MAX_FEEDRATES), 20);
+    eeprom_write_block((uint8_t*)&(replicator_axis_max_feedrates::axis_max_feedrates[0]), (uint8_t*)(eeprom_offsets::AXIS_MAX_FEEDRATES), 10);
 
     setDefaultsAcceleration();
 
@@ -445,8 +444,26 @@ void eepromResetv61(){
     /// store the heater calibration bytes
     eeprom_write_block((uint8_t*)&(heater_calibrate[0]), (uint8_t*)(eeprom_offsets::HEATER_CALIBRATION), 3);
 
-    eeprom_write_byte((uint8_t*)(eeprom_offsets::VERSION6_1_UPDATE_FLAG), VERSION6_1_FLAG);
+    eeprom_write_byte((uint8_t*)(eeprom_offsets::VERSION7_UPDATE_FLAG), VERSION7_FLAG);
   }
+  // we are storing offsets in mm now.....
+  int32_t x_nozzle_offset = getEeprom32(eeprom_offsets::TOOLHEAD_OFFSET_SETTINGS, 0);
+  /// check to see if offsets are in 5.5 and earlier state (< 1mm) or 6.0 state (~33mm)
+  /// ACK what a mess
+  if(x_nozzle_offset  < 3L * replicator_axis_steps_per_mm::axis_steps_per_mm[0] * 10){
+    //Add the full toolhead offset.  This was formerly stored in RepG  
+    // add 33mm to get the complete distance
+    x_nozzle_offset =  33L * 1000 + ((x_nozzle_offset * 100) / replicator_axis_steps_per_mm::axis_steps_per_mm[0]);
+  } else {
+    // take out the dependence on steps per mm.  and multiply by 100 (for a final scaling factor of 1000)
+    x_nozzle_offset =  100 * (x_nozzle_offset /replicator_axis_steps_per_mm::axis_steps_per_mm[0]); 
+  }
+	// toolhead offset defaults
+	storeToolheadToleranceDefaults();
+  ATOMIC_BLOCK(ATOMIC_RESTORESTATE){  
+    eeprom_write_block((uint8_t*)&(x_nozzle_offset),(uint8_t*)(eeprom_offsets::TOOLHEAD_OFFSET_SETTINGS_MM), 4 );
+  }
+        
 }
 
 

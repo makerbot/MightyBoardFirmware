@@ -1,3 +1,7 @@
+7.0.6.1.0
+ * sd card clock tests
+7.0.5.1.0
+ * heat behavior fixes, 2X support adds
 7.0.4.1.0
  * sd card clock tests
 7.0.3.1.0

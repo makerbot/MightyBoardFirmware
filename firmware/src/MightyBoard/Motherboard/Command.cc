@@ -198,8 +198,8 @@ bool fan_state = false;
 
 void startSleep(){
 
-	// record current position
-	sleep_position = steppers::getStepperPosition();
+  // record current position
+  sleep_position = steppers::getStepperPosition();
   fan_state = EX_FAN.getValue();
 	Motherboard &board = Motherboard::getBoard();
 	
@@ -212,7 +212,7 @@ void startSleep(){
 	extruder_temp[0] = board.getExtruderBoard(0).getExtruderHeater().get_set_temperature();
 	extruder_temp[1] = board.getExtruderBoard(1).getExtruderHeater().get_set_temperature();
 	platform_temp = board.getPlatformHeater().get_set_temperature();
-	
+
 	if(cold_pause){
 		// cool heaters
 		board.getExtruderBoard(0).getExtruderHeater().set_target_temperature(0);
@@ -229,8 +229,6 @@ void startSleep(){
 	
 	steppers::setTarget(z_pos, z_mm_per_second_18);
 	steppers::setTarget(wait_pos, xy_mm_per_second_80);
-  
-  // turn off fan
   board.setExtra(false);
 }
 
@@ -372,6 +370,9 @@ static void handleMovementCommand(const uint8_t &command) {
    }
 }
 
+bool start_build_flag = false;
+bool platform_on_flag = false;
+
 bool processExtruderCommandPacket() {
   Motherboard& board = Motherboard::getBoard();
   uint8_t	id = pop8();
@@ -380,7 +381,19 @@ bool processExtruderCommandPacket() {
 
   switch (command) {
 		case SLAVE_CMD_SET_TEMP:
+      /// we are clearing temps here for the beginning of a print instead of in reset because we want them to be set to zero temperature for as short a time as possible.
+      if(start_build_flag){
+        board.getExtruderBoard(0).getExtruderHeater().reset();
+        board.getExtruderBoard(1).getExtruderHeater().reset();
+        // don't reset the platform if we have received a platform temp command
+        if (!platform_on_flag){
+          board.getPlatformHeater().reset();
+        }
+        platform_on_flag = false;
+        start_build_flag = false;
+      }
 			board.getExtruderBoard(id).getExtruderHeater().set_target_temperature(pop16());
+
 			/// if platform is actively heating and extruder is not cooling down, pause extruder
 			if(board.getPlatformHeater().isHeating() && !board.getPlatformHeater().isCooling() && !board.getExtruderBoard(id).getExtruderHeater().isCooling()){
 				check_temp_state = true;
@@ -408,6 +421,7 @@ bool processExtruderCommandPacket() {
 			return true;
 		case SLAVE_CMD_SET_PLATFORM_TEMP:
 			board.setUsingPlatform(true);
+      if(start_build_flag){ platform_on_flag = true;}
 			board.getPlatformHeater().set_target_temperature(pop16());
 			// pause extruder heaters platform is heating up
 			bool pause_state; /// avr-gcc doesn't allow cross-initializtion of variables within a switch statement
@@ -488,7 +502,7 @@ void runCommandSlice() {
         board.getExtruderBoard(1).getExtruderHeater().set_target_temperature(0);
         board.getPlatformHeater().set_target_temperature(0);
     
-        Point target = steppers::getStepperPosition();
+        Point target = steppers::getPlannerPosition();
         target[2] = 150L*stepperAxisStepsPerMM(Z_AXIS);
         command::pause(false);
         steppers::setTarget(target, 150);
@@ -620,11 +634,33 @@ void runCommandSlice() {
 			}else if((sleep_mode == SLEEP_MOVING) && st_empty()){
 				interface::popScreen();
 				sleep_mode = SLEEP_ACTIVE;
+        uint8_t pot_value = 20;
+        for(uint8_t i = 0; i < 2; ++i)
+        {
+            steppers::setAxisPotValue(i, pot_value);
+        }
+				if(sleep_type == SLEEP_TYPE_COLD){
+            for(uint8_t i = 3; i < 5; ++i)
+            {
+                steppers::setAxisPotValue(i, pot_value);
+            }
+        }
 			// restart called or
 			// restart called while still moving to waiting position
 			// wait for move to wait position to finish before restarting
 			}else if(((sleep_mode == SLEEP_MOVING_WAIT) && st_empty()) ||
 					(sleep_mode == SLEEP_RESTART)){
+        uint8_t pot_value = 127;
+        for(uint8_t i = 0; i < 2; ++i)
+        {
+            steppers::setAxisPotValue(i, pot_value);
+        }
+				if(sleep_type == SLEEP_TYPE_COLD){
+            for(uint8_t i = 3; i < 5; ++i)
+            {
+                steppers::setAxisPotValue(i, pot_value);
+            }
+        }
 				Motherboard::getBoard().getInterfaceBoard().errorMessage(RESTARTING_MSG);
 				// wait for platform to heat
 				currentToolIndex = 0;
@@ -705,12 +741,17 @@ void runCommandSlice() {
 					uint8_t axes = pop8();
 					line_number++;
 					
-					bool enable = (axes & 0x80) != 0;
-					for (int i = 0; i < STEPPER_COUNT; i++) {
-						if ((axes & _BV(i)) != 0) {
-							  steppers::enableAxis(i, enable);
+          // only execute this command if our buffer is empty
+          // this is because skeinforge sends a zillion spurious enable commands that cause
+          // clicking in the motors.
+          if(st_empty()){
+            bool enable = (axes & 0x80) != 0;
+            for (int i = 0; i < STEPPER_COUNT; i++) {
+              if ((axes & _BV(i)) != 0) {
+                  steppers::enableAxis(i, enable);
+              }
             }
-					}
+          }
 				}
       } else if (command == HOST_CMD_STREAM_VERSION){
           if(command_buffer.getLength() >= 11){
@@ -906,7 +947,7 @@ void runCommandSlice() {
 					uint8_t axes = pop8();
 					line_number++;
 
-					Point newPoint = Point(0,0,0,0,0); //steppers::getStepperPosition();
+					Point newPoint = steppers::getStepperPosition();
 
 					for (uint8_t i = 0; i < STEPPER_COUNT; i++) {
 						if ( axes & (1 << i) ) {
@@ -919,7 +960,7 @@ void runCommandSlice() {
 						}
 					}
 
-					steppers::definePosition(newPoint);
+					steppers::defineHomePosition(newPoint);
 				}
 
 			}else if (command == HOST_CMD_SET_POT_VALUE){
@@ -999,6 +1040,7 @@ void runCommandSlice() {
 					pop32(); //int buildSteps = pop32();
 					line_number++;
 					host::handleBuildStartNotification(command_buffer);		
+          start_build_flag = true;
 				}
 			} else if ( command == HOST_CMD_BUILD_END_NOTIFICATION) {
 				if (command_buffer.getLength() >= 2){

@@ -121,13 +121,16 @@ private:
 	bool heating_lights_active;
 	int16_t currentTemp;
   int16_t setTemp; 
+  int16_t div_temp;
   bool toggleBlink;
   bool progress_active;
 	uint8_t progress_line;
 	uint8_t progress_start_char;
 	uint8_t progress_end_char;
 	uint8_t progress_last_index;
-    
+  
+  micros_t restart_timeout;  
+  
   void HeatingAlerts();
 
 
@@ -136,6 +139,9 @@ public:
 	/// This only resets the board, and does not send a reset
 	/// to any attached toolheads.
 	void reset(bool hard_reset);
+
+  /// initialize things that only need to be set up once, on boot
+  void init();
 
 	void runMotherboardSlice();
 
@@ -183,6 +189,7 @@ public:
 	void StopProgressBar();
 	
 	bool isHeating();
+
 };
 
 

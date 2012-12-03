@@ -76,6 +76,43 @@ Motherboard::Motherboard() :
                             TIMSK5 &= ~(1<<OCIE5A)
  
 
+void Motherboard::init(){
+  SoftI2cManager::getI2cManager().init();
+
+	// Check if the interface board is attached
+	hasInterfaceBoard = interface::isConnected();
+
+  micros = 0;
+  initClocks();
+
+  // Configure the debug pins.
+  DEBUG_PIN.setDirection(true);
+  DEBUG_PIN1.setDirection(true);
+  DEBUG_PIN2.setDirection(true);
+  DEBUG_PIN3.setDirection(true);	
+  DEBUG_PIN4.setDirection(true);
+  DEBUG_PIN5.setDirection(true);
+  DEBUG_PIN6.setDirection(true);
+		
+#ifdef MODEL_REPLICATOR2 
+  therm_sensor.init();
+	therm_sensor_timeout.start(THERMOCOUPLE_UPDATE_RATE);
+#else
+  cutoff.init();
+  extruder_manage_timeout.start(SAMPLE_INTERVAL_MICROS_THERMOCOUPLE);
+#endif
+
+  // initialize the extruders
+  Extruder_One.reset();
+  Extruder_Two.reset();
+    
+  HBP_HEAT.setDirection(true);
+	platform_thermistor.init();
+	platform_heater.reset();
+	platform_timeout.start(SAMPLE_INTERVAL_MICROS_THERMISTOR);
+
+}
+
 void Motherboard::initClocks(){
 
   // set up piezo timer
@@ -126,6 +163,8 @@ void Motherboard::initClocks(){
 #endif
 }
 
+ #define ONE_MINUTE 60000000
+
 /// Reset the motherboard to its initial state.
 /// This only resets the board, and does not send a reset
 /// to any attached toolheads.
@@ -134,7 +173,6 @@ void Motherboard::reset(bool hard_reset) {
 
 	// Init steppers
 	uint8_t axis_invert = eeprom::getEeprom8(eeprom_offsets::AXIS_INVERSION, 0);
-  SoftI2cManager::getI2cManager().init();
 	// Z holding indicates that when the Z axis is not in
 	// motion, the machine should continue to power the stepper
 	// coil to ensure that the Z stage does not shift.
@@ -151,10 +189,8 @@ void Motherboard::reset(bool hard_reset) {
 	
 	micros = 0;
 
-  initClocks();
-
-	// Check if the interface board is attached
-	hasInterfaceBoard = interface::isConnected();
+  // get heater timeout from eeprom - the value is stored in minutes 
+  restart_timeout = eeprom::getEeprom8(eeprom_offsets::HEATER_TIMEOUT_ON_CANCEL, 0) * ONE_MINUTE;
 
 	if (hasInterfaceBoard) {
 		// Make sure our interface board is initialized
@@ -173,7 +209,6 @@ void Motherboard::reset(bool hard_reset) {
             // otherwise start with the splash screen.
             interfaceBoard.queueScreen(InterfaceBoard::SPLASH_SCREEN);
         
-        
         if(hard_reset)
           _delay_us(3000000);
 
@@ -190,61 +225,37 @@ void Motherboard::reset(bool hard_reset) {
   // do not clear heater fail messages, the user should not be able to soft reboot from heater fail
   if(hard_reset)
   {
-		// Configure the debug pins.
-		DEBUG_PIN.setDirection(true);
-		DEBUG_PIN1.setDirection(true);
-		DEBUG_PIN2.setDirection(true);
-		DEBUG_PIN3.setDirection(true);	
-    DEBUG_PIN4.setDirection(true);
-    DEBUG_PIN5.setDirection(true);
-    DEBUG_PIN6.setDirection(true);
-		
 		RGB_LED::init();
 		
 		Piezo::playTune(TUNE_STARTUP);
 		
 		heatShutdown = false;
 		heatFailMode = HEATER_FAIL_NONE;
-
-#ifdef MODEL_REPLICATOR2 
-    therm_sensor.init();
-#endif
-
   } 	
   
   board_status = STATUS_NONE;
+  // turn preheat status on during reset to reflect potential remaining heat states.
+  // the flag it will be cleared immediately in the motherboard slice if the temperatures are set to zero.
+  board_status |= STATUS_PREHEATING;
+
 #ifdef MODEL_REPLICATOR2 
-	therm_sensor_timeout.start(THERMOCOUPLE_UPDATE_RATE);
 	// turn off the active cooling fan
 	setExtra(false);  
-#else
-  cutoff.init();
-  extruder_manage_timeout.start(SAMPLE_INTERVAL_MICROS_THERMOCOUPLE);
 #endif
-  
-  // initialize the extruders
-  Extruder_One.reset();
-  Extruder_Two.reset();
-    
-  HBP_HEAT.setDirection(true);
-	platform_thermistor.init();
-	platform_heater.reset();
-    
-  Extruder_One.getExtruderHeater().set_target_temperature(0);
-	Extruder_Two.getExtruderHeater().set_target_temperature(0);
-	platform_heater.set_target_temperature(0);	
-	platform_timeout.start(SAMPLE_INTERVAL_MICROS_THERMISTOR);
-	
+
 	// disable extruder two if sigle tool machine
 	Extruder_Two.getExtruderHeater().disable(eeprom::isSingleTool());
 	
 	// disable platform heater if no HBP
 	platform_heater.disable(!eeprom::hasHBP());
+
+	user_input_timeout.start(restart_timeout);
 	
 	RGB_LED::setDefaultColor(); 
 	buttonWait = false;	
 	currentTemp = 0;
   setTemp = 0; 
+  div_temp = 0;
   heating_lights_active = false;
   progress_active = false;
   progress_line = 0;
@@ -368,13 +379,17 @@ bool Motherboard::isHeating(){
 void Motherboard::HeatingAlerts(){
     
     setTemp = 0;
+    div_temp = 0;
     currentTemp = 0;
+    int16_t top_temp = 0;
     
     /// show heating progress
+    // TODO: top temp should use preheat temps stored in eeprom instead of a hard coded value
     if(isHeating()){
         if(getPlatformHeater().isHeating()){
             currentTemp += getPlatformHeater().getDelta()*2;
             setTemp += (int16_t)(getPlatformHeater().get_set_temperature())*2;
+            top_temp += 230;
         }else{
           /// clear extruder paused states if needed
           if(getExtruderBoard(0).getExtruderHeater().isPaused()){getExtruderBoard(0).getExtruderHeater().Pause(false);}
@@ -383,13 +398,21 @@ void Motherboard::HeatingAlerts(){
         if(getExtruderBoard(0).getExtruderHeater().isHeating()  && !getExtruderBoard(0).getExtruderHeater().isPaused()){
             currentTemp += getExtruderBoard(0).getExtruderHeater().getDelta();
             setTemp += (int16_t)(getExtruderBoard(0).getExtruderHeater().get_set_temperature());
+            top_temp += 230;
         }
         if(getExtruderBoard(1).getExtruderHeater().isHeating() && !getExtruderBoard(1).getExtruderHeater().isPaused()){
             currentTemp += getExtruderBoard(1).getExtruderHeater().getDelta();
             setTemp += (int16_t)(getExtruderBoard(1).getExtruderHeater().get_set_temperature());
+            top_temp += 110;
         }
+
+      if(setTemp < currentTemp){
+        {  div_temp = (top_temp - setTemp);}
+      } else {
+        div_temp = setTemp;
+      }
              
-		if((setTemp != 0) && eeprom::getEeprom8(eeprom_offsets::LED_STRIP_SETTINGS + blink_eeprom_offsets::LED_HEAT_ON, 1)
+		if((div_temp != 0) && eeprom::getEeprom8(eeprom_offsets::LED_STRIP_SETTINGS + blink_eeprom_offsets::LED_HEAT_ON, 1)
           && (eeprom::getEeprom8(eeprom_offsets::LED_STRIP_SETTINGS, LED_DEFAULT_OFF) != LED_DEFAULT_OFF)){
 			int32_t mult = 255;
 			if(!heating_lights_active){
@@ -398,7 +421,7 @@ void Motherboard::HeatingAlerts(){
 #endif
 				heating_lights_active = true;
 			}
-			RGB_LED::setColor((mult*(setTemp - currentTemp))/setTemp, 0, (mult*currentTemp)/setTemp, false);
+			RGB_LED::setColor((mult*abs((setTemp - currentTemp)))/div_temp, 0, (mult*currentTemp)/div_temp, false);
 		}
 	}else{
 		if(heating_lights_active){
@@ -418,6 +441,7 @@ void Motherboard::StartProgressBar(uint8_t line, uint8_t start_char, uint8_t end
 	progress_end_char = end_char;
 	progress_last_index = 0;
 }
+
 void Motherboard::StopProgressBar(){
 
 	progress_active = false;
@@ -436,8 +460,8 @@ uint8_t Motherboard::HeatProgressBar(uint8_t line, uint8_t start_char, uint8_t e
 		return 0;
 	}
 		
-	if(setTemp > 0){
-		heatIndex = (abs((setTemp - currentTemp)) * (end_char - start_char)) / setTemp;		
+	if(div_temp > 0){
+		heatIndex = (abs((setTemp - currentTemp)) * (end_char - start_char)) / div_temp;		
 	}
 	if (lastHeatIndex > heatIndex){
 		lcd.setCursor(start_char,line);
@@ -516,9 +540,11 @@ void Motherboard::runMotherboardSlice() {
 		board_status &= ~STATUS_PREHEATING;
 		
 		// alert user if heaters are not already set to 0
-		if((Extruder_One.getExtruderHeater().get_set_temperature() > 0) ||
+    // we do not want to display the warning if heaters are reset due to a restart and the restart_timeout is set to 0
+  	if(((Extruder_One.getExtruderHeater().get_set_temperature() > 0) ||
 			(Extruder_Two.getExtruderHeater().get_set_temperature() > 0) ||
-			(platform_heater.get_set_temperature() > 0)){
+			(platform_heater.get_set_temperature() > 0)) &&
+       !((restart_timeout == 0) && user_input_timeout.getCurrentElapsed() < USER_INPUT_TIMEOUT)) {
 				interfaceBoard.errorMessage(HEATER_INACTIVITY_MSG);//37
 				startButtonWait();
                 // turn LEDs blue

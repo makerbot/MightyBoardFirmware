@@ -56,8 +56,14 @@ void stepperAxisInit(bool hard_reset) {
 		//Load the defaults
 		axes_invert	= eeprom::getEeprom8(eeprom_offsets::AXIS_INVERSION, 0);
 		endstops_invert = eeprom::getEeprom8(eeprom_offsets::ENDSTOP_INVERSION, 0);
-	}
-
+	
+    // special upgrade for version 7.0
+    if (eeprom::getEeprom8(eeprom_offsets::VERSION7_UPDATE_FLAG, 0) != VERSION7_FLAG){    
+       // reset everything related to steps and lengths
+       eeprom::eepromResetv7();
+    }
+  }
+   
 	//Initialize the stepper pins
 	for (uint8_t i = 0; i < STEPPER_COUNT; i ++ ) {
 		if ( hard_reset ) {
@@ -73,8 +79,8 @@ void stepperAxisInit(bool hard_reset) {
 			stepperAxis[i].steps_per_mm = (float)eeprom::getEeprom32(eeprom_offsets::AXIS_STEPS_PER_MM + i * sizeof(uint32_t),
 	   							   	            replicator_axis_steps_per_mm::axis_steps_per_mm[i]) / 1000000.0;
 
-			stepperAxis[i].max_feedrate = (float)eeprom::getEeprom32(eeprom_offsets::AXIS_MAX_FEEDRATES + i * sizeof(uint32_t),
-                                                                   		 replicator_axis_max_feedrates::axis_max_feedrates[i]) / 60.0;
+			stepperAxis[i].max_feedrate = (float)eeprom::getEeprom16(eeprom_offsets::AXIS_MAX_FEEDRATES + i * sizeof(uint16_t),
+                                                                   		 replicator_axis_max_feedrates::axis_max_feedrates[i]);
 
 			//Read the axis lengths in
       int32_t length = (int32_t)eeprom::getEeprom32(eeprom_offsets::AXIS_LENGTHS_MM + i * sizeof(uint32_t), replicator_axis_lengths::axis_lengths[i]);

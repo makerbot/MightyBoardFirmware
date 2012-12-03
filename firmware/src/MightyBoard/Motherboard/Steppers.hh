@@ -65,6 +65,10 @@ namespace steppers {
     /// \param[in] position New system position
     void definePosition(const Point& position);
 
+    /// Reset the current system position to the given point, without applying toolhead offsets
+    /// \param[in] position New system position
+    void defineHomePosition(const Point& position);
+
     /// Get the current system position
     /// \return The current machine position.
     const Point getPlannerPosition();

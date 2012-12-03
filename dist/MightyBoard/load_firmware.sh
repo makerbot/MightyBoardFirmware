@@ -9,7 +9,7 @@
 
 if test -z "$1"
 then
-  FILENAME=mighty_two_v5.5.hex
+  FILENAME=mighty_two_v6.0.0.hex
 else
   FILENAME=$1
 fi
@@ -21,6 +21,16 @@ else
   PORT=$2
 fi
 
+echo "$FILENAME" | grep -q 'mighty_two'
+if [ $? -eq 0 ]
+then
+  BOOT8U2=Makerbot-usbserial-rep2.hex
+else
+  BOOT8U2=Makerbot-usbserial.hex
+fi
+
+echo $BOOT8U2
+
 while true; do
 
 FAIL8U2="8U2 Bootloader PASS"
@@ -31,7 +41,7 @@ FAILUSB="USB Program PASS"
     read
 
     # Upload bootloader via isp
-    avrdude -p at90usb82 -F -P usb -c avrispmkii -U flash:w:Makerbot-usbserial-rep2.hex -U lfuse:w:0xFF:m -U hfuse:w:0xD9:m -U efuse:w:0xF4:m -U lock:w:0x0F:m
+    avrdude -p at90usb82 -F -P usb -c avrispmkii -U flash:w:$BOOT8U2 -U lfuse:w:0xFF:m -U hfuse:w:0xD9:m -U efuse:w:0xF4:m -U lock:w:0x0F:m
 
     if [ $? -ne 0 ]
     then

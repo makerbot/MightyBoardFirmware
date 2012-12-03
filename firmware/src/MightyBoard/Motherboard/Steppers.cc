@@ -136,7 +136,7 @@ void loadToleranceOffsets() {
 	// get toolhead offsets
 	ATOMIC_BLOCK(ATOMIC_RESTORESTATE){
 		for(int i = 0; i  < 3; i++){
-			int32_t tolerance_err = (int32_t)(((float)((int32_t)eeprom::getEeprom32(eeprom_offsets::TOOLHEAD_OFFSET_SETTINGS + i*4, 0) * stepperAxisStepsPerMM(i))) / 1000);
+			int32_t tolerance_err = (int32_t)(((float)((int32_t)eeprom::getEeprom32(eeprom_offsets::TOOLHEAD_OFFSET_SETTINGS_MM + i*4, 0) * stepperAxisStepsPerMM(i))) / 1000);
 			tolerance_offset_T1[i] = tolerance_err;
 		}
 		// For now, force Z offset to be zero as bad things can happen if it has a value AND there is no use case for it having a value on the replicator
@@ -308,7 +308,7 @@ void init() {
 	initPots();
 	
   /// if eeprom has not been initialized. store default values
-	if (eeprom::getEeprom32(eeprom_offsets::TOOLHEAD_OFFSET_SETTINGS, 0xFFFFFFFF) == 0xFFFFFFFF) {
+	if (eeprom::getEeprom32(eeprom_offsets::TOOLHEAD_OFFSET_SETTINGS_MM, 0xFFFFFFFF) == 0xFFFFFFFF) {
 		eeprom::storeToolheadToleranceDefaults();
 	}
 }
@@ -336,12 +336,24 @@ void definePosition(const Point& position_in) {
 		stepperAxis[i].hasDefinePosition = true;
 
 		//Add the toolhead offset
-//		position_offset[i] += (*tool_offsets)[i];
+		position_offset[i] += (*tool_offsets)[i];
 	}
 
 	plan_set_position(position_offset[X_AXIS], position_offset[Y_AXIS], position_offset[Z_AXIS], position_offset[A_AXIS], position_offset[B_AXIS]);
 }
 
+
+/// Define current position as given point
+/// do not apply toolhead offsets
+void defineHomePosition(const Point& position_in) {
+	Point position_offset = position_in;
+
+	for ( uint8_t i = 0; i < STEPPER_COUNT; i ++ ) {
+		stepperAxis[i].hasDefinePosition = true;
+	}
+
+	plan_set_position(position_offset[X_AXIS], position_offset[Y_AXIS], position_offset[Z_AXIS], position_offset[A_AXIS], position_offset[B_AXIS]);
+}
 
 /// Get the last position of the planner
 /// This is also the target position of the last command that was sent with
@@ -452,11 +464,11 @@ void setTarget(const Point& target, int32_t dda_interval) {
 void setTargetNew(const Point& target, int32_t us, uint8_t relative) {
 	//Add on the tool offsets and convert relative moves into absolute moves
 	for ( uint8_t i = 0; i < STEPPER_COUNT; i ++ ) {
-		planner_target[i] = target[i] + (*tool_offsets)[i];
-
 		if ((relative & (1 << i)) != 0) {
-			planner_target[i] = planner_position[i] + planner_target[i];
-		}
+			planner_target[i] = planner_position[i] + target[i];
+		}else{
+      planner_target[i] = target[i] + (*tool_offsets)[i];
+    }
 	}
 
 	//Clip the Z axis so that it can't move outside the build area.
@@ -503,11 +515,11 @@ void setTargetNew(const Point& target, int32_t us, uint8_t relative) {
 void setTargetNewExt(const Point& target, int32_t dda_rate, uint8_t relative, float distance, int16_t feedrateMult64) {
 	//Add on the tool offsets and convert relative moves into absolute moves
 	for ( uint8_t i = 0; i < STEPPER_COUNT; i ++ ) {
-		planner_target[i] = target[i] + (*tool_offsets)[i];
-
 		if ((relative & (1 << i)) != 0) {
-			planner_target[i] = planner_position[i] + planner_target[i];
-		}
+			planner_target[i] = planner_position[i] + target[i];
+		}else{
+      planner_target[i] = target[i] + (*tool_offsets)[i];
+    }
 	}
 
 	//Clip the Z axis so that it can't move outside the build area.
