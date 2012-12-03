@@ -77,7 +77,7 @@
 
 #define HOST_CMD_GET_POSITION_EXT  21
 #define HOST_CMD_EXTENDED_STOP     22
-#define HOST_CMD_BOARD_STATUS	   23
+#define HOST_CMD_BOARD_STATUS	     23
 #define HOST_CMD_GET_BUILD_STATS   24
 #define HOST_CMD_ADVANCED_VERSION  27
 
@@ -112,10 +112,10 @@
 
 #define HOST_CMD_BUILD_START_NOTIFICATION 153
 #define HOST_CMD_BUILD_END_NOTIFICATION 154
-
+#define HOST_CMD_QUEUE_POINT_NEW_EXT 155
+#define HOST_CMD_SET_ACCELERATION_TOGGLE 156
+#define HOST_CMD_STREAM_VERSION    157
 #define HOST_CMD_DEBUG_ECHO        0x70
-
-
 
 // These are our query commands from the host
 #define SLAVE_CMD_VERSION                0
@@ -157,4 +157,13 @@
 #define SLAVE_CMD_GET_TOOL_STATUS       36
 #define SLAVE_CMD_GET_PID_STATE         37
 #define SLAVE_CMD_LIGHT_INDICATOR_LED   40
+
+
+enum SoftwareVariant{
+  VARIANT_NONE = 0,
+  MBI_OFFICIAL = 1,
+  SAILFISH = 2
+};
+
+
 #endif // SHARED_COMMANDS_H_

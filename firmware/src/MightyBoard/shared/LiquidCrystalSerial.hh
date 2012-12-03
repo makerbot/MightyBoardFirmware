@@ -6,6 +6,7 @@
 #include <stdint.h>
 #include <avr/pgmspace.h>
 #include "Pin.hh"
+#include "Configuration.hh"
 
 // commands
 #define LCD_CLEARDISPLAY 0x01
@@ -73,6 +74,7 @@ public:
 
   void createChar(uint8_t, uint8_t[]);
   void setCursor(uint8_t, uint8_t); 
+  void setCursorExt(int8_t col, int8_t row);
   virtual void write(uint8_t);
 
   /** Added by MakerBot Industries to support storing strings in flash **/
@@ -80,6 +82,9 @@ public:
   void writeInt32(uint32_t value, uint8_t digits);
 
   void writeString(char message[]);
+#ifdef STACK_PAINT
+  void writeFloat(float value, uint8_t decimalPlaces, uint8_t rightJustifyToCol);
+#endif
 
   /** Display the given line until a newline or null is encountered.
    * Returns a pointer to the first character not displayed.

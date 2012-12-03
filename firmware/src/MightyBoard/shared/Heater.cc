@@ -20,7 +20,6 @@
 #include "HeatingElement.hh"
 #include "Thermistor.hh"
 #include "Eeprom.hh"
-#include "EepromMap.hh"
 #include "Motherboard.hh"
 
 
@@ -39,15 +38,15 @@ const uint8_t SENSOR_MAX_BAD_READINGS = 15;
 const uint16_t TARGET_CHECK_COUNT = 5;
 
 /// If we read a temperature higher than this, shut down the heater
-const uint16_t HEATER_CUTOFF_TEMPERATURE = 300;
+const int16_t HEATER_CUTOFF_TEMPERATURE = 300;
 
 
 /// temperatures below setting by this amount will flag as "not heating up"
-const uint16_t HEAT_FAIL_THRESHOLD = 30;
+const int16_t HEAT_FAIL_THRESHOLD = 30;
 
 /// if the starting temperature is less than this amount, we will check heating progress
 /// to get to this temperature, the heater has already been checked.
-const uint16_t HEAT_CHECKED_THRESHOLD = 50;
+const int16_t HEAT_CHECKED_THRESHOLD = 50;
 
 /// timeout for heating all the way up
 const uint32_t HEAT_UP_TIME = 300000000;  //five minutes
@@ -57,17 +56,18 @@ const uint32_t HEAT_PROGRESS_TIME = 90000000; // 90 seconds
 
 
 /// threshold above starting temperature we check for heating progres
-const uint16_t HEAT_PROGRESS_THRESHOLD = 10;
+const int16_t HEAT_PROGRESS_THRESHOLD = 10;
 
 Heater::Heater(TemperatureSensor& sensor_in,
                HeatingElement& element_in,
                micros_t sample_interval_micros_in,
-               uint16_t eeprom_base_in, bool timingCheckOn) :
+               uint16_t eeprom_base_in, bool timingCheckOn, uint8_t calibration_offset) :
 		sensor(sensor_in),
 		element(element_in),
 		sample_interval_micros(sample_interval_micros_in),
 		eeprom_base(eeprom_base_in),
-		heat_timing_check(timingCheckOn)
+		heat_timing_check(timingCheckOn),
+    calibration_eeprom_offset(calibration_offset)
 {
 	reset();
 }
@@ -105,7 +105,7 @@ void Heater::reset() {
 	pid.setTarget(0);
 	next_pid_timeout.start(UPDATE_INTERVAL_MICROS);
 	//next_sense_timeout.start(sample_interval_micros);
-
+  calibration_offset = eeprom::getEeprom8(eeprom_offsets::HEATER_CALIBRATION + calibration_eeprom_offset, 0);
 }
 
 void Heater::disable(bool on){
@@ -123,7 +123,7 @@ void Heater::disable(bool on){
  */
 #define MAX_VALID_TEMP 280
 
-void Heater::set_target_temperature(int temp)
+void Heater::set_target_temperature(int16_t temp)
 {
 	// clip our set temperature if we are over temp.
 	if(temp > MAX_VALID_TEMP) {
@@ -235,7 +235,6 @@ void Heater::manage_temperature() {
 
 	//if (next_sense_timeout.hasElapsed()) {
 	//	next_sense_timeout.start(sample_interval_micros);
-
 		switch (sensor.update()) {
 		case TemperatureSensor::SS_ADC_BUSY:
 		case TemperatureSensor::SS_ADC_WAITING:
@@ -271,7 +270,7 @@ void Heater::manage_temperature() {
 			break;
 		}
 
-		current_temperature = sensor.getTemperature();
+		current_temperature = sensor.getTemperature() + calibration_offset;
 		
 		if (!is_paused){
 			uint8_t old_value_count = value_fail_count;
@@ -349,6 +348,7 @@ void Heater::manage_temperature() {
 		set_output(mv);
 			
 	}
+
 }
 
 

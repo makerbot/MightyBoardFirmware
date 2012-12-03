@@ -22,10 +22,6 @@
 #include <stdint.h>
 #include <avr/pgmspace.h>
 
-#ifdef PROGMEM 
-#undef PROGMEM 
-#define PROGMEM __attribute__((section(".progmem.data"))) 
-#endif
 
 // TODO: Clean this up...
 #if defined HAS_THERMISTOR_TABLES
@@ -40,7 +36,8 @@
 // beta: 4066
 // max adc: 1023
 
-TempTable default_therm_table PROGMEM = {
+#ifdef MODEL_REPLICATOR
+const TempTable default_therm_table PROGMEM = {
   {1, 841},
   {54, 255},
   {107, 209},
@@ -62,8 +59,32 @@ TempTable default_therm_table PROGMEM = {
   {955, 34},
   {1008, 3}
 };
+#else // MODEL_REPLICATOR2
+const TempTable default_therm_table PROGMEM = {
+  {1, 916},
+   {54, 265},
+   {107, 216},
+   {160, 189},
+   {213, 171},
+   {266, 157},
+   {319, 146},
+   {372, 136},
+   {425, 127},
+   {478, 118},
+   {531, 110},
+   {584, 103},
+   {637, 95},
+   {690, 88},
+   {743, 80},
+   {796, 71},
+   {849, 62},
+   {902, 50},
+   {955, 34},
+   {1008, 2}
+};
+#endif
 
-static Entry thermocouple_lookup[] PROGMEM = {
+const static Entry thermocouple_lookup[] PROGMEM = {
 {-304, -64},
 {-232, -48},
 {-157, -32},
@@ -97,7 +118,7 @@ static Entry thermocouple_lookup[] PROGMEM = {
 
 
 /// cold temperature lookup table provided by ADS1118 data sheet
-static Entry cold_temp_lookup[] PROGMEM = {
+const static Entry cold_temp_lookup[] PROGMEM = {
 	{ 	0x3920, -55 },
 	{  	0x3CE0, -25},
 	{	0x3FF8, -0.25},
@@ -127,13 +148,13 @@ inline Entry getEntry(int8_t entryIdx, int8_t table_id) {
 		// get from progmem
 		switch(table_id){
 			case table_thermistor:
-				memcpy_P(&rv, (const void*)&(default_therm_table[entryIdx]), sizeof(Entry));
+				memcpy_PF(&rv, (uint_farptr_t)&(default_therm_table[entryIdx]), sizeof(Entry));
 				break;
 			case table_thermocouple:
-				memcpy_P(&rv, (const void*)&(thermocouple_lookup[entryIdx]), sizeof(Entry));
+				memcpy_PF(&rv, (uint_farptr_t)&(thermocouple_lookup[entryIdx]), sizeof(Entry));
 				break;
 			case table_cold_junction:
-				memcpy_P(&rv, (const void*)&(cold_temp_lookup[entryIdx]), sizeof(Entry));
+				memcpy_PF(&rv, (uint_farptr_t)&(cold_temp_lookup[entryIdx]), sizeof(Entry));
 				break;
 		}
 	}
@@ -178,25 +199,6 @@ int16_t TempReadtoCelsius(int16_t reading, int8_t table_idx, int16_t max_allowed
   if (celsius > max_allowed_value)
 	  celsius = max_allowed_value;
   return celsius;
-}
-
-/// Check that table has been stored in eeprom
-/// @param[in] off eeprom offset location to check
-/// @return true if eeprom offset location is not cleared (0xFF)
-bool isTableSet(uint16_t off) {
-	const void* offset = (const void*)off;
-	uint8_t first_byte;
-	ATOMIC_BLOCK(ATOMIC_RESTORESTATE){
-	eeprom_read_block(&first_byte,offset,1);
-	}
-	return first_byte != 0xff;
-}
-
-/// initialize thermocouple tables
-/// this functionality is legacy
-void initThermistorTables() {
-	has_table[0] = isTableSet(eeprom_offsets::THERM_TABLE + therm_eeprom_offsets::THERM_DATA);
-	//has_table[1] = isTableSet(eeprom::THERM_TABLE_1 + eeprom::THERM_DATA_OFFSET);
 }
 
 }

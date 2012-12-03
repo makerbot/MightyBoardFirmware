@@ -41,34 +41,31 @@ void setBuildPercentage(uint8_t percent){
 	board->setBuildPercentage(percent);
 }
 
-void init(InterfaceBoard* board_in, LiquidCrystalSerial* lcd_in) {
-    board = board_in;
-    lcd = lcd_in;
+void init(InterfaceBoard* board_in) {
+  board = board_in;
 }
 
 void pushScreen(Screen* newScreen) {
-        board->pushScreen(newScreen);
+  board->pushScreen(newScreen);
 }
 
 void popScreen() {
-        board->popScreen();
+  board->popScreen();
+}
+void queueScreen(InterfaceBoard::ScreenType screen){
+  board->queueScreen(screen);
 }
 
 void doInterrupt() {
-        board->doInterrupt();
+  board->doInterrupt();
 }
 
 micros_t getUpdateRate() {
-        return board->getUpdateRate();
+  return board->getUpdateRate();
 }
 
 void doUpdate() {
-        board->doUpdate();
-}
-
-void setLEDs(bool on){
-	board->setLED(0,on);
-	board->setLED(1,on);
+  board->doUpdate();
 }
 
 }

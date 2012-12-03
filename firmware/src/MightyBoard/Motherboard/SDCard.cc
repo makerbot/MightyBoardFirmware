@@ -41,6 +41,7 @@ struct partition_struct* partition = 0;
 struct fat_fs_struct* fs = 0;
 struct fat_dir_struct* dd = 0;
 struct fat_file_struct* file = 0;
+uint32_t open_fileSize = 0;
 
 bool openPartition()
 {
@@ -188,7 +189,7 @@ bool openFile(const char* name, struct fat_file_struct** file)
 }
 
 uint32_t getFileSize(){
-	return fat_get_file_size(file);
+	return open_fileSize;
 }
 
 bool deleteFile(char *name)
@@ -312,6 +313,7 @@ SdErrorCode startPlayback(char* filename) {
   if (!openFile(filename, &file) || file == 0) {
     return SD_ERR_FILE_NOT_FOUND;
   }
+  open_fileSize = fat_get_file_size(file);
   playing = true;
   fetchNextByte();
   return SD_SUCCESS;
@@ -349,6 +351,7 @@ void reset() {
 		partition_close(partition);
 		partition = 0;
 	}
+  open_fileSize = 0;
 }
 
 } // namespace sdcard

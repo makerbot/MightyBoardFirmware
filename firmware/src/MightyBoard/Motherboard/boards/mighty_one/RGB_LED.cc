@@ -66,12 +66,13 @@ void init(){
  		return;
  	}
  	
- 	uint8_t error = TWI_write_data(LEDAddress, data1, 2);
-     _delay_us(1);
-    error = TWI_write_data(LEDAddress, data2, 2);
-     _delay_us(1);
- 	
-     LEDSelect = data1[1];
+  // we have to delay between writes to give the chip time to respond
+ 	TWI_write_data(LEDAddress, data1, 2);
+   _delay_us(1);
+  TWI_write_data(LEDAddress, data2, 2);
+   _delay_us(1);
+
+   LEDSelect = data1[1];
  		
  }
     
@@ -99,10 +100,11 @@ void init(){
  	else
  		return;
  	
-     uint8_t error = TWI_write_data(LEDAddress, data1, 2);
-     _delay_us(1);
-     error = TWI_write_data(LEDAddress, data2, 2);
-     _delay_us(1);
+  // we need to delay between writes to give the chip time to process
+   TWI_write_data(LEDAddress, data1, 2);
+   _delay_us(1);
+   TWI_write_data(LEDAddress, data2, 2);
+   _delay_us(1);
      
  	LEDSelect = data1[1];	
  }
@@ -151,7 +153,7 @@ void setDefaultColor(){
 	 // set frequency to slowest and duty cyle to zero (off)
 	 uint8_t LEDColor = eeprom::getEeprom8(eeprom_offsets::LED_STRIP_SETTINGS, 1);
 	 uint32_t CustomColor = eeprom::getEeprom32(eeprom_offsets::LED_STRIP_SETTINGS + blink_eeprom_offsets::CUSTOM_COLOR, 0xFFFFFFFF);
-
+	
 	// blink rate has to be set first in order for color to register,
 	// so set blink before each color
 	 

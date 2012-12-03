@@ -1,3 +1,48 @@
+### Issues ###
+Set digipot s3g not working (likely from bug in Buttons)
+
+### Make sure to check ###
+jetty does not disable the stepper interrupt on command:pause() - is this behavior replicated elsewhere?
+are the nozzle offsets still implemented properly?
+lets run a test with the new offsets
+can we print from USB?  from repG?  from Makerware? - is the slow down flag different for RepG / Makerware
+verify that the pipelining behavior still works and enable disable axes are not getting in the way
+test sleep and pause commands for correct position recall
+the eeprom map + update all the headers for the eeprom map
+
+### issues with build! ###
+jog mode not working correctly
+steppers not being disabled at end of print
+sleep does not work anymore......no sleep, does pause, text is weird
+isEnabled menu item is not working
+
+### first build checks  -- all checked ###
+steps per mm definitions
+sqrt table - no definitions for this anywhere else
+check if we are using axis_lengths anywere - I store 1/2 lengths for xy and jetty stores full...
+are we writing to build_Status_bytes?
+
+stopBuild vs stopBuildNow (a new add) - this is present in the jetty firmware  - It looks like this just facilitates the cancel plate down behavior... so not to worry
+
+### fixes that need to be ported to the "stable" build ###
+cancel build menu fix
+sd card name fix
+
+### things that are probably good that we should merge in step 2 ###
+move things out of Motherboard.cc in favor of ? being defined in the class that is using them?
+moving screen definitions out of Motherboard.cc if they are duplicates of other definitions
+? are .h file function definitions worse for some reason?  a memory reason?
+filament tracker
+jetty mods to jog mode
+track down all the warnings - ignore some warnings
+move TOTAL_BUILD_TIME back to 0x01A0 in the eepromMap
+
+### Merge Progess ###
+computing the distance etc values:
+in firmware: 0.35 - 0.7 ms
+on host: 0.2 - 0.4 ms
+comparable points : 0.2ms vs 0.4 ms
+
 ##File Name Changes##
 MBI files Planner.xx, Steppers.xx (movements called from Command.xx, Host.xx, Menu.xx)
 Jetty files StepperAccelPlaner.xx, StepperAccel.xx, StepperAxis.xx, Steppers.xx, StepperAccelSpeedTable* (movments called from same)

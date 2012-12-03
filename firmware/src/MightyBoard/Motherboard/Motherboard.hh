@@ -57,6 +57,8 @@ public:
 	enum status_states{
 		STATUS_NONE = 0,
 		STATUS_HEAT_INACTIVE_SHUTDOWN = 0x40,
+    STATUS_CANCELLING = 0x20,
+    STATUS_WAITING_FOR_BUTTON = 0x10,
 		STATUS_ONBOARD_PROCESS = 0x08,
 		STATUS_ONBOARD_SCRIPT = 0x04,
 		STATUS_MANUAL_MODE = 0x02,
@@ -104,9 +106,6 @@ private:
 	LiquidCrystalSerial lcd;
 	InterfaceBoard interfaceBoard;
 	
-	SplashScreen splashScreen;      ///< Displayed at startup
-	WelcomeScreen welcomeScreen;	///< Displayed on Startup for the first time
-    
 	Thermistor platform_thermistor;
 	BuildPlatformHeatingElement platform_element;
 	Heater platform_heater;
@@ -122,13 +121,16 @@ private:
 	bool heating_lights_active;
 	int16_t currentTemp;
   int16_t setTemp; 
+  int16_t div_temp;
   bool toggleBlink;
   bool progress_active;
 	uint8_t progress_line;
 	uint8_t progress_start_char;
 	uint8_t progress_end_char;
 	uint8_t progress_last_index;
-    
+  
+  micros_t restart_timeout;  
+  
   void HeatingAlerts();
 
 
@@ -137,6 +139,9 @@ public:
 	/// This only resets the board, and does not send a reset
 	/// to any attached toolheads.
 	void reset(bool hard_reset);
+
+  /// initialize things that only need to be set up once, on boot
+  void init();
 
 	void runMotherboardSlice();
 
@@ -157,7 +162,7 @@ public:
 	void interfaceBlink(int on_time, int off_time);
 
 	/// Perform the timer interrupt routine.
-	void doInterrupt();
+	void doStepperInterrupt();
 	
 	bool isUsingPlatform() { return using_platform; }
 	void setUsingPlatform(bool is_using);
@@ -184,6 +189,7 @@ public:
 	void StopProgressBar();
 	
 	bool isHeating();
+
 };
 
 
