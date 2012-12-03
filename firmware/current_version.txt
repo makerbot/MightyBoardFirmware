@@ -1,3 +1,5 @@
+7.0.5.1.0
+ * heat behavior fixes, 2X support adds
 7.0.3.1.0
  * version number bump since we haven't release in a while 
 7.0.1.1.0
