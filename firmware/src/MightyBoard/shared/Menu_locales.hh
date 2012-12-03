@@ -232,6 +232,7 @@ static PROGMEM unsigned char LEFT_MSG[] =    "Left";
 static PROGMEM unsigned char ERROR_MSG[] =   "error!";
 static PROGMEM unsigned char NA_MSG[] =      "  NA    ";
 static PROGMEM unsigned char WAITING_MSG[] = "waiting ";
+static PROGMEM unsigned char WAIT_FOR_HOMING_MSG[] = "Wait for Homing";
 
 static PROGMEM unsigned char HEATER_INACTIVITY_MSG[] = "Heaters shutdown    " "due to inactivity   ";
 static PROGMEM unsigned char HEATER_FAIL_SOFTWARE_CUTOFF_MSG[] = "Extruder Overheat!  " "Software Temp Limit " "Reached! Please     " "Shutdown or Restart";
@@ -276,7 +277,7 @@ static PROGMEM unsigned char ERROR_SD_CARD_GENERIC[] = " SD card read error";
 static PROGMEM unsigned char ERROR_TEMP_RESET_EXTERNALLY[] = "My temperature was  changed externally. Reselect filament   menu to try again.";
 
 static PROGMEM unsigned char ERROR_INVALID_PLATFORM[] = "INVALID COMMAND:    I received a commandfor a heated plate, but I don't have one";
-static PROGMEM unsigned char ERROR_INVALID_TOOL[] = "INVALID TOOL:       I received a commandfor Tool #2, but I  only have one Tool. ";
+static PROGMEM unsigned char ERROR_INVALID_TOOL[] = "INVALID TOOL:       I received a Left   Tool comand, but I  only have one Tool.";
 static PROGMEM unsigned char ACTIVE_FAN_MSG[]		 = "Filament Fan        ";
 
 

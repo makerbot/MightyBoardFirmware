@@ -2241,13 +2241,21 @@ void ActiveBuildMenu::drawItem(uint8_t index, LiquidCrystalSerial& lcd, uint8_t 
             lcd.writeFromPgmspace(CANCEL_BUILD_MSG);
             break;
         case 2:
-            lcd.writeFromPgmspace(CHANGE_FILAMENT_MSG);
+            if(!steppers::isZHomed()){
+                lcd.writeFromPgmspace(WAIT_FOR_HOMING_MSG);
+            } else {
+                lcd.writeFromPgmspace(CHANGE_FILAMENT_MSG);
+            }
             break;
         case 3:
-            if(!is_sleeping){
-              lcd.writeFromPgmspace(SLEEP_MSG);
-            }else {
-              lcd.writeFromPgmspace(RESTART_MSG);
+            if(!steppers::isZHomed()){
+                lcd.writeFromPgmspace(WAIT_FOR_HOMING_MSG);
+            } else {
+                if(!is_sleeping){
+                  lcd.writeFromPgmspace(SLEEP_MSG);
+                }else {
+                  lcd.writeFromPgmspace(RESTART_MSG);
+                }
             }
             break;
         case FanIdx+1:
@@ -2339,11 +2347,13 @@ void ActiveBuildMenu::handleSelect(uint8_t index){
       interface::pushScreen(&build_stats_screen);
       break;
     case 2:
-      host::pauseBuild(false);
-      is_paused = false;
-      interface::pushScreen(&filamentMenu);
-      host::activePauseBuild(true, command::SLEEP_TYPE_FILAMENT);
-      is_sleeping = true;
+      if(steppers::isZHomed()){
+          host::pauseBuild(false);
+          is_paused = false;
+          interface::pushScreen(&filamentMenu);
+          host::activePauseBuild(true, command::SLEEP_TYPE_FILAMENT);
+          is_sleeping = true;
+      }
       break;
     case 0:
       // pause command execution
@@ -2363,15 +2373,17 @@ void ActiveBuildMenu::handleSelect(uint8_t index){
       interface::pushScreen(&cancel_build_menu);
       break;
     case 3:
-      is_sleeping = !is_sleeping;
-      if(is_sleeping){
-        host::pauseBuild(false);
-        is_paused = false;
-        host::activePauseBuild(true, command::SLEEP_TYPE_COLD);
-      }else{
-        host::activePauseBuild(false, command::SLEEP_TYPE_COLD);
+      if(steppers::isZHomed()){
+        is_sleeping = !is_sleeping;
+        if(is_sleeping){
+            host::pauseBuild(false);
+            is_paused = false;
+            host::activePauseBuild(true, command::SLEEP_TYPE_COLD);
+        }else{
+            host::activePauseBuild(false, command::SLEEP_TYPE_COLD);
+        }
+        lineUpdate = true;
       }
-      lineUpdate = true;
       break;
 #ifdef ACTIVE_COOLING_FAN
     case FanIdx:

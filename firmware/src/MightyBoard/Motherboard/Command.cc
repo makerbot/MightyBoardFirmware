@@ -198,9 +198,10 @@ bool fan_state = false;
 
 void startSleep(){
 
-	// record current position
-	sleep_position = steppers::getStepperPosition();
-  fan_state = EX_FAN.getValue();
+    if(steppers::isZHomed()){
+        // record current position
+        sleep_position = steppers::getStepperPosition();
+        fan_state = EX_FAN.getValue();
 	Motherboard &board = Motherboard::getBoard();
 	
 	// retract
@@ -212,7 +213,7 @@ void startSleep(){
 	extruder_temp[0] = board.getExtruderBoard(0).getExtruderHeater().get_set_temperature();
 	extruder_temp[1] = board.getExtruderBoard(1).getExtruderHeater().get_set_temperature();
 	platform_temp = board.getPlatformHeater().get_set_temperature();
-	
+
 	if(cold_pause){
 		// cool heaters
 		board.getExtruderBoard(0).getExtruderHeater().set_target_temperature(0);
@@ -229,9 +230,8 @@ void startSleep(){
 	
 	steppers::setTarget(z_pos, z_mm_per_second_18);
 	steppers::setTarget(wait_pos, xy_mm_per_second_80);
-  
-  // turn off fan
   board.setExtra(false);
+}
 }
 
 void stopSleep(){
@@ -636,11 +636,33 @@ void runCommandSlice() {
 			}else if((sleep_mode == SLEEP_MOVING) && st_empty()){
 				interface::popScreen();
 				sleep_mode = SLEEP_ACTIVE;
+                uint8_t pot_value = 20;
+                for(uint8_t i = 0; i < 2; ++i)
+                {
+                    steppers::setAxisPotValue(i, pot_value);
+                }
+				if(sleep_type == SLEEP_TYPE_COLD){
+                    for(uint8_t i = 3; i < 5; ++i)
+                    {
+                        steppers::setAxisPotValue(i, pot_value);
+                    }
+                }
 			// restart called or
 			// restart called while still moving to waiting position
 			// wait for move to wait position to finish before restarting
 			}else if(((sleep_mode == SLEEP_MOVING_WAIT) && st_empty()) ||
 					(sleep_mode == SLEEP_RESTART)){
+                uint8_t pot_value = 127;
+                for(uint8_t i = 0; i < 2; ++i)
+                {
+                    steppers::setAxisPotValue(i, pot_value);
+                }
+				if(sleep_type == SLEEP_TYPE_COLD){
+                    for(uint8_t i = 3; i < 5; ++i)
+                    {
+                        steppers::setAxisPotValue(i, pot_value);
+                    }
+                }
 				Motherboard::getBoard().getInterfaceBoard().errorMessage(RESTARTING_MSG);
 				// wait for platform to heat
 				currentToolIndex = 0;
