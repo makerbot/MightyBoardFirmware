@@ -336,7 +336,7 @@ void definePosition(const Point& position_in) {
 		stepperAxis[i].hasDefinePosition = true;
 
 		//Add the toolhead offset
-		//position_offset[i] += (*tool_offsets)[i];
+		position_offset[i] += (*tool_offsets)[i];
 	}
 
 	plan_set_position(position_offset[X_AXIS], position_offset[Y_AXIS], position_offset[Z_AXIS], position_offset[A_AXIS], position_offset[B_AXIS]);

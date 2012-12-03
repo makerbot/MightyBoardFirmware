@@ -36,7 +36,7 @@
 // beta: 4066
 // max adc: 1023
 
-//#ifdef MODEL_REPLICATOR
+#ifdef MODEL_REPLICATOR
 const TempTable default_therm_table PROGMEM = {
   {1, 841},
   {54, 255},
@@ -59,32 +59,30 @@ const TempTable default_therm_table PROGMEM = {
   {955, 34},
   {1008, 3}
 };
-//#else // MODEL_REPLICATOR2
-/*
+#else // MODEL_REPLICATOR2
 const TempTable default_therm_table PROGMEM = {
-   {1, 431},
-   {43, 147},
-   {85, 117},
-   {127, 101},
-   {169, 89},
-   {211, 80},
-   {253, 73},
-   {295, 67},
-   {337, 61},
-   {379, 56},
-   {421, 52},
-   {463, 47},
-   {505, 43},
-   {547, 39},
-   {589, 35},
-   {631, 31},
-   {673, 27},
-   {715, 23},
-   {757, 18},
-   {799, 13}
+  {1, 916},
+   {54, 265},
+   {107, 216},
+   {160, 189},
+   {213, 171},
+   {266, 157},
+   {319, 146},
+   {372, 136},
+   {425, 127},
+   {478, 118},
+   {531, 110},
+   {584, 103},
+   {637, 95},
+   {690, 88},
+   {743, 80},
+   {796, 71},
+   {849, 62},
+   {902, 50},
+   {955, 34},
+   {1008, 2}
 };
-*/
-//#endif
+#endif
 
 const static Entry thermocouple_lookup[] PROGMEM = {
 {-304, -64},
