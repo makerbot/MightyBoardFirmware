@@ -232,7 +232,7 @@ static PROGMEM unsigned char LEFT_MSG[] =    "Left";
 static PROGMEM unsigned char ERROR_MSG[] =   "error!";
 static PROGMEM unsigned char NA_MSG[] =      "  NA    ";
 static PROGMEM unsigned char WAITING_MSG[] = "waiting ";
-static PROGMEM unsigned char WAIT_FOR_HOMING_MSG[] = "Wait for Homing";
+static PROGMEM unsigned char WAIT_FOR_HOMING_MSG[] = "Waiting for Homing ";
 
 static PROGMEM unsigned char HEATER_INACTIVITY_MSG[] = "Heaters shutdown    " "due to inactivity   ";
 static PROGMEM unsigned char HEATER_FAIL_SOFTWARE_CUTOFF_MSG[] = "Extruder Overheat!  " "Software Temp Limit " "Reached! Please     " "Shutdown or Restart";

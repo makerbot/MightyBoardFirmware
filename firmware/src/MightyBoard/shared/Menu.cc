@@ -641,7 +641,7 @@ void SelectAlignmentMenu::handleSelect(uint8_t index) {
 
 void FilamentScreen::startMotor(){
     int32_t interval = 300000000;  // 5 minutes
-    int32_t steps = interval / 6250;
+    int32_t steps = interval / 3250;
     if(forward)
         steps *= -1;
     Point target = Point(0,0,0,0,0);
@@ -2348,6 +2348,7 @@ void ActiveBuildMenu::handleSelect(uint8_t index){
       break;
     case 2:
       if(steppers::isZHomed()){
+          preheatActive = true;
           host::pauseBuild(false);
           is_paused = false;
           interface::pushScreen(&filamentMenu);
@@ -2381,6 +2382,7 @@ void ActiveBuildMenu::handleSelect(uint8_t index){
             host::activePauseBuild(true, command::SLEEP_TYPE_COLD);
         }else{
             host::activePauseBuild(false, command::SLEEP_TYPE_COLD);
+            preheatActive = false;
         }
         lineUpdate = true;
       }

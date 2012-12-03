@@ -509,7 +509,10 @@ void handleBuildStopNotification(uint8_t stopFlags) {
 	last_print_line = command::getLineNumber();
 	buildState = BUILD_FINISHED_NORMALLY;
 	currentState = HOST_STATE_READY;
-
+  
+  // ensure filament axes are disabled on stop build
+  steppers::enableAxis(3, false);
+  steppers::enableAxis(4, false);
   // turn off the cooling fan
   EX_FAN.setValue(false);
 }
@@ -696,6 +699,9 @@ void stopBuild() {
 		(currentState == host::HOST_STATE_BUILDING_FROM_SD)){
     	
     steppers::abort();
+    // disable filament axes
+    steppers::enableAxis(3, false);
+    steppers::enableAxis(4, false);
 
 		Motherboard::getBoard().setBoardStatus(Motherboard::STATUS_CANCELLING, true);
 		// record print statistics

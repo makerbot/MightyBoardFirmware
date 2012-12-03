@@ -198,10 +198,9 @@ bool fan_state = false;
 
 void startSleep(){
 
-    if(steppers::isZHomed()){
-        // record current position
-        sleep_position = steppers::getStepperPosition();
-        fan_state = EX_FAN.getValue();
+  // record current position
+  sleep_position = steppers::getStepperPosition();
+  fan_state = EX_FAN.getValue();
 	Motherboard &board = Motherboard::getBoard();
 	
 	// retract
@@ -231,7 +230,6 @@ void startSleep(){
 	steppers::setTarget(z_pos, z_mm_per_second_18);
 	steppers::setTarget(wait_pos, xy_mm_per_second_80);
   board.setExtra(false);
-}
 }
 
 void stopSleep(){
@@ -636,33 +634,33 @@ void runCommandSlice() {
 			}else if((sleep_mode == SLEEP_MOVING) && st_empty()){
 				interface::popScreen();
 				sleep_mode = SLEEP_ACTIVE;
-                uint8_t pot_value = 20;
-                for(uint8_t i = 0; i < 2; ++i)
-                {
-                    steppers::setAxisPotValue(i, pot_value);
-                }
+        uint8_t pot_value = 20;
+        for(uint8_t i = 0; i < 2; ++i)
+        {
+            steppers::setAxisPotValue(i, pot_value);
+        }
 				if(sleep_type == SLEEP_TYPE_COLD){
-                    for(uint8_t i = 3; i < 5; ++i)
-                    {
-                        steppers::setAxisPotValue(i, pot_value);
-                    }
-                }
+            for(uint8_t i = 3; i < 5; ++i)
+            {
+                steppers::setAxisPotValue(i, pot_value);
+            }
+        }
 			// restart called or
 			// restart called while still moving to waiting position
 			// wait for move to wait position to finish before restarting
 			}else if(((sleep_mode == SLEEP_MOVING_WAIT) && st_empty()) ||
 					(sleep_mode == SLEEP_RESTART)){
-                uint8_t pot_value = 127;
-                for(uint8_t i = 0; i < 2; ++i)
-                {
-                    steppers::setAxisPotValue(i, pot_value);
-                }
+        uint8_t pot_value = 127;
+        for(uint8_t i = 0; i < 2; ++i)
+        {
+            steppers::setAxisPotValue(i, pot_value);
+        }
 				if(sleep_type == SLEEP_TYPE_COLD){
-                    for(uint8_t i = 3; i < 5; ++i)
-                    {
-                        steppers::setAxisPotValue(i, pot_value);
-                    }
-                }
+            for(uint8_t i = 3; i < 5; ++i)
+            {
+                steppers::setAxisPotValue(i, pot_value);
+            }
+        }
 				Motherboard::getBoard().getInterfaceBoard().errorMessage(RESTARTING_MSG);
 				// wait for platform to heat
 				currentToolIndex = 0;
@@ -743,12 +741,17 @@ void runCommandSlice() {
 					uint8_t axes = pop8();
 					line_number++;
 					
-					bool enable = (axes & 0x80) != 0;
-					for (int i = 0; i < STEPPER_COUNT; i++) {
-						if ((axes & _BV(i)) != 0) {
-							  steppers::enableAxis(i, enable);
+          // only execute this command if our buffer is empty
+          // this is because skeinforge sends a zillion spurious enable commands that cause
+          // clicking in the motors.
+          if(st_empty()){
+            bool enable = (axes & 0x80) != 0;
+            for (int i = 0; i < STEPPER_COUNT; i++) {
+              if ((axes & _BV(i)) != 0) {
+                  steppers::enableAxis(i, enable);
+              }
             }
-					}
+          }
 				}
       } else if (command == HOST_CMD_STREAM_VERSION){
           if(command_buffer.getLength() >= 11){
