@@ -343,6 +343,18 @@ void definePosition(const Point& position_in) {
 }
 
 
+/// Define current position as given point
+/// do not apply toolhead offsets
+void defineHomePosition(const Point& position_in) {
+	Point position_offset = position_in;
+
+	for ( uint8_t i = 0; i < STEPPER_COUNT; i ++ ) {
+		stepperAxis[i].hasDefinePosition = true;
+	}
+
+	plan_set_position(position_offset[X_AXIS], position_offset[Y_AXIS], position_offset[Z_AXIS], position_offset[A_AXIS], position_offset[B_AXIS]);
+}
+
 /// Get the last position of the planner
 /// This is also the target position of the last command that was sent with
 /// setTarget / setTargetNew / setTargetNewExt
@@ -452,11 +464,11 @@ void setTarget(const Point& target, int32_t dda_interval) {
 void setTargetNew(const Point& target, int32_t us, uint8_t relative) {
 	//Add on the tool offsets and convert relative moves into absolute moves
 	for ( uint8_t i = 0; i < STEPPER_COUNT; i ++ ) {
-		planner_target[i] = target[i] + (*tool_offsets)[i];
-
 		if ((relative & (1 << i)) != 0) {
-			planner_target[i] = planner_position[i] + planner_target[i];
-		}
+			planner_target[i] = planner_position[i] + target[i];
+		}else{
+      planner_target[i] = target[i] + (*tool_offsets)[i];
+    }
 	}
 
 	//Clip the Z axis so that it can't move outside the build area.
@@ -503,11 +515,11 @@ void setTargetNew(const Point& target, int32_t us, uint8_t relative) {
 void setTargetNewExt(const Point& target, int32_t dda_rate, uint8_t relative, float distance, int16_t feedrateMult64) {
 	//Add on the tool offsets and convert relative moves into absolute moves
 	for ( uint8_t i = 0; i < STEPPER_COUNT; i ++ ) {
-		planner_target[i] = target[i] + (*tool_offsets)[i];
-
 		if ((relative & (1 << i)) != 0) {
-			planner_target[i] = planner_position[i] + planner_target[i];
-		}
+			planner_target[i] = planner_position[i] + target[i];
+		}else{
+      planner_target[i] = target[i] + (*tool_offsets)[i];
+    }
 	}
 
 	//Clip the Z axis so that it can't move outside the build area.

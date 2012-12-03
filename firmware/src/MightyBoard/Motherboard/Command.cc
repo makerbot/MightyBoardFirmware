@@ -935,7 +935,7 @@ void runCommandSlice() {
 						}
 					}
 
-					steppers::definePosition(newPoint);
+					steppers::defineHomePosition(newPoint);
 				}
 
 			}else if (command == HOST_CMD_SET_POT_VALUE){
