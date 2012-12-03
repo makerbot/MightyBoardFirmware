@@ -36,13 +36,6 @@ void init() {
        ATOMIC_BLOCK(ATOMIC_RESTORESTATE){  
        eeprom_write_block(prom_version,(uint8_t*)eeprom_offsets::VERSION_LOW,2);
        }
-       // special upgrade for version 7.0
-       if (getEeprom8(eeprom_offsets::VERSION7_UPDATE_FLAG, 0) != VERSION7_FLAG){
-          
-          // reset everything related to steps and lengths
-          eepromResetv7();
-       }
-       
 }
 
 #if defined(ERASE_EEPROM_ON_EVERY_BOOT) || defined(EEPROM_MENU_ENABLE)

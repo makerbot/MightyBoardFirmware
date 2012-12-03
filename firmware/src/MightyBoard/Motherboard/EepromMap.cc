@@ -274,15 +274,12 @@ ATOMIC_BLOCK(ATOMIC_RESTORESTATE){
   eeprom_write_block((uint8_t*)&(replicator_axis_steps_per_mm::axis_steps_per_mm[0]), (uint8_t*)(eeprom_offsets::AXIS_STEPS_PER_MM), 20);
 
   /// store the default axis max feedrates for the machine
-  eeprom_write_block((uint8_t*)&(replicator_axis_max_feedrates::axis_max_feedrates[0]), (uint8_t*)(eeprom_offsets::AXIS_MAX_FEEDRATES), 20);
+  eeprom_write_block((uint8_t*)&(replicator_axis_max_feedrates::axis_max_feedrates[0]), (uint8_t*)(eeprom_offsets::AXIS_MAX_FEEDRATES), 10);
 
   setDefaultsAcceleration();
 
   eeprom_write_byte((uint8_t*)eeprom_offsets::FILAMENT_HELP_TEXT_ON, 1);
 
-  /// Thermal table settings
-  SetDefaultsThermal(eeprom_offsets::THERM_TABLE);
-  
   /// Preheat heater settings
   setDefaultsPreheat(eeprom_offsets::PREHEAT_SETTINGS);
 
@@ -435,7 +432,7 @@ void eepromResetv7(){
     eeprom_write_block((uint8_t*)&(replicator_axis_steps_per_mm::axis_steps_per_mm[0]), (uint8_t*)(eeprom_offsets::AXIS_STEPS_PER_MM), 20);
 
     /// store the default axis max feedrates for the machine
-    eeprom_write_block((uint8_t*)&(replicator_axis_max_feedrates::axis_max_feedrates[0]), (uint8_t*)(eeprom_offsets::AXIS_MAX_FEEDRATES), 20);
+    eeprom_write_block((uint8_t*)&(replicator_axis_max_feedrates::axis_max_feedrates[0]), (uint8_t*)(eeprom_offsets::AXIS_MAX_FEEDRATES), 10);
 
     setDefaultsAcceleration();
 
