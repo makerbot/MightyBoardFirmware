@@ -87,6 +87,7 @@ void reset(void) {
 
 	// We need to set the buzzer pin to output, so that the timer can drive it
 	BUZZER_PIN.setDirection(true);
+	BUZZER_PIN.setValue(false);
 }
 
 
