@@ -710,7 +710,7 @@ void stopBuild() {
 		/// ensure that we have homed all axes before attempting this
     uint8_t z_home = steppers::isZHomed();   
     if(z_home > 0){
-      Point target = steppers::getStepperPosition();
+      Point target = steppers::getPlannerPosition();
       if(z_home == 1) {target[2] = 145L*stepperAxisStepsPerMM(Z_AXIS);}
       else {target[2] = 150L*stepperAxisStepsPerMM(Z_AXIS);}
       command::pause(false);

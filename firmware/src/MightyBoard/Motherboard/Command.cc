@@ -199,7 +199,7 @@ bool fan_state = false;
 void startSleep(){
 
 	// record current position
-	sleep_position = steppers::getStepperPosition();
+	sleep_position = steppers::getPlannerPosition();
   fan_state = EX_FAN.getValue();
 	Motherboard &board = Motherboard::getBoard();
 	
@@ -236,7 +236,7 @@ void startSleep(){
 
 void stopSleep(){
 	// move to build position
-	Point z_pos = Point(steppers::getStepperPosition());
+	Point z_pos = Point(steppers::getPlannerPosition());
 	/// set filament position to sleep_position
 	z_pos[A_AXIS] = sleep_position[A_AXIS];
 	z_pos[B_AXIS] = sleep_position[B_AXIS];
@@ -504,7 +504,7 @@ void runCommandSlice() {
         board.getExtruderBoard(1).getExtruderHeater().set_target_temperature(0);
         board.getPlatformHeater().set_target_temperature(0);
     
-        Point target = steppers::getStepperPosition();
+        Point target = steppers::getPlannerPosition();
         target[2] = 150L*stepperAxisStepsPerMM(Z_AXIS);
         command::pause(false);
         steppers::setTarget(target, 150);
