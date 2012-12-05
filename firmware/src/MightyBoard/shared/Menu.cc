@@ -141,19 +141,23 @@ void HeaterPreheat::resetState(){
   if(singleTool){ _leftActive = false; }
   Motherboard &board = Motherboard::getBoard();
   
-  if(((board.getExtruderBoard(0).getExtruderHeater().get_set_temperature() > 0) && _rightActive) ||
-      ((board.getExtruderBoard(1).getExtruderHeater().get_set_temperature() > 0) && _leftActive) ||
-      ((board.getPlatformHeater().get_set_temperature() >0) && _platformActive))
-  {   preheatActive = true;}
-  else
-  {   preheatActive = false;}
-
-  if(eeprom::hasHBP()){
-    itemCount = 4;
-  }else{
-    itemCount = 3;
+  preheatFlag = 0;
+  if(board.getExtruderBoard(0).getExtruderHeater().get_set_temperature() > 0 && _rightActive) {
+      preheatFlag |= 0x01;
+   }
+  if(board.getExtruderBoard(1).getExtruderHeater().get_set_temperature() > 0 && _leftActive) {
+      preheatFlag |= 0x02;
+   }
+  if(eeprom::hasHBP() && board.getPlatformHeater().get_set_temperature() > 0 && _platformActive) {
+      preheatFlag |= 0x04;
+  }
+  if(preheatFlag > 0){
+    preheatActive = true;
+  } else {
+    preheatActive = false;
   }
 }
+
 
 void HeaterPreheat::drawItem(uint8_t index, LiquidCrystalSerial& lcd, uint8_t line_number) {
   

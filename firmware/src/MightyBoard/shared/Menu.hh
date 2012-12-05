@@ -592,6 +592,8 @@ public:
 
 private:
 
+    int8_t preheatFlag;
+
 	int8_t _rightActive, _leftActive, _platformActive;
     
     void storeHeatByte();
