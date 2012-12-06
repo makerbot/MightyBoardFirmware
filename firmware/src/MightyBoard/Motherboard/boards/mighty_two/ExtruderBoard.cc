@@ -31,7 +31,7 @@ ExtruderBoard::ExtruderBoard(uint8_t slave_id_in, Pin HeaterPin_In, Pin FanPin_I
      		extruder_thermocouple(thermocouple_channel),
      		extruder_element(slave_id_in),
      		extruder_heater(extruder_thermocouple,extruder_element,SAMPLE_INTERVAL_MICROS_THERMOCOUPLE,
-        		  (eeprom_base+ toolhead_eeprom_offsets::EXTRUDER_PID_BASE), true ),
+        		  (eeprom_base+ toolhead_eeprom_offsets::EXTRUDER_PID_BASE), true, slave_id_in),
       		coolingFan(extruder_heater, (eeprom_base + toolhead_eeprom_offsets::COOLING_FAN_SETTINGS), FanPin_In),
       		slave_id(slave_id_in),
       		Heater_Pin(HeaterPin_In),
@@ -55,9 +55,8 @@ void ExtruderBoard::reset() {
 
 void ExtruderBoard::runExtruderSlice() {
 
-        extruder_heater.manage_temperature();
-        coolingFan.manageCoolingFan();
-
+  extruder_heater.manage_temperature();
+  coolingFan.manageCoolingFan();
 }
 
 void ExtruderBoard::setFan(uint8_t on)
@@ -94,7 +93,7 @@ ExtruderHeatingElement::ExtruderHeatingElement(uint8_t id):
 void ExtruderHeatingElement::setHeatingElement(uint8_t value) {
 	
 	
-  	ATOMIC_BLOCK(ATOMIC_RESTORESTATE) {
+ 	ATOMIC_BLOCK(ATOMIC_RESTORESTATE) {
 	  if(heater_id == 0)
 	   { 
      		if (value == 0 || value == 255) {
@@ -121,6 +120,7 @@ void ExtruderHeatingElement::setHeatingElement(uint8_t value) {
 			}
 		}
 	}
+
 }
 
 

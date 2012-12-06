@@ -18,7 +18,8 @@
 
 
 #include "Thermocouple.hh"
-
+#include "Configuration.hh"
+#include "Pin.hh"
 
 // We'll throw in nops to get the timing right (if necessary)
 inline void nop() {
@@ -50,6 +51,7 @@ void Thermocouple::init() {
 
 
 Thermocouple::SensorState Thermocouple::update() {
+
 	// TODO: Check timing against datasheet.
 	cs_pin.setValue(false);
 	nop();

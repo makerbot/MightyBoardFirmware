@@ -80,16 +80,16 @@ public:
         /// refreshing too fast during a build is certain to interfere with
         /// the serial and stepper processes, which will decrease build quality.
         /// \return refresh interval, in microseconds.
-	virtual micros_t getUpdateRate();
+	virtual micros_t getUpdateRate() = 0;
 
         /// Update the screen display,
         /// \param[in] lcd LCD to write to
         /// \param[in] forceRedraw if true, redraw the entire screen. If false,
         ///                        only updated sections need to be redrawn.
-	virtual void update(LiquidCrystalSerial& lcd, bool forceRedraw);
+	virtual void update(LiquidCrystalSerial& lcd, bool forceRedraw) = 0;
 
         /// Reset the screen to it's default state
-	virtual void reset();
+	virtual void reset() = 0;
 
         /// Get a notification that a button was pressed down.
         /// This function is called for every button that is pressed. Screen
@@ -99,21 +99,9 @@ public:
         /// Note that the current implementation only supports one button
         /// press at a time, and will discard any other events.
         /// \param button Button that was pressed
-        virtual void notifyButtonPressed(ButtonArray::ButtonName button);
-        
-        /// set build percentage to be displayed in monitor mode
-        virtual void setBuildPercentage(uint8_t percent){return;}
-        
-        /// poll if the screen is waiting on a timer
-        virtual bool screenWaiting(void){ return false;}
-    
-        /// check if the screen is a cancel screen in case other button
-        /// wait behavior is activated 
-        virtual bool isCancelScreen(void){ return false;}
-        
-        /// pop function called when screen is popped.  used to 
-        /// clear states in the screen if necessary
-        virtual void pop(void){return;}
+  virtual void notifyButtonPressed(ButtonArray::ButtonName button) = 0;
+
+  virtual void pop_actions() {return;} 
 };
 
 
@@ -130,26 +118,26 @@ public:
 
 	virtual void resetState();
 
-    void notifyButtonPressed(ButtonArray::ButtonName button);
+  void notifyButtonPressed(ButtonArray::ButtonName button);
 
 protected:
 
-        bool needsRedraw;               ///< set to true if a menu item changes out of sequence
-		bool lineUpdate;				///< flags the menu to update the current line
-		bool cursorUpdate;				///< flag to update the menu cursor
-        volatile uint8_t itemIndex;     ///< The currently selected item
-        uint8_t lastDrawIndex;          ///< The index used to make the last draw
-        volatile uint8_t zeroIndex;     ///< The index corresponding to the zeroth display line
-        uint8_t lastZeroIndex;          ///< The last zeroIndex displayed
-        uint8_t itemCount;              ///< Total number of items
-        uint8_t firstItemIndex;         ///< The first selectable item. Set this
-                                        ///< to greater than 0 if the first
-                                        ///< item(s) are a title)
-        bool selectMode;       			///< true if in counter change state
-		uint8_t selectIndex;        	///< The currently selected item, in a counter change state
-		bool sliding_menu;				///< the menu either slides, or scrolls down in groups of SCREEN_HEIGHT
-                                        
-        uint8_t counter_item[MAX_INDICES];	///< array defining which idices are counters
+  bool needsRedraw;               ///< set to true if a menu item changes out of sequence
+  bool lineUpdate;				///< flags the menu to update the current line
+  bool cursorUpdate;				///< flag to update the menu cursor
+  volatile uint8_t itemIndex;     ///< The currently selected item
+  uint8_t lastDrawIndex;          ///< The index used to make the last draw
+  volatile uint8_t zeroIndex;     ///< The index corresponding to the zeroth display line
+  uint8_t lastZeroIndex;          ///< The last zeroIndex displayed
+  uint8_t itemCount;              ///< Total number of items
+  uint8_t firstItemIndex;         ///< The first selectable item. Set this
+                                  ///< to greater than 0 if the first
+                                  ///< item(s) are a title)
+  bool selectMode;       			///< true if in counter change state
+  uint8_t selectIndex;        	///< The currently selected item, in a counter change state
+  bool sliding_menu;				///< the menu either slides, or scrolls down in groups of SCREEN_HEIGHT
+                                      
+  uint8_t counter_item[MAX_INDICES];	///< array defining which idices are counters
 
         /// Draw an item at the current cursor position.
         /// \param[in] index Index of the item to draw
@@ -163,7 +151,7 @@ protected:
         /// Handle the menu being cancelled. This should either remove the
         /// menu from the stack, or pop up a confirmation dialog to make sure
         /// that the menu should be removed.
-	virtual void handleCancel();
+	void handleCancel();
 	
 		/// Handle update of a menu counter item
         /// \param[in] index Index of the menu item that was selected
@@ -177,7 +165,6 @@ class SplashScreen: public Screen {
 private:
 	bool hold_on;
 public:
-	SplashScreen();
 	micros_t getUpdateRate() {return 50L * 1000L;}
 
 	void SetHold(bool on);
@@ -185,7 +172,7 @@ public:
 
 	void reset();
 
-    void notifyButtonPressed(ButtonArray::ButtonName button);
+  void notifyButtonPressed(ButtonArray::ButtonName button);
 };
 
 class FilamentOKMenu: public Menu {
@@ -231,17 +218,12 @@ public:
     
 	void resetState();
     
-    bool isCancelScreen(){return true;}
-    
-    void pop(void);
-    
 protected:
 	void drawItem(uint8_t index, LiquidCrystalSerial& lcd, uint8_t line_number);
     
 	void handleSelect(uint8_t index);
-    
-    
-    bool paused;
+      
+  bool paused;
 };
 
 class BuildStats: public Screen {
@@ -259,7 +241,7 @@ public:
 	
 	void reset();
 
-    void notifyButtonPressed(ButtonArray::ButtonName button);
+  void notifyButtonPressed(ButtonArray::ButtonName button);
 };
 
 class BuildFinished: public Screen {
@@ -269,8 +251,6 @@ private:
 
 public:
 	
-	bool screenWaiting(void);
-
 	micros_t getUpdateRate() {return 500L * 1000L;}
 	
 	void update(LiquidCrystalSerial& lcd, bool forceRedraw);
@@ -448,6 +428,7 @@ private:
     int toggleCounter;
     bool helpText;   
     bool needsRedraw;
+    uint16_t filament_heat_temp[2];
     
     void startMotor();
     void stopMotor();
@@ -514,8 +495,6 @@ public:
 	ActiveBuildMenu();
     
 	void resetState();
-	
-	void pop(void);
 	
 	micros_t getUpdateRate() {return 100L * 1000L;}
     
@@ -619,7 +598,6 @@ private:
     void resetState();
      
     bool singleTool;
-    bool preheatActive;
 
 };
 
@@ -643,10 +621,11 @@ private:
     
     uint8_t  singleExtruder;
     uint8_t  soundOn;
-    int8_t LEDColor;
+    int8_t   LEDColor;
+    int8_t   heaterTimeout;
     uint8_t  heatingLEDOn;
     uint8_t  helpOn;
-	uint8_t  accelerationOn;
+    uint8_t  accelerationOn;
     uint8_t  HBPPresent;
     
 };
@@ -654,6 +633,7 @@ private:
 class FilamentMenu: public Menu {
 public:
 	FilamentMenu();
+  void pop_actions();
     
     
 protected:

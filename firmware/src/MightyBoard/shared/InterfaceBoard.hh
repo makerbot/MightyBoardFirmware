@@ -41,18 +41,24 @@ public:
 		enum ScreenType{
 			BUILD_FINISHED = 1,
 			MESSAGE_SCREEN = 2,
+      BUILD_SCREEN = 3,
+      SPLASH_SCREEN = 4,
+      WELCOME_SCREEN = 5,
+      CANCEL_SCREEN = 6
 		};
 
 private:
-        ButtonArray& buttons;            ///< Button array to read from
+        ButtonArray& buttons;           ///< Button array to read from
 
-        MonitorMode buildScreen;            ///< Screen to display while building
+        MonitorMode buildScreen;        ///< Screen to display while building
         MainMenu mainScreen;            ///< Root menu screen
-        MessageScreen messageScreen;		 ///< Screen to display messages
+        MessageScreen messageScreen;		///< Screen to display messages
+        SplashScreen splashScreen;       ///< version infor screen
+        WelcomeScreen welcomeScreen;     ///< welcome screen
+ 
+//        SnakeMode snake;				        ///< Snake game
         
-        SnakeMode snake;				///< Snake game
-        
-        BuildFinished buildFinished;	///< screen displayed at end of build
+        BuildFinished buildFinished;	  ///< screen displayed at end of build
 
         /// Stack of screens to display; the topmost one will actually
         /// be drawn to the screen, while the other will remain resident
@@ -60,15 +66,13 @@ private:
         Screen* screenStack[SCREEN_STACK_DEPTH];
         int8_t screenIndex;             ///< Stack index of the current screen.
 
-        Pin LEDs[2];                    ///< Pins connected to the LEDs
-
         bool building;                  ///< True if the bot is building
         
         uint8_t buildPercentage;
 
         uint8_t waitingMask;            ///< Mask of buttons the interface is
                                         ///< waiting on.
-    
+        bool user_wait_override;        /// flag to override button waiting mask and pass button on to screen
         bool screen_locked;             /// set to true in case of catastrophic failure (ie heater cuttoff triggered)
         
         uint8_t onboard_start_idx;		/// screen stack index when onboard script is started
@@ -81,9 +85,7 @@ public:
         /// \param[in] Main screen, shown as root display
         /// \param[in] Screen to display while building
         InterfaceBoard(ButtonArray& buttons_in,
-                       LiquidCrystalSerial& lcd_in,
-                       const Pin& gled,
-                       const Pin& rled);
+                       LiquidCrystalSerial& lcd_in);
 
         /// Initialze the interface board. This needs to be called once
         /// at system startup (or reset).
@@ -120,8 +122,6 @@ public:
 
         void showMonitorMode();
         
-        void setLED(uint8_t id, bool on);
-
         /// Tell the interface board that the system is waiting for a button push
         /// corresponding to one of the bits in the button mask. The interface board
         /// will not process button pushes directly until one of the buttons in the
@@ -153,6 +153,9 @@ public:
         
         /// pop Error Message Screen
         void DoneWithMessage();
+
+        /// flag to ignore wait on button mask;
+        void setOverride(bool on);
 
         // return a pointer to the message screen
         MessageScreen* GetMessageScreen();

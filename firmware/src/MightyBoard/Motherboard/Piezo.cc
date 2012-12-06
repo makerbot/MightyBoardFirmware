@@ -58,7 +58,7 @@ struct tone {
 };
 
 // Setup the tone buffer
-const static uint8_t TONE_QUEUE_SIZE = 40;
+const static uint8_t TONE_QUEUE_SIZE = 20;
 
 uint32_t tones_buf[TONE_QUEUE_SIZE];
 CircularBuffer32 tones(TONE_QUEUE_SIZE, tones_buf);
@@ -87,6 +87,7 @@ void reset(void) {
 
 	// We need to set the buzzer pin to output, so that the timer can drive it
 	BUZZER_PIN.setDirection(true);
+	BUZZER_PIN.setValue(false);
 }
 
 
@@ -259,8 +260,8 @@ const uint16_t tune_startup[] PROGMEM = {
 };
 
 const uint16_t tune_print_done[] PROGMEM = {
-  1319,   85,
-  0,      85,
+  //1319,   85,
+  //0,      85,
   1568,   85,
   0,      85,
   2093,   85,
@@ -315,12 +316,12 @@ const uint16_t tune_beethoven_5th[] PROGMEM = {
 };
 
 const uint16_t tune_start_print[] PROGMEM = {
-  2093,   85,
-  0,      85,
-  831,    85,
-  0,      85,
-  2489,   85,
-  0,      85,
+ // 2093,   85,
+ // 0,      85,
+ // 831,    85,
+ // 0,      85,
+ // 2489,   85,
+ // 0,      85,
   831,    85,
   0,      85,
   3322,   85,
@@ -344,8 +345,8 @@ const uint16_t tune_start_print[] PROGMEM = {
 };
 
 const uint16_t tune_filament_start[] PROGMEM = {
-  2217,   85,
-  0,      85,
+//  2217,   85,
+//  0,      85,
   1976,   85,
   0,      85,
   2489,   171,

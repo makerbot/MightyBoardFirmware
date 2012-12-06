@@ -51,15 +51,15 @@ public:
 private:
 
 		Thermocouple extruder_thermocouple;
-        ExtruderHeatingElement extruder_element;
-        Heater extruder_heater;
-        
-        Pin Heater_Pin;
+    ExtruderHeatingElement extruder_element;
+    Heater extruder_heater;
+    
+    Pin Heater_Pin;
 
-        uint8_t slave_id;
+    uint8_t slave_id;
 
-        CoolingFan coolingFan;
-        uint8_t* eeprom_base;
+    CoolingFan coolingFan;
+    uint8_t* eeprom_base;
 
 public:
 	void reset();
@@ -68,7 +68,7 @@ public:
         
 	void setFan(uint8_t on);
 
-  	Heater& getExtruderHeater() { return extruder_heater; }
+  Heater& getExtruderHeater() { return extruder_heater; }
 
 	uint8_t getSlaveID() { return slave_id; }
 };

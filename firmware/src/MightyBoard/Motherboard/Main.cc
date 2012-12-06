@@ -16,7 +16,6 @@
  */
 
 #include "Main.hh"
-#include "DebugPacketProcessor.hh"
 #include "Host.hh"
 #include "Command.hh"
 #include <avr/interrupt.h>
@@ -32,6 +31,69 @@
 #include <util/delay.h>
 #include "UtilityScripts.hh"
 #include "Piezo.hh"
+#ifdef STACK_PAINT
+#include "Menu_locales.hh"
+#endif
+
+#define DEBUG_SRAM_MONITOR
+#if defined(STACK_PAINT) && defined(DEBUG_SRAM_MONITOR)
+	bool stackAlertLockout = false;
+	uint16_t stackAlertCounter = 0;
+#endif
+
+#ifdef STACK_PAINT
+
+        //Stack checking
+        //http://www.avrfreaks.net/index.php?name=PNphpBB2&file=viewtopic&t=52249
+        extern uint8_t _end;
+        extern uint8_t __stack;
+
+        #define STACK_CANARY 0xc5
+
+        void StackPaint(void) __attribute__ ((naked)) __attribute__ ((section (".init1")));
+
+        void StackPaint(void)
+        {
+                #if 0
+                        uint8_t *p = &_end;
+
+                        while(p <= &__stack)
+                        {
+                                *p = STACK_CANARY;
+                                p++;
+                        }
+                #else
+                        __asm volatile ("    ldi r30,lo8(_end)\n"
+                                        "    ldi r31,hi8(_end)\n"
+                                        "    ldi r24,lo8(0xc5)\n" /* STACK_CANARY = 0xc5 */
+                                        "    ldi r25,hi8(__stack)\n"
+                                        "    rjmp .cmp\n"
+                                        ".loop:\n"
+                                        "    st Z+,r24\n"
+                                        ".cmp:\n"
+                                        "    cpi r30,lo8(__stack)\n"
+                                        "    cpc r31,r25\n"
+                                        "    brlo .loop\n"
+                                        "    breq .loop"::);
+                #endif
+        }
+
+
+        uint16_t StackCount(void)
+        {
+                const uint8_t *p = &_end;
+                uint16_t       c = 0;
+
+                while(*p == STACK_CANARY && p <= &__stack)
+                {
+                        p++;
+                        c++;
+                }
+
+                return c;
+        }
+
+#endif
 
 void reset(bool hard_reset) {
 	ATOMIC_BLOCK(ATOMIC_FORCEON) {
@@ -43,10 +105,10 @@ void reset(bool hard_reset) {
 			brown_out = true;
 		}
 		
-        // clear watch dog timer and re-enable
+    // clear watch dog timer and re-enable
 		if(hard_reset)
 		{ 
-            // ATODO: remove disable
+      // ATODO: remove disable
 			wdt_disable();
 			MCUSR = 0x0;
 			wdt_enable(WDTO_8S); // 8 seconds is max timeout
@@ -57,12 +119,11 @@ void reset(bool hard_reset) {
     sdcard::reset();
     Piezo::reset();
 		utility::reset();
-		planner::init();
-		planner::abort();
 		command::reset();
 		eeprom::init();
+    steppers::init();
+		steppers::abort();
 		steppers::reset();
-	  TemperatureTable::initThermistorTables();
 		board.reset(hard_reset);
 
 	// brown out occurs on normal power shutdown, so this is not a good message		
@@ -81,8 +142,8 @@ int main() {
   INTERFACE_POWER.setDirection(true);
   INTERFACE_POWER.setValue(false);
 #endif
+  board.init();
 	reset(true);
-	steppers::init();
 	sei();
 	    
 	while (1) {
@@ -92,11 +153,23 @@ int main() {
 		command::runCommandSlice();
 		// Motherboard slice
 		board.runMotherboardSlice();
+		//Alert if SRAM/stack has been corrupted by running out of SRAM
+#if defined(STACK_PAINT) && defined(DEBUG_SRAM_MONITOR)
+		stackAlertCounter ++;
+		if ( stackAlertCounter >= 5000 ) {
+			if (( StackCount() == 0 )) {  //( ! stackAlertLockout ) && 
+        board.errorResponse(ERROR_SRAM);
+				stackAlertLockout = true;
+			}
+			stackAlertCounter = 0;
+	  }
+#endif
     // check for new tones
     Piezo::runPiezoSlice();
+
     // reset the watch dog timer
 		wdt_reset();
-		
+
 	}
 	return 0;
 }
