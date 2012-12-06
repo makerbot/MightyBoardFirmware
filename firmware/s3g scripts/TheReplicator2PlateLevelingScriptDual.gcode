@@ -35,7 +35,7 @@ M70 ( Please wait)
 G1 Z5
 
 ; move to front left pin
-G1 X-31.5 Y-70 F3000
+G1 X-33.5 Y-70 F3000
 G1 Z0 F1000
 M71 (Adjust front left   knob until paper    just slides between nozzle and plate    )
 M70 ( Please wait)
@@ -43,7 +43,7 @@ G1 Z5
 
 ; repeat process to check leveling
 
-M71 (Now I'm going to    send my extruder to all three corners   again to recheck.)
+M71 (Now I'm going to    send my extruder to all three points    to recheck plate.)
 M70 ( Please wait)
 ; move to rear levelling pin
 G1 X16.5 Y70 F5000
@@ -53,14 +53,14 @@ M70 ( Please wait)
 G1 Z5
 
 ; move to front right pin
-G1 Y-70 X141.5 F5000 
+G1 Y-70 X124 F5000 
 G1 Z0 F1000
 M71 (Adjust front right  knob until paper    just slides between nozzle and plate    )
 M70 ( Please wait)
 G1 Z5
 
 ; move to front left pin
-G1 Y-70 X-108.5 F5000
+G1 Y-70 X-91.5 F5000
 G1 Z0 F1000
 M71 (Adjust front left   knob until paper    just slides between nozzle and plate    )
 M70 ( Please wait)
