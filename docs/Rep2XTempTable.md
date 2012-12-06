@@ -63,3 +63,4 @@ All temperature were taken with a Fluke Type k Thermocouple.  Temperatures were 
     <130°C>
     <117.0°C>
 </tr>
+</table>
