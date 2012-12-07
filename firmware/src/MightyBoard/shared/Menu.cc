@@ -133,29 +133,27 @@ HeaterPreheat::HeaterPreheat(){
 }
 
 void HeaterPreheat::resetState(){
-  uint8_t heatSet = eeprom::getEeprom8(eeprom_offsets::PREHEAT_SETTINGS + preheat_eeprom_offsets::PREHEAT_ON_OFF, 0);
-  _rightActive = (heatSet & (1 << HEAT_MASK_RIGHT)) != 0;
-  _platformActive = eeprom::hasHBP() && ((heatSet & (1 << HEAT_MASK_PLATFORM)) != 0);
-  _leftActive = (heatSet & (1 << HEAT_MASK_LEFT)) != 0;
-  singleTool = eeprom::isSingleTool();
-  if(singleTool){ _leftActive = false; }
   Motherboard &board = Motherboard::getBoard();
   
   preheatFlag = 0;
-  if(board.getExtruderBoard(0).getExtruderHeater().get_set_temperature() > 0 && _rightActive) {
+  if(board.getExtruderBoard(0).getExtruderHeater().get_set_temperature() > 0) {
       preheatFlag |= 0x01;
    }
-  if(board.getExtruderBoard(1).getExtruderHeater().get_set_temperature() > 0 && _leftActive) {
+  if(board.getExtruderBoard(1).getExtruderHeater().get_set_temperature() > 0) {
       preheatFlag |= 0x02;
    }
-  if(eeprom::hasHBP() && board.getPlatformHeater().get_set_temperature() > 0 && _platformActive) {
+  if(eeprom::hasHBP() && board.getPlatformHeater().get_set_temperature() > 0) {
       preheatFlag |= 0x04;
   }
-  if(preheatFlag > 0){
-    preheatActive = true;
-  } else {
-    preheatActive = false;
-  }
+  preheatActive = preheatFlag > 0;
+
+  uint8_t heatSet = eeprom::getEeprom8(eeprom_offsets::PREHEAT_SETTINGS + preheat_eeprom_offsets::PREHEAT_ON_OFF, 0);
+
+  _rightActive = ((heatSet & (1 << HEAT_MASK_RIGHT)) != 0) || ((1 == preheatFlag >> 0) && 0x01);
+  _platformActive = (eeprom::hasHBP() && ((heatSet & (1 << HEAT_MASK_PLATFORM)) != 0)) || ((1 == preheatFlag >> 2) && 0x01);
+  _leftActive = ((heatSet & (1 << HEAT_MASK_LEFT)) != 0) || ((1 == preheatFlag >> 1) && 0x01);
+  singleTool = eeprom::isSingleTool();
+  if(singleTool){ _leftActive = false; }
 }
 
 
