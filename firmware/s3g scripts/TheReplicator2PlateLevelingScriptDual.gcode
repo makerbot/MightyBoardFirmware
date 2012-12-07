@@ -43,7 +43,7 @@ G1 Z5
 
 ; repeat process to check leveling
 
-M71 (Now I'm going to    send my extruder to all three points    to recheck plate.)
+M71 (Now I'm going to    send my extruder to all three points    again to recheck.)
 M70 ( Please wait)
 ; move to rear levelling pin
 G1 X16.5 Y70 F5000
