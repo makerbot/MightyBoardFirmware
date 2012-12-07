@@ -34,7 +34,6 @@ echo $BOOT8U2
 while true; do
 
 FAIL8U2="8U2 Bootloader PASS"
-FAILLOCK="1280 Lock Bits PASS"
 FAIL1280="1280 Bootloader PASS"
 FAILUSB="USB Program PASS"
 
@@ -49,17 +48,6 @@ FAILUSB="USB Program PASS"
      FAIL8U2="8U2 Bootloader FAIL"
     fi
 
-   echo "Press to Check 1280 Lock Bits"
-    read
-
-    # Upload bootloader via isp
-    avrdude -p m1280 -F -P usb -c avrispmkii -U lock:w:0x0F:m
-
-    if [ $? -ne 0 ]
-     then
-      FAILLOCK="1280 Lock Bits FAIL"
-      echo FAILLOCK
-    fi
 
    echo "Press Enter upload 1280 bootloader"
     read
