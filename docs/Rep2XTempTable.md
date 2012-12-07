@@ -5,63 +5,63 @@ All temperature were taken with a Fluke Type k Thermocouple.  Temperatures were 
 
 <table>
 <tr>
-    <target>
-    <MightyBoard>
-    <Fluke Type K Thermocouple>
+    <th>target</th>
+    <th>MightyBoard</th>
+    <th>Fluke Type K Thermocouple</th>
 </tr>
 <tr>
-    <30°C>
-    <30°C>
-    <31.3°C>
+    <td>30°C</td>
+    <td>30°C</td>
+    <td>31.3°C</td>
 </tr>
 <tr>
-    <40°C>
-    <40°C>
-    <39.8°C>
+    <td>40°C</td>
+    <td>40°C</td>
+    <td>39.8°C</td>
 </tr>
 <tr>
-    <50°C>
-    <49°C>
-    <47.8°C>
+    <td>50°C</td>
+    <td>49°C</td>
+    <td>47.8°C</td>
 </tr>
 <tr>
-    <60°C>
-    <60°C>
-    <56.6°C>
+    <td>60°C</td>
+    <td>60°C</td>
+    <td>56.6°C</td>
 </tr>
 <tr>
-    <70°C>
-    <70°C>
-    <65.6°C>
+    <td>70°C</td>
+    <td>70°C</td>
+    <td>65.6°C</td>
 </tr>
 <tr>
-    <80°C>
-    <80°C>
-    <74.0°C>
+    <td>80°C</td>
+    <td>80°C</td>
+    <td>74.0°C</td>
 </tr>
 <tr>
-    <90°C>
-    <90°C>
-    <84.0°C>
+    <td>90°C</td>
+    <td>90°C</td>
+    <td>84.0°C</td>
 </tr>
 <tr>
-    <100°C>
-    <100°C>
-    <92.3°C>
+    <td>100°C</td>
+    <td>100°C</td>
+    <td>92.3°C</td>
 </tr>
 <tr>
-    <110°C>
-    <110°C>
-    <101.8°C>
+    <td>110°C</td>
+    <td>110°C</td>
+    <td>101.8°C</td>
 </tr>
 <tr>
-    <120°C>
-    <120°C>
-    <109.6°C>
+    <td>120°C</td>
+    <td>120°C</td>
+    <td>109.6°C</td>
 </tr>
 <tr>
-    <130°C>
-    <130°C>
-    <117.0°C>
+    <td>130°C</td>
+    <td>130°C</td>
+    <td>117.0°C</td>
 </tr>
 </table>
