@@ -48,6 +48,7 @@ FAILUSB="USB Program PASS"
      FAIL8U2="8U2 Bootloader FAIL"
     fi
 
+
    echo "Press Enter upload 1280 bootloader"
     read
 

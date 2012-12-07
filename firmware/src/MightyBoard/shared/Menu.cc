@@ -3280,7 +3280,10 @@ void SDMenu::drawItem(uint8_t index, LiquidCrystalSerial& lcd, uint8_t line_numb
 
   char fnbuf[SD_CARD_MAX_FILE_LENGTH];
 
-    if ( !getFilename(index, fnbuf, SD_CARD_MAX_FILE_LENGTH)) {
+    // Minus two to take EXIT_MSG into account
+    uint8_t reverseIndex = itemCount - 2 - index;
+
+    if ( !getFilename(reverseIndex, fnbuf, SD_CARD_MAX_FILE_LENGTH)) {
         interface::popScreen();
         Piezo::playTune(TUNE_ERROR);
         Motherboard::getBoard().errorResponse(ERROR_SD_CARD_GENERIC);
@@ -3295,7 +3298,10 @@ void SDMenu::drawItem(uint8_t index, LiquidCrystalSerial& lcd, uint8_t line_numb
 }
 
 void SDMenu::handleSelect(uint8_t index) {
-  
+
+  // Minus two to take EXIT_MSG into account
+  uint8_t reverseIndex = itemCount - 2 - index;
+
   if(index >= itemCount -1)
   {
     interface::popScreen();
@@ -3309,7 +3315,7 @@ void SDMenu::handleSelect(uint8_t index) {
 
   char* buildName = host::getBuildName();
  
-  if ( !getFilename(index, buildName, host::MAX_FILE_LEN) ) {
+  if ( !getFilename(reverseIndex, buildName, host::MAX_FILE_LEN) ) {
       interface::popScreen();
       Piezo::playTune(TUNE_ERROR);
       Motherboard::getBoard().errorResponse(ERROR_SD_CARD_GENERIC);
