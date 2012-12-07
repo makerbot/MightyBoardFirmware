@@ -11,6 +11,7 @@ All temperature were taken with a Fluke Type k Thermocouple.  Temperatures were 
 </tr>
 <tr>
     <30°C>
+    <30°C>
     <31.3°C>
 </tr>
 <tr>
