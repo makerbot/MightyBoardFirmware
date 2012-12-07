@@ -65,3 +65,123 @@ All temperature were taken with a Fluke Type k Thermocouple.  Temperatures were 
     <td>117.0°C</td>
 </tr>
 </table>
+
+## Fine Grain testing
+
+<table>
+<tr>
+    <th>target</th>
+    <th>MightyBoard</th>
+    <th>Fluke Type K Thermocouple</th>
+</tr>
+<tr>
+    <td>30</td>
+    <td>31</td>
+    <td>32.0</td>
+</tr>
+<tr>
+    <td>35</td>
+    <td>36</td>
+    <td>36.0</td>
+</tr>
+<tr>
+    <td>40</td>
+    <td>41</td>
+    <td>40.5</td>
+</tr>
+<tr>
+    <td>45</td>
+    <td>45</td>
+    <td>44.7</td>
+</tr>
+<tr>
+    <td>50</td>
+    <td>48.5</td>
+    <td>50</td>
+</tr>
+<tr>
+    <td>55</td>
+    <td>55</td>
+    <td>52.8</td>
+</tr>
+<tr>
+    <td>60</td>
+    <td>60</td>
+    <td>57.6</td>
+</tr>
+<tr>
+    <td>65</td>
+    <td>65</td>
+    <td>63.0</td>
+</tr>
+<tr>
+    <td>70</td>
+    <td>70</td>
+    <td>68.0</td>
+</tr>
+<tr>
+    <td>75</td>
+    <td>75</td>
+    <td>72.5</td>
+</tr>
+<tr>
+    <td>80</td>
+    <td>80</td>
+    <td>77.0</td>
+</tr>
+<tr>
+    <td>85</td>
+    <td>85</td>
+    <td>81.5</td>
+</tr>
+<tr>
+    <td>90</td>
+    <td>90</td>
+    <td>86.15</td>
+</tr>
+<tr>
+    <td>95</td>
+    <td>95</td>
+    <td>91.0</td>
+</tr>
+<tr>
+    <td>100</td>
+    <td>100</td>
+    <td>95.15</td>
+</tr>
+<tr>
+    <td>105</td>
+    <td>105</td>
+    <td>99.5</td>
+</tr>
+<tr>
+    <td>110</td>
+    <td>110</td>
+    <td>104.5</td>
+</tr>
+<tr>
+    <td>115</td>
+    <td>115</td>
+    <td>108.85</td>
+</tr>
+<tr>
+    <td>120</td>
+    <td>120</td>
+    <td>113.15</td>
+</tr>
+<tr>
+    <td>125</td>
+    <td>125</td>
+    <td>117.25</td>
+</tr>
+<tr>
+    <td>130</td>
+    <td>130</td>
+    <td>121.5</td>
+</tr>
+<tr>
+    <td>135</td>
+    <td>135</td>
+    <td>125.9</td>
+</tr>
+</table>
