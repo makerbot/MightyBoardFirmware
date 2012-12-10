@@ -163,7 +163,8 @@ void Motherboard::initClocks(){
 #endif
 }
 
- #define ONE_MINUTE 60000000
+#define ONE_MINUTE 60000000
+#define ONE_SECOND 1000000 
 
 /// Reset the motherboard to its initial state.
 /// This only resets the board, and does not send a reset
@@ -190,7 +191,7 @@ void Motherboard::reset(bool hard_reset) {
 	micros = 0;
 
   // get heater timeout from eeprom - the value is stored in minutes 
-  restart_timeout = eeprom::getEeprom8(eeprom_offsets::HEATER_TIMEOUT_ON_CANCEL, 0) * ONE_MINUTE;
+  restart_timeout = (eeprom::getEeprom8(eeprom_offsets::HEATER_TIMEOUT_ON_CANCEL, 0) * ONE_MINUTE) + ONE_SECOND;
 
 	if (hasInterfaceBoard) {
 		// Make sure our interface board is initialized
@@ -533,8 +534,6 @@ void Motherboard::runMotherboardSlice() {
     // don't do this if a heat failure has occured ( in this case heaters are already shutdown and separate error messaging used)
 	if(user_input_timeout.hasElapsed() && !heatShutdown && (host::getHostState() != host::HOST_STATE_BUILDING_FROM_SD) && (host::getHostState() != host::HOST_STATE_BUILDING))
 	{
-        // clear timeout
-		user_input_timeout.clear();
 		
 		board_status |= STATUS_HEAT_INACTIVE_SHUTDOWN;
 		board_status &= ~STATUS_PREHEATING;
@@ -544,7 +543,7 @@ void Motherboard::runMotherboardSlice() {
   	if(((Extruder_One.getExtruderHeater().get_set_temperature() > 0) ||
 			(Extruder_Two.getExtruderHeater().get_set_temperature() > 0) ||
 			(platform_heater.get_set_temperature() > 0)) &&
-       !((restart_timeout == 0) && user_input_timeout.getCurrentElapsed() < USER_INPUT_TIMEOUT)) {
+       !((restart_timeout == ONE_SECOND) && user_input_timeout.getCurrentElapsed() < USER_INPUT_TIMEOUT)) {
 				interfaceBoard.errorMessage(HEATER_INACTIVITY_MSG);//37
 				startButtonWait();
                 // turn LEDs blue
@@ -554,9 +553,12 @@ void Motherboard::runMotherboardSlice() {
 		Extruder_One.getExtruderHeater().set_target_temperature(0);
 		Extruder_Two.getExtruderHeater().set_target_temperature(0);
 		platform_heater.set_target_temperature(0);
+
+    // clear timeout
+    user_input_timeout.clear();
 	}
-	
-    // respond to heatshutdown.  response only needs to be called once
+
+  // respond to heatshutdown.  response only needs to be called once
 	if(heatShutdown && !triggered && !Piezo::isPlaying())
 	{
     triggered = true;

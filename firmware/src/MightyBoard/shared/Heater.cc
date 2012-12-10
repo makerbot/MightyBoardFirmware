@@ -379,8 +379,7 @@ void Heater::Pause(bool on){
 		
 	}else{
 		// restart heatup
-		set_target_temperature(paused_set_temperature);
-		
+		set_target_temperature(paused_set_temperature);		
 	}
 }
 
