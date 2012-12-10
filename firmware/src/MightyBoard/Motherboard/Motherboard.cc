@@ -166,6 +166,8 @@ void Motherboard::initClocks(){
 #define ONE_MINUTE 60000000
 #define ONE_SECOND 1000000 
 
+#define MOTOR_DIAGNOSTICS
+
 /// Reset the motherboard to its initial state.
 /// This only resets the board, and does not send a reset
 /// to any attached toolheads.
@@ -192,6 +194,25 @@ void Motherboard::reset(bool hard_reset) {
 
   // get heater timeout from eeprom - the value is stored in minutes 
   restart_timeout = (eeprom::getEeprom8(eeprom_offsets::HEATER_TIMEOUT_ON_CANCEL, 0) * ONE_MINUTE) + ONE_SECOND;
+
+#ifdef MOTOR_DIAGNOSTICS
+
+  int32_t interval = 2000;
+
+  Point position = steppers::getStepperPosition();
+  steppers::abort();
+  
+  for(int k = 0; k < STEPPER_COUNT; k++)
+    position[k] += interval*2;
+        
+  steppers::setTarget(position, interval);
+
+  for(int k = 0; k < STEPPER_COUNT; k++)
+    position[k] -= interval*2;
+    
+  steppers::setTarget(position, interval);
+
+#endif 
 
 	if (hasInterfaceBoard) {
 		// Make sure our interface board is initialized
