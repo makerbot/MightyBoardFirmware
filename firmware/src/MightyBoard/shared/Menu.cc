@@ -2358,6 +2358,8 @@ void ActiveBuildMenu::handleSelect(uint8_t index){
           preheatActive = true;
           host::pauseBuild(false);
           is_paused = false;
+          // record the start screen here
+          Motherboard::getBoard().getInterfaceBoard().RecordOnboardStartIdx();
           interface::pushScreen(&filamentMenu);
           host::activePauseBuild(true, command::SLEEP_TYPE_FILAMENT);
           is_sleeping = true;
@@ -2386,6 +2388,8 @@ void ActiveBuildMenu::handleSelect(uint8_t index){
         if(is_sleeping){
             host::pauseBuild(false);
             is_paused = false;
+            // record the start screen here
+            Motherboard::getBoard().getInterfaceBoard().RecordOnboardStartIdx();
             host::activePauseBuild(true, command::SLEEP_TYPE_COLD);
         }else{
             host::activePauseBuild(false, command::SLEEP_TYPE_COLD);

@@ -293,10 +293,10 @@ void ActivePause(bool on, SleepType type){
 				sleep_mode = SLEEP_NONE;
 				active_paused = on;
 			}else if(sleep_mode == SLEEP_MOVING){
-				sleepReheat();
+				  sleepReheat();
 				sleep_mode = SLEEP_MOVING_WAIT;
 			}else if(sleep_mode == SLEEP_ACTIVE){
-				sleepReheat();
+				  sleepReheat();
 				sleep_mode = SLEEP_RESTART;
 			}else if (sleep_type == SLEEP_TYPE_NONE){
 				active_paused = on;
@@ -383,11 +383,11 @@ bool processExtruderCommandPacket() {
 		case SLAVE_CMD_SET_TEMP:
       /// we are clearing temps here for the beginning of a print instead of in reset because we want them to be set to zero temperature for as short a time as possible.
       if(start_build_flag){
-        board.getExtruderBoard(0).getExtruderHeater().abort();
-        board.getExtruderBoard(1).getExtruderHeater().abort();
+        board.getExtruderBoard(0).getExtruderHeater().reset();
+        board.getExtruderBoard(1).getExtruderHeater().reset();
         // don't reset the platform if we have received a platform temp command
         if (!platform_on_flag){
-          board.getPlatformHeater().abort();
+          board.getPlatformHeater().reset();
         }
         platform_on_flag = false;
         start_build_flag = false;
@@ -623,8 +623,6 @@ void runCommandSlice() {
 		if(active_paused){
 			// sleep called, waiting for current stepper move to finish
 			if((sleep_mode == SLEEP_START_WAIT) && st_empty()){
-        // record the start screen here
-        Motherboard::getBoard().getInterfaceBoard().RecordOnboardStartIdx();
 				if(sleep_type == SLEEP_TYPE_COLD){
 					Motherboard::getBoard().getInterfaceBoard().errorMessage(SLEEP_PREP_MSG);
 				}else if(sleep_type == SLEEP_TYPE_FILAMENT){
@@ -692,8 +690,8 @@ void runCommandSlice() {
 				sleep_mode = SLEEP_FINISHED;
 			// when position is reached, restart print
 			}else if((sleep_mode == SLEEP_FINISHED) && st_empty()){
-				sleep_mode = SLEEP_NONE;
 				Motherboard::getBoard().getInterfaceBoard().popToOnboardStart();
+				sleep_mode = SLEEP_NONE;
 				active_paused = false;
 			}
 			return;
