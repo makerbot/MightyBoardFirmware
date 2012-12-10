@@ -142,6 +142,9 @@ class Heater
 
     /// Reset the heater to a to board-on state
     void reset();
+
+    /// clear heater target temp and states
+    void abort();
     
     // pause or unpause the heater
     // a paused heater will not heat

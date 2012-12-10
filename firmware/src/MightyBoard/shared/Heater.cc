@@ -108,6 +108,23 @@ void Heater::reset() {
   calibration_offset = eeprom::getEeprom8(eeprom_offsets::HEATER_CALIBRATION + calibration_eeprom_offset, 0);
 }
 
+void Heater::abort() {
+
+	startTemp = 0;
+	paused_set_temperature = 0;
+
+	fail_count = 0;
+	value_fail_count = 0;
+	heatingUpTimer = Timeout();
+	heatProgressTimer = Timeout();
+	progressChecked = false;
+	newTargetReached = false;
+	is_paused = false;
+	is_disabled = false;
+
+	pid.reset();
+}
+
 void Heater::disable(bool on){
   is_disabled = on;
   if(is_disabled){

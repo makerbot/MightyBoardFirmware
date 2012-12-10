@@ -293,10 +293,10 @@ void ActivePause(bool on, SleepType type){
 				sleep_mode = SLEEP_NONE;
 				active_paused = on;
 			}else if(sleep_mode == SLEEP_MOVING){
-				sleepReheat();
+				  sleepReheat();
 				sleep_mode = SLEEP_MOVING_WAIT;
 			}else if(sleep_mode == SLEEP_ACTIVE){
-				sleepReheat();
+				  sleepReheat();
 				sleep_mode = SLEEP_RESTART;
 			}else if (sleep_type == SLEEP_TYPE_NONE){
 				active_paused = on;
@@ -690,8 +690,8 @@ void runCommandSlice() {
 				sleep_mode = SLEEP_FINISHED;
 			// when position is reached, restart print
 			}else if((sleep_mode == SLEEP_FINISHED) && st_empty()){
+				Motherboard::getBoard().getInterfaceBoard().popToOnboardStart();
 				sleep_mode = SLEEP_NONE;
-				interface::popScreen();
 				active_paused = false;
 			}
 			return;

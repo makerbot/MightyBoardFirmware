@@ -763,7 +763,6 @@ void activePauseBuild(bool pause, command::SleepType type){
 	/// don't update time or state if we are already in the desired state
 	if (!(pause == command::isActivePaused())){
 		
-		command::ActivePause(pause, type);
 		if(pause){
 			buildState = BUILD_SLEEP;
 			print_time.pause(true);
@@ -771,6 +770,7 @@ void activePauseBuild(bool pause, command::SleepType type){
 			buildState = BUILD_RUNNING;
 			print_time.pause(false);
 		}
+		command::ActivePause(pause, type);
 	}
 }
 
