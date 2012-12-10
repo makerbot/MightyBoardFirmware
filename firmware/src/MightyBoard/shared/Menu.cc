@@ -134,19 +134,25 @@ HeaterPreheat::HeaterPreheat(){
 
 void HeaterPreheat::resetState(){
   uint8_t heatSet = eeprom::getEeprom8(eeprom_offsets::PREHEAT_SETTINGS + preheat_eeprom_offsets::PREHEAT_ON_OFF, 0);
-  _rightActive = (heatSet & (1 << HEAT_MASK_RIGHT)) != 0;
-  _platformActive = eeprom::hasHBP() && ((heatSet & (1 << HEAT_MASK_PLATFORM)) != 0);
-  _leftActive = (heatSet & (1 << HEAT_MASK_LEFT)) != 0;
-  singleTool = eeprom::isSingleTool();
-  if(singleTool){ _leftActive = false; }
   Motherboard &board = Motherboard::getBoard();
-  
-  if(((board.getExtruderBoard(0).getExtruderHeater().get_set_temperature() > 0) && _rightActive) ||
-      ((board.getExtruderBoard(1).getExtruderHeater().get_set_temperature() > 0) && _leftActive) ||
-      ((board.getPlatformHeater().get_set_temperature() >0) && _platformActive))
+  if ((board.getExtruderBoard(0).getExtruderHeater().get_set_temperature() > 0) || (board.getPlatformHeater().get_set_temperature() > 0) ||
+       (board.getExtruderBoard(1).getExtruderHeater().get_set_temperature() > 0))
   {   preheatActive = true;}
   else
   {   preheatActive = false;}
+
+  if (preheatActive) {
+    _rightActive = board.getExtruderBoard(0).getExtruderHeater().get_set_temperature() > 0;
+    _platformActive = eeprom::hasHBP() && (board.getPlatformHeater().get_set_temperature() > 0);
+    _leftActive = board.getExtruderBoard(1).getExtruderHeater().get_set_temperature() > 0;
+  }else{
+    _rightActive = (heatSet & (1 << HEAT_MASK_RIGHT)) != 0;
+    _platformActive = eeprom::hasHBP() && ((heatSet & (1 << HEAT_MASK_PLATFORM)) != 0);
+    _leftActive = (heatSet & (1 << HEAT_MASK_LEFT)) != 0; 
+  }
+  singleTool = eeprom::isSingleTool();
+  if(singleTool){ _leftActive = false; }
+  
 
   if(eeprom::hasHBP()){
     itemCount = 4;

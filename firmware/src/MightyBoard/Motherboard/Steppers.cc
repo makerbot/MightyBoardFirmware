@@ -270,8 +270,10 @@ void reset() {
 	minimumPlannerSpeed = FTOFP((float)ACCELERATION_MIN_PLANNER_SPEED);
 
 	if ( eeprom::getEeprom8(NAC2(SLOWDOWN_FLAG), DEFAULT_SLOWDOWN_FLAG) ) {
+    // we have different slowdown limits depending on whether we're printing from sd card or USB
 		slowdown_limit = (int)ACCELERATION_SLOWDOWN_LIMIT;
-		if ( slowdown_limit > (BLOCK_BUFFER_SIZE / 2))  slowdown_limit = 0;
+    if (!sdcard::isPlaying()) { slowdown_limit *= 2; }
+		if ( slowdown_limit > (BLOCK_BUFFER_SIZE / 2))  { slowdown_limit = BLOCK_BUFFER_SIZE / 2; }
 	}
 	else	slowdown_limit = 0;	
 

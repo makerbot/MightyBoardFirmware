@@ -109,6 +109,13 @@ void InterfaceBoard::RecordOnboardStartIdx(){
 	onboard_start_idx = screenIndex;
 }
 
+void InterfaceBoard::popToOnboardStart(){
+  while(screenIndex > onboard_start_idx){
+    popScreenQuick();
+  }
+  screenStack[screenIndex]->update(lcd, true);
+}
+
 void InterfaceBoard::doUpdate() {
 
 		// If we are building, make sure we show a build menu; otherwise,

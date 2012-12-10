@@ -383,11 +383,11 @@ bool processExtruderCommandPacket() {
 		case SLAVE_CMD_SET_TEMP:
       /// we are clearing temps here for the beginning of a print instead of in reset because we want them to be set to zero temperature for as short a time as possible.
       if(start_build_flag){
-        board.getExtruderBoard(0).getExtruderHeater().reset();
-        board.getExtruderBoard(1).getExtruderHeater().reset();
+        board.getExtruderBoard(0).getExtruderHeater().abort();
+        board.getExtruderBoard(1).getExtruderHeater().abort();
         // don't reset the platform if we have received a platform temp command
         if (!platform_on_flag){
-          board.getPlatformHeater().reset();
+          board.getPlatformHeater().abort();
         }
         platform_on_flag = false;
         start_build_flag = false;
@@ -623,6 +623,8 @@ void runCommandSlice() {
 		if(active_paused){
 			// sleep called, waiting for current stepper move to finish
 			if((sleep_mode == SLEEP_START_WAIT) && st_empty()){
+        // record the start screen here
+        Motherboard::getBoard().getInterfaceBoard().RecordOnboardStartIdx();
 				if(sleep_type == SLEEP_TYPE_COLD){
 					Motherboard::getBoard().getInterfaceBoard().errorMessage(SLEEP_PREP_MSG);
 				}else if(sleep_type == SLEEP_TYPE_FILAMENT){
@@ -691,7 +693,7 @@ void runCommandSlice() {
 			// when position is reached, restart print
 			}else if((sleep_mode == SLEEP_FINISHED) && st_empty()){
 				sleep_mode = SLEEP_NONE;
-				interface::popScreen();
+				Motherboard::getBoard().getInterfaceBoard().popToOnboardStart();
 				active_paused = false;
 			}
 			return;

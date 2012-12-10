@@ -150,6 +150,9 @@ public:
         
         /// pop screen without refreshing the new head screen
         void popScreenQuick();
+
+        /// pop to a screen index found earlier by calling RecordOnboardStartIdx()
+        void popToOnboardStart();
         
         /// pop Error Message Screen
         void DoneWithMessage();
