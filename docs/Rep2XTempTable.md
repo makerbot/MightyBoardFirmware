@@ -96,8 +96,8 @@ All temperature were taken with a Fluke Type k Thermocouple.  Temperatures were 
 </tr>
 <tr>
     <td>50</td>
-    <td>48.5</td>
     <td>50</td>
+    <td>48.5</td>
 </tr>
 <tr>
     <td>55</td>
@@ -183,5 +183,119 @@ All temperature were taken with a Fluke Type k Thermocouple.  Temperatures were 
     <td>135</td>
     <td>135</td>
     <td>125.9</td>
+</tr>
+</table>
+
+## With new Thermistor Table
+<table>
+<tr>
+    <th>target</th>
+    <th>MightyBoard</th>
+    <th>Fluke Type K Thermocouple</th>
+</tr>
+<tr>
+    <td>30</td>
+    <td>31</td>
+    <td>31</td>
+</tr>
+<tr>
+    <td>35</td>
+    <td>36</td>
+    <td>35.6</td>
+</tr>
+<tr>
+    <td>40</td>
+    <td>41</td>
+    <td>41.2</td>
+</tr>
+<tr>
+    <td>45</td>
+    <td>45</td>
+    <td>45.8</td>
+</tr>
+<tr>
+    <td>50</td>
+    <td>50</td>
+    <td>50.5</td>
+</tr>
+<tr>
+    <td>55</td>
+    <td>55</td>
+    <td>56.0</td>
+</tr>
+<tr>
+    <td>60</td>
+    <td>60</td>
+    <td>61.84</td>
+</tr>
+<tr>
+    <td>65</td>
+    <td>65</td>
+    <td>66.85</td>
+</tr>
+<tr>
+    <td>70</td>
+    <td>69</td>
+    <td>70.95</td>
+</tr>
+<tr>
+    <td>75</td>
+    <td>75</td>
+    <td>75.45</td>
+</tr>
+<tr>
+    <td>80</td>
+    <td>80</td>
+    <td>80.25</td>
+</tr>
+<tr>
+    <td>85</td>
+    <td>85</td>
+    <td>84.9</td>
+</tr>
+<tr>
+    <td>90</td>
+    <td>90</td>
+    <td>90.0</td>
+</tr>
+<tr>
+    <td>95</td>
+    <td>95</td>
+    <td>94.85</td>
+</tr>
+<tr>
+    <td>100</td>
+    <td>100</td>
+    <td>100</td>
+</tr>
+<tr>
+    <td>105</td>
+    <td>105</td>
+    <td>105.7</td>
+</tr>
+<tr>
+    <td>110</td>
+    <td>110</td>
+    <td>109.8</td>
+</tr>
+<tr>
+    <td>115</td>
+    <td>115</td>
+    <td>114.8</td>
+</tr>
+<tr>
+    <td>120</td>
+    <td>120</td>
+    <td>119.7</td>
+</tr>
+<tr>
+    <td>125</td>
+    <td>125</td>
+    <td>124.9</td>
+</tr>
+<tr>
+    <td>130</td>
+    <td>130</td>
+    <td>130</td>
 </tr>
 </table>
