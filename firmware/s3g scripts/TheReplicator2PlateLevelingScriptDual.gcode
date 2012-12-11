@@ -53,14 +53,14 @@ M70 ( Please wait)
 G1 Z5
 
 ; move to front right pin
-G1 Y-70 X124 F5000 
+G1 Y-70 X119 F5000 
 G1 Z0 F1000
 M71 (Adjust front right  knob until paper    just slides between nozzle and plate    )
 M70 ( Please wait)
 G1 Z5
 
 ; move to front left pin
-G1 Y-70 X-91.5 F5000
+G1 Y-70 X-86.5 F5000
 G1 Z0 F1000
 M71 (Adjust front left   knob until paper    just slides between nozzle and plate    )
 M70 ( Please wait)
