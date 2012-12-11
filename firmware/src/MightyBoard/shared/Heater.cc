@@ -110,11 +110,11 @@ void Heater::reset() {
 
 void Heater::abort() {
 
-	startTemp = 0;
-	paused_set_temperature = 0;
-
+	fail_state = false;
 	fail_count = 0;
+	fail_mode = HEATER_FAIL_NONE;
 	value_fail_count = 0;
+
 	heatingUpTimer = Timeout();
 	heatProgressTimer = Timeout();
 	progressChecked = false;
@@ -122,7 +122,21 @@ void Heater::abort() {
 	is_paused = false;
 	is_disabled = false;
 
+	float p = eeprom::getEepromFixed16(eeprom_base+pid_eeprom_offsets::P_TERM,DEFAULT_P);
+	float i = eeprom::getEepromFixed16(eeprom_base+pid_eeprom_offsets::I_TERM,DEFAULT_I);
+	float d = eeprom::getEepromFixed16(eeprom_base+pid_eeprom_offsets::D_TERM,DEFAULT_D);
+
 	pid.reset();
+	if (p == 0 && i == 0 && d == 0) {
+		p = DEFAULT_P; i = DEFAULT_I; d = DEFAULT_D;
+	}
+	pid.setPGain(p);
+	pid.setIGain(i);
+	pid.setDGain(d);
+	pid.setTarget(0);
+	next_pid_timeout.start(UPDATE_INTERVAL_MICROS);
+	//next_sense_timeout.start(sample_interval_micros);
+  calibration_offset = eeprom::getEeprom8(eeprom_offsets::HEATER_CALIBRATION + calibration_eeprom_offset, 0);
 }
 
 void Heater::disable(bool on){

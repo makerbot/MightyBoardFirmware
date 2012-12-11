@@ -383,11 +383,11 @@ bool processExtruderCommandPacket() {
 		case SLAVE_CMD_SET_TEMP:
       /// we are clearing temps here for the beginning of a print instead of in reset because we want them to be set to zero temperature for as short a time as possible.
       if(start_build_flag){
-        board.getExtruderBoard(0).getExtruderHeater().reset();
-        board.getExtruderBoard(1).getExtruderHeater().reset();
+        board.getExtruderBoard(0).getExtruderHeater().abort();
+        board.getExtruderBoard(1).getExtruderHeater().abort();
         // don't reset the platform if we have received a platform temp command
         if (!platform_on_flag){
-          board.getPlatformHeater().reset();
+          board.getPlatformHeater().abort();
         }
         platform_on_flag = false;
         start_build_flag = false;
