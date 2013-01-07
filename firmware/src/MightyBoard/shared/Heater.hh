@@ -57,9 +57,9 @@ class Heater
     micros_t sample_interval_micros;    ///< Interval that the temperature sensor should
                                         ///< be updated at.
 
-    volatile uint16_t current_temperature;       ///< Last known temperature reading
-    uint16_t startTemp;					///< start temperature when new target is set.  used to assess heating up progress 
-	uint16_t paused_set_temperature;		///< we record the set temperature when a heater is "paused"
+    volatile int16_t current_temperature;       ///< Last known temperature reading
+    int16_t startTemp;					///< start temperature when new target is set.  used to assess heating up progress 
+	  int16_t paused_set_temperature;		///< we record the set temperature when a heater is "paused"
     bool newTargetReached;				///< flag set when heater reached target and cleared when a new temperature is set
     
     uint16_t eeprom_base;               ///< Base address to read EEPROM configuration from
@@ -83,6 +83,9 @@ class Heater
     bool is_paused;						///< set to true when we wish to pause the heater from heating up 
     bool is_disabled;					///< heaters are disabled when they are not present (user settable)
 
+    uint8_t calibration_eeprom_offset; //axis offset in HEATER_CALIBRATE
+    int8_t  calibration_offset;   // temperature offset for this heater in degrees C
+
     /// This is the interval between PID calculations.  It doesn't make sense for
     /// this to be fast (<1 sec) because of the long system delay between heater
     /// and sensor.
@@ -99,19 +102,22 @@ class Heater
     /// \param[in] sample_interval_micros Interval to sample the temperature sensor,
     ///                                    in microseconds.
     /// \param[in] eeprom_base EEPROM address where the PID settings are stored.
+    /// \param[in] heat_timing_check whether or not we should monitor heat-up time
+    /// \param[in] calibration_offset axis offset in HEATER_CALIBRATE field of eeprom
     Heater(TemperatureSensor& sensor,
            HeatingElement& element,
            const micros_t sample_interval_micros,
            const uint16_t eeprom_base,
-           bool heat_timing_check);
+           bool heat_timing_check,
+           uint8_t calibration_offset);
     
     /// Get the current sensor temperature
     /// \return Current sensor temperature, in degrees Celcius
-    int get_current_temperature();
+    int16_t get_current_temperature();
 
     /// Get the setpoint temperature
     /// \return Setpoint temperature, in degrees Celcius
-    int get_set_temperature();
+    int16_t get_set_temperature();
 
     /// Set the target output temperature
     /// \param temp New target temperature, in degrees Celcius.
@@ -136,6 +142,9 @@ class Heater
 
     /// Reset the heater to a to board-on state
     void reset();
+
+    /// clear heater target temp and states
+    void abort();
     
     // pause or unpause the heater
     // a paused heater will not heat
@@ -145,19 +154,19 @@ class Heater
 
     /// Get the current PID error term
     /// \return E term from the PID controller
-    int getPIDErrorTerm();
+    int16_t getPIDErrorTerm();
 
     /// Get the current PID delta term
     /// \return D term from the PID controller
-    int getPIDDeltaTerm();
+    int16_t getPIDDeltaTerm();
 
     /// Get the last PID output
     /// \return last output from the PID controller
-    int getPIDLastOutput();
+    int16_t getPIDLastOutput();
     
     /// get the difference between the current temperature
     /// and the set temperature
-    int getDelta();
+    int16_t getDelta();
     
     /// is heater temperature target different than current
     bool isHeating();

@@ -9,7 +9,7 @@
 
 if test -z "$1"
 then
-  FILENAME=mighty_two_v6.1.0.hex
+  FILENAME=mighty_two_v7.0.0.hex
 else
   FILENAME=$1
 fi
@@ -47,6 +47,7 @@ FAILUSB="USB Program PASS"
     then
      FAIL8U2="8U2 Bootloader FAIL"
     fi
+
 
    echo "Press Enter upload 1280 bootloader"
     read

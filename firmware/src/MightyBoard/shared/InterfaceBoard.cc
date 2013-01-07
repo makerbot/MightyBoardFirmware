@@ -11,15 +11,11 @@
 bool onboard_build = false;
 
 InterfaceBoard::InterfaceBoard(ButtonArray& buttons_in,
-                               LiquidCrystalSerial& lcd_in,
-                               const Pin& gled_in,
-                               const Pin& rled_in):
+                               LiquidCrystalSerial& lcd_in):
         lcd(lcd_in),
         buttons(buttons_in),
 		waitingMask(0)
 {
-  LEDs[0] = gled_in;
-  LEDs[1] = rled_in;
   buildPercentage = 101;
 }
 
@@ -31,9 +27,6 @@ void InterfaceBoard::init() {
 	lcd.clear();
 	lcd.home();
 
-	LEDs[0].setDirection(true);
-	LEDs[1].setDirection(true);
-	
   building = false;
 
   screenIndex = -1;
@@ -42,6 +35,7 @@ void InterfaceBoard::init() {
   screen_locked = false;
   onboard_build = false;
   onboard_start_idx = 1;
+  user_wait_override = false;
 }
 
 void InterfaceBoard::resetLCD() {
@@ -68,7 +62,7 @@ void InterfaceBoard::errorMessage(const unsigned char buf[]){
 			pushScreen(&messageScreen);
 		}else{
 			screenStack[screenIndex]->update(lcd, true);
-		}
+	  }
 }
 
 MessageScreen * InterfaceBoard::GetMessageScreen(){
@@ -95,6 +89,15 @@ void InterfaceBoard::queueScreen(ScreenType screen){
 		case MESSAGE_SCREEN:
 			pushScreen(&messageScreen);
 			break;
+    case BUILD_SCREEN:
+      pushScreen(&buildScreen);
+      break;
+    case SPLASH_SCREEN:
+      pushScreen(&splashScreen);
+      break;
+    case WELCOME_SCREEN:
+      pushScreen(&welcomeScreen);
+      break;
 		default:
 			break;
 		}
@@ -104,6 +107,13 @@ void InterfaceBoard::queueScreen(ScreenType screen){
 /// record screen stack index when onboard script is started so we can return there on finish
 void InterfaceBoard::RecordOnboardStartIdx(){
 	onboard_start_idx = screenIndex;
+}
+
+void InterfaceBoard::popToOnboardStart(){
+  while(screenIndex > onboard_start_idx){
+    popScreenQuick();
+  }
+  screenStack[screenIndex]->update(lcd, true);
 }
 
 void InterfaceBoard::doUpdate() {
@@ -125,7 +135,7 @@ void InterfaceBoard::doUpdate() {
 				// wait until the screen is finished.
         // we do not push the build screen at all for utility scripts that don't require heating.
 				if (utility::showMonitor()){
-					if(!(screenStack[screenIndex]->screenWaiting() || command::isWaiting()))
+					if(!(((screenStack[screenIndex] == &messageScreen) && messageScreen.screenWaiting()) || command::isWaiting()))
 					{
 						pushScreen(&buildScreen);
 						building = true;
@@ -140,8 +150,8 @@ void InterfaceBoard::doUpdate() {
 			break;
 		default:
 			if (building) {
-        
-				if(!(screenStack[screenIndex]->screenWaiting())){	
+        /// don't remove the build screens if there is a message screen waiting or the build Finished screen is on top 
+				if(!((screenStack[screenIndex] == &messageScreen) && messageScreen.screenWaiting()) && (screenStack[screenIndex] != &buildFinished)){	
 					
 					// when using onboard scrips, we want to return to whichever screen we launched the script from
 					if(onboard_build){	
@@ -170,16 +180,13 @@ void InterfaceBoard::doUpdate() {
 
     if(!screen_locked){
         if (buttons.getButton(button)) {
-            if (button == ButtonArray::RESET){
-                host::stopBuild();
-                return;
             // respond to button press if waiting
-            // pass on to screen if a cancel screen is active
-            } else if((((1<<button) & waitingMask) != 0) && 
-                      (!screenStack[screenIndex]->isCancelScreen())){
+            // pass on to screen if user_wait_override is set (Set by cancel screens)
+            if((((1<<button) & waitingMask) != 0) &&
+                !user_wait_override){
                  waitingMask = 0;
-            } else if (button == ButtonArray::EGG){
-                pushScreen(&snake);
+           // } else if (button == ButtonArray::EGG){
+             //   pushScreen(&snake);
             } else {
                 screenStack[screenIndex]->notifyButtonPressed(button);
             }
@@ -189,14 +196,14 @@ void InterfaceBoard::doUpdate() {
         }
        
         // update build data
-        screenStack[screenIndex]->setBuildPercentage(buildPercentage);	
+        buildScreen.setBuildPercentage(buildPercentage);	
         screenStack[screenIndex]->update(lcd, false);
     }
 }
 
-//void InterfaceBoard::update(){
-//	screenStack[screenIndex]->update(lcd, true);
-//}
+void InterfaceBoard::setOverride(bool on){
+  user_wait_override = on;
+}
 
 // push screen to stack and call update
 void InterfaceBoard::pushScreen(Screen* newScreen) {
@@ -221,12 +228,13 @@ void InterfaceBoard::setBuildPercentage(uint8_t percent){
 
 void InterfaceBoard::popScreen() {
 	
-	screenStack[screenIndex]->pop();
+  screenStack[screenIndex]->pop_actions();
 	// Don't allow the root menu to be removed.
 	if (screenIndex > 0) {
 		screenIndex--;
 	}
  
+  user_wait_override = false;
   buttons.setButtonDelay(ButtonArray::SlowDelay);
 	screenStack[screenIndex]->update(lcd, true);
 }
@@ -234,7 +242,6 @@ void InterfaceBoard::popScreen() {
 /// pop screen without refreshing the new head screen
 void InterfaceBoard::popScreenQuick() {
 	
-	screenStack[screenIndex]->pop();
 	// Don't allow the root menu to be removed.
 	if (screenIndex > 0) {
 		screenIndex--;
@@ -242,12 +249,6 @@ void InterfaceBoard::popScreenQuick() {
   buttons.setButtonDelay(ButtonArray::SlowDelay);
 
 }
-
-// turn interface LEDs on
-void InterfaceBoard::setLED(uint8_t id, bool on){
-	LEDs[id].setValue(on);
-}
-
 
 /// Tell the interface board that the system is waiting for a button push
 /// corresponding to one of the bits in the button mask. The interface board

@@ -20,7 +20,10 @@
 #include <string.h>
 #include "Commands.hh"
 #include "Steppers.hh"
-#include "DebugPacketProcessor.hh"
+#include "Configuration.hh"
+#if defined(HONOR_DEBUG_PACKETS) && (HONOR_DEBUG_PACKETS == 1)
+    #include "DebugPacketProcessor.hh"
+#endif
 #include "Timeout.hh"
 #include "Version.hh"
 #include <util/atomic.h>
@@ -33,7 +36,6 @@
 #include "Eeprom.hh"
 #include "EepromMap.hh"
 #include "UtilityScripts.hh"
-#include "Planner.hh"
 #include "stdio.h"
 #include "Menu_locales.hh"
 
@@ -91,35 +93,37 @@ bool hard_reset = false;
 bool cancelBuild = false;
 
 void runHostSlice() {
-		
-        InPacket& in = UART::getHostUART().in;
-        OutPacket& out = UART::getHostUART().out;
+  InPacket& in = UART::getHostUART().in;
+  OutPacket& out = UART::getHostUART().out;
 	if (out.isSending()) {
 		// still sending; wait until send is complete before reading new host packets.
 		return;
 	}
-    // soft reset the machine unless waiting to notify repG that a cancel has occured
-	if (do_host_reset && (!cancelBuild || cancel_timeout.hasElapsed()) && (!z_stage_timeout.isActive() || z_stage_timeout.hasElapsed() || !steppers::isRunning())){
-			
-		if((buildState == BUILD_RUNNING) || (buildState == BUILD_PAUSED) || (buildState == BUILD_SLEEP)){
-			stopBuild();
+
+  // soft reset the machine unless waiting to notify repG that a cancel has occured
+	if (do_host_reset && (!cancelBuild || cancel_timeout.hasElapsed()) && (!z_stage_timeout.isActive() || z_stage_timeout.hasElapsed() || st_empty())){
+  	if((buildState == BUILD_RUNNING) || (buildState == BUILD_PAUSED) || (buildState == BUILD_SLEEP)){
+			buildState = BUILD_CANCELED;
+      stopBuild();
 		}
-    command::ActivePause(false, command::SLEEP_TYPE_NONE);
 		do_host_reset = false;
+    cancelBuild = false;
+    cancel_timeout = Timeout();
+    z_stage_timeout = Timeout();
 
 		// reset local board
 		reset(hard_reset);
 		
-        // hard_reset can be called, but is not called by any
-        // a hard reset calls the start up sound and resets heater errors
+    // hard_reset can be called, but is not called by any
+    // a hard reset calls the start up sound and resets heater errors
 		hard_reset = false;
-		packet_in_timeout.abort();
+		packet_in_timeout = Timeout();
 
 		// Clear the machine and build names
 		machineName[0] = 0;
 		buildName[0] = 0;
 		currentState = HOST_STATE_READY;
-			
+
 		return;
 	}
     // new packet coming in
@@ -188,7 +192,7 @@ void runHostSlice() {
 			out.append8(RC_CMD_UNSUPPORTED);
 		}
 		in.reset();
-                UART::getHostUART().beginSend();
+    UART::getHostUART().beginSend();
 	}
     /// mark new state as ready if done building from SD
 	if(currentState==HOST_STATE_BUILDING_FROM_SD)
@@ -223,7 +227,7 @@ bool processCommandPacket(const InPacket& from_host, OutPacket& to_host) {
 				to_host.append8(RC_OK);
 				return true;
 			}
-			if(sdcard::isPlaying() || utility::isPlaying()){
+			if(sdcard::isPlaying() || utility::isPlaying() || (currentState == HOST_STATE_CANCEL_BUILD)){
 				// ignore action commands if SD card build is playing
 				// or if ONBOARD script is playing
 				to_host.append8(RC_BOT_BUILDING);
@@ -259,7 +263,7 @@ void heatShutdown(){
 
 // Received driver version info, and request for fw version info.
 // puts fw version into a reply packet, and send it back
-inline void handleVersion(const InPacket& from_host, OutPacket& to_host) {
+void handleVersion(const InPacket& from_host, OutPacket& to_host) {
 
     // Case to give an error on Replicator G versions older than 0025. See footnote 1
     if(from_host.read16(1)  <=  25   ) {
@@ -275,7 +279,7 @@ inline void handleVersion(const InPacket& from_host, OutPacket& to_host) {
 
 // Received driver version info, and request for fw version info.
 // puts fw version into a reply packet, and send it back
-inline void handleGetAdvancedVersion(const InPacket& from_host, OutPacket& to_host) {
+void handleGetAdvancedVersion(const InPacket& from_host, OutPacket& to_host) {
 
 	// we're not doing anything with the host version at the moment
 	uint16_t host_version = from_host.read16(1);
@@ -283,13 +287,15 @@ inline void handleGetAdvancedVersion(const InPacket& from_host, OutPacket& to_ho
 	to_host.append8(RC_OK);
 	to_host.append16(firmware_version);
 	to_host.append16(internal_version);
-	to_host.append16(0);
+  // software variant
+  to_host.append8(MBI_OFFICIAL);
+	to_host.append8(0);
 	to_host.append16(0);
 
 }
 
     // return build name
-inline void handleGetBuildName(const InPacket& from_host, OutPacket& to_host) {
+void handleGetBuildName(const InPacket& from_host, OutPacket& to_host) {
 	to_host.append8(RC_OK);
 	for (uint8_t idx = 0; idx < MAX_FILE_LEN; idx++) {
 	  to_host.append8(buildName[idx]);
@@ -297,29 +303,28 @@ inline void handleGetBuildName(const InPacket& from_host, OutPacket& to_host) {
 	}
 }
 
-inline void handleGetBufferSize(const InPacket& from_host, OutPacket& to_host) {
+void handleGetBufferSize(const InPacket& from_host, OutPacket& to_host) {
 	to_host.append8(RC_OK);
 	to_host.append32(command::getRemainingCapacity());
 }
 
-inline void handleGetPosition(const InPacket& from_host, OutPacket& to_host) {
+void handleGetPosition(const InPacket& from_host, OutPacket& to_host) {
 	ATOMIC_BLOCK(ATOMIC_FORCEON) {
-		const Point p = planner::getPosition();
+		const Point p = steppers::getStepperPosition();
 		to_host.append8(RC_OK);
 		to_host.append32(p[0]);
 		to_host.append32(p[1]);
 		to_host.append32(p[2]);
 		// From spec:
 		// endstop status bits: (7-0) : | N/A | N/A | z max | z min | y max | y min | x max | x min |
-		Motherboard& board = Motherboard::getBoard();
 		uint8_t endstop_status = steppers::getEndstopStatus();
 		to_host.append8(endstop_status);
 	}
 }
 
-inline void handleGetPositionExt(const InPacket& from_host, OutPacket& to_host) {
+void handleGetPositionExt(const InPacket& from_host, OutPacket& to_host) {
 	ATOMIC_BLOCK(ATOMIC_FORCEON) {
-		const Point p = planner::getPosition();
+		const Point p = steppers::getStepperPosition();
 		to_host.append8(RC_OK);
 		to_host.append32(p[0]);
 		to_host.append32(p[1]);
@@ -333,28 +338,26 @@ inline void handleGetPositionExt(const InPacket& from_host, OutPacket& to_host) 
 #endif
 		// From spec:
 		// endstop status bits: (15-0) : | b max | b min | a max | a min | z max | z min | y max | y min | x max | x min |
-		Motherboard& board = Motherboard::getBoard();
 		uint8_t endstop_status = steppers::getEndstopStatus();
-		
 		to_host.append16((uint16_t)endstop_status);
 	}
 }
 
     // capture to SD
-inline void handleCaptureToFile(const InPacket& from_host, OutPacket& to_host) {
+void handleCaptureToFile(const InPacket& from_host, OutPacket& to_host) {
 	char *p = (char*)from_host.getData() + 1;
 	to_host.append8(RC_OK);
 	to_host.append8(sdcard::startCapture(p));
 }
     // stop capture to SD
-inline void handleEndCapture(const InPacket& from_host, OutPacket& to_host) {
+void handleEndCapture(const InPacket& from_host, OutPacket& to_host) {
 	to_host.append8(RC_OK);
 	to_host.append32(sdcard::finishCapture());
 	sdcard::reset();
 }
 
     // playback from SD
-inline void handlePlayback(const InPacket& from_host, OutPacket& to_host) {
+void handlePlayback(const InPacket& from_host, OutPacket& to_host) {
 	to_host.append8(RC_OK);
 	for (int idx = 1; idx < from_host.getLength(); idx++) {
 		buildName[idx-1] = from_host.read8(idx);
@@ -366,7 +369,7 @@ inline void handlePlayback(const InPacket& from_host, OutPacket& to_host) {
 }
 
     // retrive SD file names
-inline void handleNextFilename(const InPacket& from_host, OutPacket& to_host) {
+void handleNextFilename(const InPacket& from_host, OutPacket& to_host) {
 	to_host.append8(RC_OK);
 	uint8_t resetFlag = from_host.read8(1);
 	if (resetFlag != 0) {
@@ -394,28 +397,29 @@ inline void handleNextFilename(const InPacket& from_host, OutPacket& to_host) {
 }
 
     // pause command response
-inline void handlePause(const InPacket& from_host, OutPacket& to_host) {
+void handlePause(const InPacket& from_host, OutPacket& to_host) {
 	/// this command also calls the host::pauseBuild() command
 	pauseBuild(!command::isPaused());
 	to_host.append8(RC_OK);
 }
 
-inline void handleSleep(const InPacket& from_host, OutPacket& to_host) {
+void handleSleep(const InPacket& from_host, OutPacket& to_host) {
 	/// this command also calls the host::pauseBuild() command
 	activePauseBuild(!command::isActivePaused(), command::SLEEP_TYPE_COLD);
 	to_host.append8(RC_OK);
 }
 
     // check if steppers are still executing a command
-inline void handleIsFinished(const InPacket& from_host, OutPacket& to_host) {
+void handleIsFinished(const InPacket& from_host, OutPacket& to_host) {
 	to_host.append8(RC_OK);
 	ATOMIC_BLOCK(ATOMIC_FORCEON) {
-		bool done = !steppers::isRunning() && command::isEmpty();
+		bool done = st_empty() && command::isEmpty();
 		to_host.append8(done?1:0);
 	}
 }
-    // read value from eeprom
-inline void handleReadEeprom(const InPacket& from_host, OutPacket& to_host) {
+
+// read value from eeprom
+void handleReadEeprom(const InPacket& from_host, OutPacket& to_host) {
     
     uint16_t offset = from_host.read16(1);
     uint8_t length = from_host.read8(3);
@@ -432,7 +436,7 @@ inline void handleReadEeprom(const InPacket& from_host, OutPacket& to_host) {
 /**
  * writes a chunk of data from a input packet to eeprom
  */
-inline void handleWriteEeprom(const InPacket& from_host, OutPacket& to_host) {
+void handleWriteEeprom(const InPacket& from_host, OutPacket& to_host) {
     uint16_t offset = from_host.read16(1);
     uint8_t length = from_host.read8(3);
     uint8_t data[length];
@@ -455,10 +459,10 @@ enum { // bit assignments
 };
 
     // stop steppers and command execution
-inline void handleExtendedStop(const InPacket& from_host, OutPacket& to_host) {
+void handleExtendedStop(const InPacket& from_host, OutPacket& to_host) {
 	uint8_t flags = from_host.read8(1);
 	if (flags & _BV(ES_STEPPERS)) {
-		planner::abort();
+		steppers::abort();
 	}
 	if (flags & _BV(ES_COMMANDS)) {
 		command::reset();
@@ -489,8 +493,9 @@ void handleBuildStartNotification(CircularBuffer& buf) {
 				buildName[idx++] = buf.pop();		
 			} while ((buildName[idx-1] != '\0') && (idx < MAX_FILE_LEN));
 			break;
+    default:
+      break;
 	}
-	//interface::BuildStart();
 	startPrintTime();
 	command::clearLineNumber();
 	buildState = BUILD_RUNNING;
@@ -499,21 +504,21 @@ void handleBuildStartNotification(CircularBuffer& buf) {
     // set build state to ready
 void handleBuildStopNotification(uint8_t stopFlags) {
 	uint8_t flags = stopFlags;
-	
-	
 	Motherboard::getBoard().getInterfaceBoard().queueScreen(InterfaceBoard::BUILD_FINISHED);
-	//interface::BuildFinished();
 	stopPrintTime();
 	last_print_line = command::getLineNumber();
 	buildState = BUILD_FINISHED_NORMALLY;
 	currentState = HOST_STATE_READY;
-
+  
+  // ensure filament axes are disabled on stop build
+  steppers::enableAxis(3, false);
+  steppers::enableAxis(4, false);
   // turn off the cooling fan
   EX_FAN.setValue(false);
 }
 
 /// get current print stats if printing, or last print stats if not printing
-inline void handleGetBuildStats(OutPacket& to_host) {
+void handleGetBuildStats(OutPacket& to_host) {
         to_host.append8(RC_OK);
  
 		uint8_t hours;
@@ -533,7 +538,7 @@ inline void handleGetBuildStats(OutPacket& to_host) {
 }
 /// get current print stats if printing, or last print stats if not printing
 /// for documentation of these status bytes, see docs/MotherboardStatusBytes.md
-inline void handleGetBoardStatus(OutPacket& to_host) {
+void handleGetBoardStatus(OutPacket& to_host) {
 	Motherboard& board = Motherboard::getBoard();
 	to_host.append8(RC_OK);
 	to_host.append8(board.GetBoardStatus());
@@ -563,6 +568,7 @@ bool processQueryPacket(const InPacket& from_host, OutPacket& to_host) {
 				if (currentState == HOST_STATE_BUILDING
 						|| currentState == HOST_STATE_BUILDING_FROM_SD
 						|| currentState == HOST_STATE_BUILDING_ONBOARD) {
+          buildState = BUILD_CANCELED;
           host::stopBuild();
 					Motherboard::getBoard().indicateError(ERR_RESET_DURING_BUILD);
 				}else{
@@ -636,11 +642,12 @@ char* getMachineName() {
 	// If EEPROM is zero, load in a default. The 0 is there on purpose
 	// since this fallback should only happen on EEPROM total failure
 	static PROGMEM unsigned char defaultMachineName[] =  "The Replicat0r";
-
+  
 	if (machineName[0] == 0) {
 		for(uint8_t i = 0; i < 14; i++) {
 			machineName[i] = pgm_read_byte_near(defaultMachineName+i);
 		}
+    machineName[14] = '\0';
 	}
 
 	return machineName;
@@ -665,18 +672,11 @@ sdcard::SdErrorCode startBuildFromSD() {
 		return e;
 	}
 	
-	// clear heater temps
-//	Motherboard::getBoard().getPlatformHeater().set_target_temperature(0);
-//	Motherboard::getBoard().getExtruderBoard(0).getExtruderHeater().set_target_temperature(0);
-//	Motherboard::getBoard().getExtruderBoard(1).getExtruderHeater().set_target_temperature(0);
-	
 	command::reset();
+	steppers::abort();
 	steppers::reset();
-	planner::abort();
 	Motherboard::getBoard().reset(false);
-
 	currentState = HOST_STATE_BUILDING_FROM_SD;
-
 	return e;
 }
     // start build from utility script
@@ -687,7 +687,8 @@ void startOnboardBuild(uint8_t  build){
     Motherboard::getBoard().getInterfaceBoard().RecordOnboardStartIdx();
     Motherboard::getBoard().setBoardStatus(Motherboard::STATUS_ONBOARD_SCRIPT, true);
     command::reset();
-    planner::abort();
+    steppers::abort();
+    steppers::reset();
   }
 }
 
@@ -697,12 +698,15 @@ void stopBuild() {
 	if((currentState == host::HOST_STATE_BUILDING) ||
 		(currentState == host::HOST_STATE_BUILDING_FROM_SD)){
     	
-    planner::abort();
+    steppers::abort();
+    // disable filament axes
+    steppers::enableAxis(3, false);
+    steppers::enableAxis(4, false);
 
+		Motherboard::getBoard().setBoardStatus(Motherboard::STATUS_CANCELLING, true);
 		// record print statistics
 		last_print_line = command::getLineNumber();
 		stopPrintTime();
-		buildState = BUILD_CANCELED;
 		command::ActivePause(true, command::SLEEP_TYPE_NONE);
 		
 		uint8_t hours;
@@ -711,21 +715,21 @@ void stopBuild() {
 		/// lower the z stage if a build is canceled
 		/// ensure that we have homed all axes before attempting this
     uint8_t z_home = steppers::isZHomed();   
-    if(z_home){
-      Point target = planner::getPosition();
-      if(z_home == 1) {target[2] = 58000;}
-      else {target[2] = 60000;}
+    if(z_home > 0){
+      Point target = steppers::getPlannerPosition();
+      if(z_home == 1) {target[2] = 145L*stepperAxisStepsPerMM(Z_AXIS);}
+      else {target[2] = 150L*stepperAxisStepsPerMM(Z_AXIS);}
       command::pause(false);
-      planner::addMoveToBuffer(target, 150);
+      steppers::setTarget(target, 150);
 			InterfaceBoard& ib = Motherboard::getBoard().getInterfaceBoard();
       ib.errorMessage(CANCEL_PLATE_MSG);
       ib.lock();
-      z_stage_timeout.start(5000000);  //5 seconds
+      z_stage_timeout.start(10000000);  //10 seconds
     }
 	}
-	
-    // if building from repG, try to send a cancel msg to repG before reseting 
-	if(currentState == HOST_STATE_BUILDING)
+
+  // if building from repG, try to send a cancel msg to repG before reseting 
+	if((currentState == HOST_STATE_BUILDING) && (buildState != BUILD_CANCELED))
 	{	
 		currentState = HOST_STATE_CANCEL_BUILD;
 		cancelBuild = true;
@@ -759,7 +763,6 @@ void activePauseBuild(bool pause, command::SleepType type){
 	/// don't update time or state if we are already in the desired state
 	if (!(pause == command::isActivePaused())){
 		
-		command::ActivePause(pause, type);
 		if(pause){
 			buildState = BUILD_SLEEP;
 			print_time.pause(true);
@@ -767,6 +770,7 @@ void activePauseBuild(bool pause, command::SleepType type){
 			buildState = BUILD_RUNNING;
 			print_time.pause(false);
 		}
+		command::ActivePause(pause, type);
 	}
 }
 

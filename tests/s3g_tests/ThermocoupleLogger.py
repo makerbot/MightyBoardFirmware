@@ -1,12 +1,16 @@
 
 """
 get thermocouple readings from the replicator with a time stamp so we can correlate them to an external reference
+
+Meant to be run from the parent directory of MightyBoardFirmware.  
+
+the s3g directory is assumed to be a sibling of MightyBoardFirmware
 """
 import os, sys 
 lib_path = os.path.abspath('../')
-sys.path.append(lib_path)
+sys.path.insert(0, lib_path)
 lib_path = os.path.abspath('s3g/')
-sys.path.append(lib_path)
+sys.path.insert(0, lib_path)
 
 
 import optparse
@@ -14,11 +18,11 @@ import serial
 import io
 import struct
 import array
-import s3g 
+import makerbot_driver
 import csv
 import time
 
-s3g_port = s3g.s3g()
+s3g_port = makerbot_driver.s3g()
 
 def GetHeaterReads():
   
@@ -28,15 +32,15 @@ def GetHeaterReads():
   while 1:
     temps = [time.time()-start_time]
     try:
-      if options.platform is not None:
+      if options.platform:
         platform_temp = s3g_port.get_platform_temperature(0)
         temps.append(platform_temp)
         print "platform %d" % (platform_temp)
-      if options.toolhead is not None:
+      if options.toolhead:
         raw_temp = s3g_port.get_toolhead_temperature(int(options.toolhead))
         temps.append(raw_temp)
         print "channel %d %d" % (int(options.toolhead), raw_temp)
-      if options.toolhead_two is not None:
+      if options.toolhead_two:
         raw_temp_0 =s3g_port.get_toolhead_temperature(int(options.toolhead_two)) 
         temps.append(raw_temp_0)
         print "channel %d %d" % (int(options.toolhead_two), raw_temp_0)
@@ -48,9 +52,9 @@ def GetHeaterReads():
       
 def setUp():
   file = serial.Serial(options.serialPort, '115200', timeout=1)
-  s3g_port.writer = s3g.Writer.StreamWriter(file)
+  s3g_port.writer = makerbot_driver.Writer.StreamWriter(file)
   s3g_port.set_extended_position([0, 0, 0, 0, 0])
-  s3g_port.abort_immediately()
+  #s3g_port.abort_immediately()
   time.sleep(2)
 
 def tearDown():
@@ -61,9 +65,9 @@ if __name__ == '__main__':
   parser = optparse.OptionParser()
   parser.add_option("-p", "--port", dest="serialPort", default="/dev/ttyACM0")
   parser.add_option("-f", "--file", dest="filename", default="temp_data.csv")
-  parser.add_option("-t", "--tool", dest="toolhead", default=None)
-  parser.add_option("-w", "--tool_two", dest="toolhead_two", default=None)
-  parser.add_option("-m", "--platform", dest="platform", default=None)
+  parser.add_option("-t", "--tool", dest="toolhead", default=None, action='store_true')
+  parser.add_option("-w", "--tool_two", dest="toolhead_two", default=None,action='store_true')
+  parser.add_option("-m", "--platform", dest="platform", default=None,action='store_true')
   (options, args) = parser.parse_args()
 
   del sys.argv[1:]

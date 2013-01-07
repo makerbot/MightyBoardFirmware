@@ -22,7 +22,6 @@
 #include "Motherboard.hh"
 #include "Configuration.hh"
 #include "Steppers.hh"
-#include "Planner.hh"
 #include "Command.hh"
 #include "Interface.hh"
 #include "Commands.hh"
@@ -36,21 +35,27 @@
 #include <util/delay.h>
 #include "Menu_locales.hh"
 #include "TemperatureTable.hh"
-#ifdef MODEL_REPLICATOR
-#include "Cutoff.hh"
-Cutoff cutoff;
+
+#ifndef JKN_ADVANCE
+    #warning "Release: JKN_ADVANCE disabled in Configuration.hh"
 #endif
 
 /// Instantiate static motherboard instance
 Motherboard Motherboard::motherboard;
 
+enum HeaterTypes{
+  EXTRUDER_A = 0,
+  EXTRUDER_B = 1,
+  HEATER_HBP = 2,
+};
+
 /// Create motherboard object
 Motherboard::Motherboard() :
       lcd(LCD_STROBE, LCD_DATA, LCD_CLK),
-      interfaceBoard(buttonArray, lcd, INTERFACE_LED_ONE, INTERFACE_LED_TWO),
+      interfaceBoard(buttonArray, lcd),
       platform_thermistor(PLATFORM_PIN, TemperatureTable::table_thermistor),
 			platform_heater(platform_thermistor,platform_element,SAMPLE_INTERVAL_MICROS_THERMISTOR,
-     	eeprom_offsets::T0_DATA_BASE + toolhead_eeprom_offsets::HBP_PID_BASE, false), //TRICKY: HBP is only and anways on T0 for this machine
+     	      eeprom_offsets::T0_DATA_BASE + toolhead_eeprom_offsets::HBP_PID_BASE, false, HEATER_HBP),
 			using_platform(eeprom::getEeprom8(eeprom_offsets::HBP_PRESENT, 1)),
 #ifdef MODEL_REPLICATOR2
 			Extruder_One(0, EXA_PWR, EXA_FAN, ThermocoupleReader::CHANNEL_ONE, eeprom_offsets::T0_DATA_BASE),
@@ -63,6 +68,51 @@ Motherboard::Motherboard() :
 {
 }
 
+ 
+#define ENABLE_TIMER_INTERRUPTS     TIMSK2 |= (1<<OCIE2A); \
+                            TIMSK5 |= (1<<OCIE5A)
+ 
+#define DISABLE_TIMER_INTERRUPTS    TIMSK2 &= ~(1<<OCIE2A); \
+                            TIMSK5 &= ~(1<<OCIE5A)
+ 
+
+void Motherboard::init(){
+  SoftI2cManager::getI2cManager().init();
+
+	// Check if the interface board is attached
+	hasInterfaceBoard = interface::isConnected();
+
+  micros = 0;
+  initClocks();
+
+  // Configure the debug pins.
+  DEBUG_PIN.setDirection(true);
+  DEBUG_PIN1.setDirection(true);
+  DEBUG_PIN2.setDirection(true);
+  DEBUG_PIN3.setDirection(true);	
+  DEBUG_PIN4.setDirection(true);
+  DEBUG_PIN5.setDirection(true);
+  DEBUG_PIN6.setDirection(true);
+		
+#ifdef MODEL_REPLICATOR2 
+  therm_sensor.init();
+	therm_sensor_timeout.start(THERMOCOUPLE_UPDATE_RATE);
+#else
+  cutoff.init();
+  extruder_manage_timeout.start(SAMPLE_INTERVAL_MICROS_THERMOCOUPLE);
+#endif
+
+  // initialize the extruders
+  Extruder_One.reset();
+  Extruder_Two.reset();
+    
+  HBP_HEAT.setDirection(true);
+	platform_thermistor.init();
+	platform_heater.reset();
+	platform_timeout.start(SAMPLE_INTERVAL_MICROS_THERMISTOR);
+
+}
+
 void Motherboard::initClocks(){
 
   // set up piezo timer
@@ -71,17 +121,17 @@ void Motherboard::initClocks(){
 	// Reset and configure timer 5,  stepper
 	// interrupt timer.
 	TCCR5A = 0x00;
-	TCCR5B = 0x09; // no prescaling
+	TCCR5B = 0x0A; // no prescaling
 	TCCR5C = 0x00;
-	OCR5A = INTERVAL_IN_MICROSECONDS * 16;
+	OCR5A = 0x2000; //INTERVAL_IN_MICROSECONDS * 16;
 	TIMSK5 = 0x02; // turn on OCR5A match interrupt
 	
-	// Reset and configure timer 2, the microsecond timer and debug LED flasher timer.
-	TCCR2A = 0x00;  
-	TCCR2B = 0x0A; /// prescaler at 1/8
-	OCR2A = INTERVAL_IN_MICROSECONDS;  // TODO: update PWM settings to make overflowtime adjustable if desired : currently interupting on overflow
+	// Reset and configure timer 2, the microsecond timer, advance_timer and debug LED flasher timer.
+	TCCR2A = 0x02; //CTC  //0x00;  
+	TCCR2B = 0x04; //prescaler at 1/64  //0x0A; /// prescaler at 1/8
+	OCR2A = 25; //Generate interrupts 16MHz / 64 / 25 = 10KHz  //INTERVAL_IN_MICROSECONDS;  // TODO: update PWM settings to make overflowtime adjustable if desired : currently interupting on overflow
 	OCR2B = 0;
-	TIMSK2 = 0x02; // turn on OCR5A match interrupt
+	TIMSK2 = 0x02; // turn on OCR2A match interrupt
 
 #ifdef MODEL_REPLICATOR2
 	// reset and configure timer 3, the Extruders timer
@@ -113,6 +163,9 @@ void Motherboard::initClocks(){
 #endif
 }
 
+#define ONE_MINUTE 60000000
+#define ONE_SECOND 1000000 
+
 /// Reset the motherboard to its initial state.
 /// This only resets the board, and does not send a reset
 /// to any attached toolheads.
@@ -121,7 +174,6 @@ void Motherboard::reset(bool hard_reset) {
 
 	// Init steppers
 	uint8_t axis_invert = eeprom::getEeprom8(eeprom_offsets::AXIS_INVERSION, 0);
-  SoftI2cManager::getI2cManager().init();
 	// Z holding indicates that when the Z axis is not in
 	// motion, the machine should continue to power the stepper
 	// coil to ensure that the Z stage does not shift.
@@ -138,28 +190,31 @@ void Motherboard::reset(bool hard_reset) {
 	
 	micros = 0;
 
-  initClocks();
-
-	// Check if the interface board is attached
-	hasInterfaceBoard = interface::isConnected();
+  // get heater timeout from eeprom - the value is stored in minutes 
+  restart_timeout = (eeprom::getEeprom8(eeprom_offsets::HEATER_TIMEOUT_ON_CANCEL, 0) * ONE_MINUTE) + ONE_SECOND;
 
 	if (hasInterfaceBoard) {
 		// Make sure our interface board is initialized
         interfaceBoard.init();
 
+        INTERFACE_LED_ONE.setDirection(true);
+        INTERFACE_LED_TWO.setDirection(true);
+
+        INTERFACE_LED_ONE.setValue(true);
+        INTERFACE_LED_TWO.setValue(true);
+
         // start with welcome script if the first boot flag is not set
         if(eeprom::getEeprom8(eeprom_offsets::FIRST_BOOT_FLAG, 0) == 0)
-            interfaceBoard.pushScreen(&welcomeScreen);
+            interfaceBoard.queueScreen(InterfaceBoard::WELCOME_SCREEN);
         else
             // otherwise start with the splash screen.
-            interfaceBoard.pushScreen(&splashScreen);     
+            interfaceBoard.queueScreen(InterfaceBoard::SPLASH_SCREEN);
         
         if(hard_reset)
           _delay_us(3000000);
 
-
         // Finally, set up the interface
-        interface::init(&interfaceBoard, &lcd);
+        interface::init(&interfaceBoard);
 
         interface_update_timeout.start(interfaceBoard.getUpdateRate());
   }
@@ -171,66 +226,49 @@ void Motherboard::reset(bool hard_reset) {
   // do not clear heater fail messages, the user should not be able to soft reboot from heater fail
   if(hard_reset)
   {
-		// Configure the debug pins.
-		DEBUG_PIN.setDirection(true);
-		DEBUG_PIN1.setDirection(true);
-		DEBUG_PIN2.setDirection(true);
-		DEBUG_PIN3.setDirection(true);	
-    DEBUG_PIN4.setDirection(true);
-    DEBUG_PIN5.setDirection(true);
-    DEBUG_PIN6.setDirection(true);
-		
 		RGB_LED::init();
 		
 		Piezo::playTune(TUNE_STARTUP);
 		
 		heatShutdown = false;
 		heatFailMode = HEATER_FAIL_NONE;
-#ifdef MODEL_REPLICATOR
-    cutoff.init();
-#endif
   } 	
   
   board_status = STATUS_NONE;
- 
+  // turn preheat status on during reset to reflect potential remaining heat states.
+  // the flag it will be cleared immediately in the motherboard slice if the temperatures are set to zero.
+  board_status |= STATUS_PREHEATING;
+
 #ifdef MODEL_REPLICATOR2 
-  therm_sensor.init();
-	therm_sensor_timeout.start(THERMOCOUPLE_UPDATE_RATE);
-#else
-  extruder_manage_timeout.start(SAMPLE_INTERVAL_MICROS_THERMOCOUPLE);
-#endif
-  
 	// turn off the active cooling fan
 	setExtra(false);  
+#endif
 
-  // initialize the extruders
-  Extruder_One.reset();
-  Extruder_Two.reset();
-    
-	HBP_HEAT.setDirection(true);
-	platform_thermistor.init();
-	platform_heater.reset();
-    
-  Extruder_One.getExtruderHeater().set_target_temperature(0);
-	Extruder_Two.getExtruderHeater().set_target_temperature(0);
-	platform_heater.set_target_temperature(0);	
-	platform_timeout.start(SAMPLE_INTERVAL_MICROS_THERMISTOR);
-	
 	// disable extruder two if sigle tool machine
 	Extruder_Two.getExtruderHeater().disable(eeprom::isSingleTool());
 	
 	// disable platform heater if no HBP
 	platform_heater.disable(!eeprom::hasHBP());
+
+	user_input_timeout.start(restart_timeout);
 	
 	RGB_LED::setDefaultColor(); 
 	buttonWait = false;	
 	currentTemp = 0;
   setTemp = 0; 
+  div_temp = 0;
   heating_lights_active = false;
   progress_active = false;
   progress_line = 0;
   progress_start_char = 0;
   progress_end_char = 0;
+
+  // pop the splash screen unless we are showing the welcome script
+  if(hasInterfaceBoard){
+    if(eeprom::getEeprom8(eeprom_offsets::FIRST_BOOT_FLAG, 0) != 0)
+       interface::popScreen();  
+  }
+
 }
 
 /// Get the number of microseconds that have passed since
@@ -244,14 +282,40 @@ micros_t Motherboard::getCurrentMicros() {
 }
 
 /// Run the motherboard interrupt
-void Motherboard::doInterrupt() {
+void Motherboard::doStepperInterrupt() {
 
-	//micros += INTERVAL_IN_MICROSECONDS;
-	// Do not move steppers if the board is in a paused state
-	if (command::isPaused()) return;
-	steppers::doInterrupt();
-	
+  //TODO: we have pause implemented here - make sure things stil work
+  //We never ignore interrupts on pause, because when paused, we might 
+  //extrude filament to change it or fix jams
+
+  if(command::isPaused()) return;
+
+  DISABLE_TIMER_INTERRUPTS;
+  sei();
+  
+  steppers::doStepperInterrupt();
+  
+  cli();
+  ENABLE_TIMER_INTERRUPTS;
+ 
+#ifdef ANTI_CLUNK_PROTECTION
+  //Because it's possible another stepper interrupt became due whilst
+  //we were processing the last interrupt, and had stepper interrupts
+  //disabled, we compare the counter to the requested interrupt time
+  //to see if it overflowed.  If it did, then we reset the counter, and
+  //schedule another interrupt for very shortly into the future.
+  if ( TCNT5 >= OCR5A ) {
+
+      OCR5A = 0x01;   //We set the next interrupt to 1 interval, because this will cause the interrupt to  fire again
+              //on the next chance it has after exiting this interrupt, i.e. it gets queued.
+
+      TCNT5 = 0;  //Reset the timer counter
+
+      //debug_onscreen1 ++;
+  }
+#endif
 }
+
 bool connectionsErrorTriggered = false;
 void Motherboard::heaterFail(HeaterFailMode mode){
 
@@ -316,13 +380,17 @@ bool Motherboard::isHeating(){
 void Motherboard::HeatingAlerts(){
     
     setTemp = 0;
+    div_temp = 0;
     currentTemp = 0;
+    int16_t top_temp = 0;
     
     /// show heating progress
+    // TODO: top temp should use preheat temps stored in eeprom instead of a hard coded value
     if(isHeating()){
         if(getPlatformHeater().isHeating()){
             currentTemp += getPlatformHeater().getDelta()*2;
             setTemp += (int16_t)(getPlatformHeater().get_set_temperature())*2;
+            top_temp += 230;
         }else{
           /// clear extruder paused states if needed
           if(getExtruderBoard(0).getExtruderHeater().isPaused()){getExtruderBoard(0).getExtruderHeater().Pause(false);}
@@ -331,13 +399,21 @@ void Motherboard::HeatingAlerts(){
         if(getExtruderBoard(0).getExtruderHeater().isHeating()  && !getExtruderBoard(0).getExtruderHeater().isPaused()){
             currentTemp += getExtruderBoard(0).getExtruderHeater().getDelta();
             setTemp += (int16_t)(getExtruderBoard(0).getExtruderHeater().get_set_temperature());
+            top_temp += 230;
         }
         if(getExtruderBoard(1).getExtruderHeater().isHeating() && !getExtruderBoard(1).getExtruderHeater().isPaused()){
             currentTemp += getExtruderBoard(1).getExtruderHeater().getDelta();
             setTemp += (int16_t)(getExtruderBoard(1).getExtruderHeater().get_set_temperature());
+            top_temp += 110;
         }
+
+      if(setTemp < currentTemp){
+        {  div_temp = (top_temp - setTemp);}
+      } else {
+        div_temp = setTemp;
+      }
              
-		if((setTemp != 0) && eeprom::getEeprom8(eeprom_offsets::LED_STRIP_SETTINGS + blink_eeprom_offsets::LED_HEAT_ON, 1)
+		if((div_temp != 0) && eeprom::getEeprom8(eeprom_offsets::LED_STRIP_SETTINGS + blink_eeprom_offsets::LED_HEAT_ON, 1)
           && (eeprom::getEeprom8(eeprom_offsets::LED_STRIP_SETTINGS, LED_DEFAULT_OFF) != LED_DEFAULT_OFF)){
 			int32_t mult = 255;
 			if(!heating_lights_active){
@@ -346,7 +422,7 @@ void Motherboard::HeatingAlerts(){
 #endif
 				heating_lights_active = true;
 			}
-			RGB_LED::setColor((mult*(setTemp - currentTemp))/setTemp, 0, (mult*currentTemp)/setTemp, false);
+			RGB_LED::setColor((mult*abs((setTemp - currentTemp)))/div_temp, 0, (mult*currentTemp)/div_temp, false);
 		}
 	}else{
 		if(heating_lights_active){
@@ -366,6 +442,7 @@ void Motherboard::StartProgressBar(uint8_t line, uint8_t start_char, uint8_t end
 	progress_end_char = end_char;
 	progress_last_index = 0;
 }
+
 void Motherboard::StopProgressBar(){
 
 	progress_active = false;
@@ -384,8 +461,8 @@ uint8_t Motherboard::HeatProgressBar(uint8_t line, uint8_t start_char, uint8_t e
 		return 0;
 	}
 		
-	if(setTemp > 0){
-		heatIndex = (abs((setTemp - currentTemp)) * (end_char - start_char)) / setTemp;		
+	if(div_temp > 0){
+		heatIndex = (abs((setTemp - currentTemp)) * (end_char - start_char)) / div_temp;		
 	}
 	if (lastHeatIndex > heatIndex){
 		lcd.setCursor(start_char,line);
@@ -457,16 +534,16 @@ void Motherboard::runMotherboardSlice() {
     // don't do this if a heat failure has occured ( in this case heaters are already shutdown and separate error messaging used)
 	if(user_input_timeout.hasElapsed() && !heatShutdown && (host::getHostState() != host::HOST_STATE_BUILDING_FROM_SD) && (host::getHostState() != host::HOST_STATE_BUILDING))
 	{
-        // clear timeout
-		user_input_timeout.clear();
 		
 		board_status |= STATUS_HEAT_INACTIVE_SHUTDOWN;
 		board_status &= ~STATUS_PREHEATING;
 		
 		// alert user if heaters are not already set to 0
-		if((Extruder_One.getExtruderHeater().get_set_temperature() > 0) ||
+    // we do not want to display the warning if heaters are reset due to a restart and the restart_timeout is set to 0
+  	if(((Extruder_One.getExtruderHeater().get_set_temperature() > 0) ||
 			(Extruder_Two.getExtruderHeater().get_set_temperature() > 0) ||
-			(platform_heater.get_set_temperature() > 0)){
+			(platform_heater.get_set_temperature() > 0)) &&
+       !((restart_timeout == ONE_SECOND) && user_input_timeout.getCurrentElapsed() < USER_INPUT_TIMEOUT)) {
 				interfaceBoard.errorMessage(HEATER_INACTIVITY_MSG);//37
 				startButtonWait();
                 // turn LEDs blue
@@ -476,9 +553,12 @@ void Motherboard::runMotherboardSlice() {
 		Extruder_One.getExtruderHeater().set_target_temperature(0);
 		Extruder_Two.getExtruderHeater().set_target_temperature(0);
 		platform_heater.set_target_temperature(0);
+
+    // clear timeout
+    user_input_timeout.clear();
 	}
-	
-    // respond to heatshutdown.  response only needs to be called once
+
+  // respond to heatshutdown.  response only needs to be called once
 	if(heatShutdown && !triggered && !Piezo::isPlaying())
 	{
     triggered = true;
@@ -526,7 +606,7 @@ void Motherboard::runMotherboardSlice() {
 		// disable command processing and steppers
 		host::heatShutdown();
 		command::heatShutdown();
-		planner::abort();
+		steppers::abort();
     for(int i = 0; i < STEPPER_COUNT; i++)
 			steppers::enableAxis(i, false);
 	}
@@ -570,17 +650,18 @@ void Motherboard::resetUserInputTimeout(){
 	user_input_timeout.start(USER_INPUT_TIMEOUT);
 }
 
-#define MICROS_INTERVAL 128
+//Frequency of Timer 2
+//100 = (1.0 / ( 16MHz / 64 / 25 = 10KHz)) * 1000000
+#define MICROS_INTERVAL 100
 
 void Motherboard::UpdateMicros(){
 	micros += MICROS_INTERVAL;//_IN_MICROSECONDS;
 
 }
 
-
 /// Timer three comparator match interrupt
 ISR(TIMER5_COMPA_vect) {
-	Motherboard::getBoard().doInterrupt();
+	Motherboard::getBoard().doStepperInterrupt();
 }
 
 
@@ -622,10 +703,12 @@ void Motherboard::interfaceBlink(int on_time, int off_time){
 	
 	if(off_time == 0){
 		interface_blink_state = BLINK_NONE;
-		interface::setLEDs(true);
+		INTERFACE_LED_ONE.setValue(true);
+    INTERFACE_LED_TWO.setValue(true);
 	}else if(on_time == 0){
 		interface_blink_state = BLINK_NONE;
-		interface::setLEDs(false);
+		INTERFACE_LED_ONE.setValue(false);
+    INTERFACE_LED_TWO.setValue(false);
 	} else{
 		interface_on_time = on_time;
 		interface_off_time = off_time;
@@ -653,14 +736,20 @@ int blinked_so_far = 0;
 /// Number of overflows remaining on the current overflow blink cycle
 int interface_ovfs_remaining = 0;
 
-uint16_t blink_overflow_counter = 0;
+uint8_t blink_overflow_counter = 0;
+
+volatile micros_t m2;
 
 /// Timer 2 overflow interrupt
 ISR(TIMER2_COMPA_vect) {
 	
 	Motherboard::getBoard().UpdateMicros();
+
+#ifdef JKN_ADVANCE
+  steppers::doExtruderInterrupt();
+#endif
 	
-	if(blink_overflow_counter++ <= 0x080)
+	if(blink_overflow_counter++ <= 0xA4)
 			return;
 	
 	blink_overflow_counter = 0;
@@ -697,16 +786,16 @@ ISR(TIMER2_COMPA_vect) {
 		if (interface_blink_state == BLINK_ON) {
 			interface_blink_state = BLINK_OFF;
 			interface_ovfs_remaining = interface_on_time;
-			interface::setLEDs(true);
+      INTERFACE_LED_ONE.setValue(true);
+      INTERFACE_LED_TWO.setValue(true);
 		} else if (interface_blink_state == BLINK_OFF) {
 			interface_blink_state = BLINK_ON;
 			interface_ovfs_remaining = interface_off_time;
-			interface::setLEDs(false);
+      INTERFACE_LED_ONE.setValue(false);
+      INTERFACE_LED_TWO.setValue(false);
 		} 
 	} 
-
 }
-
 
 void Motherboard::setUsingPlatform(bool is_using) {
   using_platform = is_using;
@@ -714,10 +803,9 @@ void Motherboard::setUsingPlatform(bool is_using) {
 
 void Motherboard::setExtra(bool on) {
   	ATOMIC_BLOCK(ATOMIC_RESTORESTATE) {
-      //setUsingPlatform(false);
-      //pwmHBP_On(false);
-      EX_FAN.setDirection(true);
-      EX_FAN.setValue(on);
+    //setUsingPlatform(false);
+    EX_FAN.setDirection(true);
+    EX_FAN.setValue(on);
 	}
 }
 

@@ -1,5 +1,11 @@
 # Firmware Changes Log
 
+## Firmware 6.1 changes
+* Toolhead offsets are stored entirely on the bot, removing the need for G54, G55, G10 codes.  This means that T0 has offset of 0, and T1 has offset of {33mm+/-, 0, 0} on the replicator 1 or 2X
+* All eeprom values formerly stored in steps are now store in mm - this is to facilitate changing of the steps_per_mm values
+* Acceleration complete rewrite.  We now use Jetty Acceleration
+* EEPROM fields renamed to not use OFFSET in the titles.  These are confusing in json parsing.
+
 ## Firmware 5.6 changes
 * New menu added for changing settings while printing. 
 * Print time now recorded while printing.  Queryable by PC host.  Also visible on the onboard UI
@@ -10,7 +16,7 @@
 
 ## Firmware 5.5 changes
 
-* M6 wait issue : bot handles heating the platform.  This fixes the intermittent issue we've seen where the bot stalls after the platform heats up.
+* M6 wait issue : bot handles heating the platform.  This fixes the intermittent issue where the bot stalls after the platform heats up.
 * Axis Home Offsets changed : Single Extruder offsets are now: X: 152, Y: 72.  Dual extruder offsets are now: X: 152, Y: 75.   The offset refers to the distance from the center of the right nozzle.  Previous firmware used the middle point between the two nozzles as the reference point for the Dual Extruder machines.  
 * Heating error sometimes causes prints to fail during long prints - changed fail counter so that it cannot overflow if there are a few bad reads over a long period of time
 * Changed plate leveling script to front-back-left-right-center, changed text to say "tighten four or five times" instead of "tighten all the way"
