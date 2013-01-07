@@ -350,7 +350,11 @@ void storeToolheadToleranceDefaults(){
 	
  ATOMIC_BLOCK(ATOMIC_RESTORESTATE){ 
 	// assume t0 to t1 distance is in specifications (0 steps tolerance error)
-	uint32_t offsets[3] = {33L*1000,0,0};
+#ifdef MODEL_REPLICATOR
+  uint32_t offsets[3] = {33L*1000,0,0};
+#else
+  uint32_t offsets[3] = {35L*1000,0,0};
+#endif
 	eeprom_write_block((uint8_t*)&(offsets[0]),(uint8_t*)(eeprom_offsets::TOOLHEAD_OFFSET_SETTINGS_MM), 12 );
 }
 	
