@@ -376,7 +376,7 @@ All temperature were taken with a Fluke Type k Thermocouple.  Temperatures were 
 </tr>    
 <tr>
     <td>127</td>
-    <td>x122.8</td>
+    <td>122.8</td>
     <td>125.2</td>
     <td>108.7</td>
 </tr>    
