@@ -306,7 +306,7 @@ All temperature were taken with a Fluke Type k Thermocouple.  Temperatures were 
     <th>Target Temp</th>
     <th>Next To Thermistor (Fluke)</th>
     <th>Middle of bed bottom (Chan 0)</th>
-    <th>Middle of bed tom (Chan 1)</th>
+    <th>Middle of bed top (Chan 1)</th>
 </tr>
 <tr>
     <td>34</td>
