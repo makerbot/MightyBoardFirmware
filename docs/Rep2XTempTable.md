@@ -1,4 +1,5 @@
 # Temperature Table for recording Temperatures for the Rep2X's Thermistor
+Because different thermistor tables have been used to ascertain these readings, they can only be used to find relative differences between thermocouple locations. 
 
 ## Table:
 All temperature were taken with a Fluke Type k Thermocouple.  Temperatures were set with RepG, and given ~2 minutes to settle.  In the event of a constant oscillating temperature, the average was recorded.  Temperatures above 70°C tended to oscillate more than temperatures below.
