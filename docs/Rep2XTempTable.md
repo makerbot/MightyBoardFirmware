@@ -299,3 +299,91 @@ All temperature were taken with a Fluke Type k Thermocouple.  Temperatures were 
     <td>130</td>
 </tr>
 </table>
+
+## Multiple Thermocouple Data
+<table>
+<tr>
+    <th>Target Temp</th>
+    <th>Next To Thermistor (Fluke)</th>
+    <th>Middle of bed bottom (Chan 0)</th>
+    <th>Middle of bed tom (Chan 1)</th>
+</tr>
+<tr>
+    <td>34</td>
+    <td>34</td>
+    <td>32.8</td>
+    <td>32.2</td>
+</tr>
+<tr>
+    <td>48</td>
+    <td>47.8</td>
+    <td>47.9</td>
+    <td>45.6</td>
+</tr>
+<tr>
+    <td>58</td>
+    <td>58.2</td>
+    <td>58.5</td>
+    <td>54.7</td>
+</tr
+<tr>
+    <td>66</td>
+    <td>66.8</td>
+    <td>67.4</td>
+    <td>62.0</td>
+</tr>    
+<tr>
+    <td>74</td>
+    <td>74.6</td>
+    <td>75.2</td>
+    <td>68.7</td>
+</tr>
+<tr>
+    <td>81</td>
+    <td>81.6</td>
+    <td>82.6</td>
+    <td>74.8</td>
+</tr>    
+<tr>
+    <td>88</td>
+    <td>88.3</td>
+    <td>89.5</td>
+    <td>80.3</td>
+</tr>    
+<tr>
+    <td>94</td>
+    <td>94.8</td>
+    <td>96.0</td>
+    <td>85.7</td>
+</tr>    
+<tr>
+    <td>104</td>
+    <td>101.7</td>
+    <td>103.2</td>
+    <td>91.6</td>
+</tr>    
+<tr>
+    <td>112</td>
+    <td>108.4</td>
+    <td>110.0</td>
+    <td>97.0</td>
+</tr>    
+<tr>
+    <td>119</td>
+    <td>115.4</td>
+    <td>117.2</td>
+    <td>102.0</td>
+</tr>    
+<tr>
+    <td>127</td>
+    <td>x122.8</td>
+    <td>125.2</td>
+    <td>108.7</td>
+</tr>    
+<tr>
+    <td>135</td>
+    <td>131.2</td>
+    <td>134.3</td>
+    <td>115.7</td>
+</tr>    
+</table>
