@@ -392,3 +392,78 @@ All temperature were taken with a Fluke Type k Thermocouple.  Temperatures were 
     <td>144.3</td>
     <td>123.7</td>
 </table>
+
+<table>
+<tr>
+    <th>Target Temp</th>
+    <th>Left (Fluke)</th>
+    <th>Middle (Chan 0)</th>
+    <th>Right (Chan 1)</th>
+</tr>
+<tr>
+    <td>30</td>
+    <td>31.4</td>
+    <td>30.6</td>
+    <td>30.9</td>
+</tr>
+<tr>
+    <td>40</td>
+    <td>40.2</td>
+    <td>39.7</td>
+    <td>40.6</td>
+</tr>
+<tr>
+    <td>50</td>
+    <td>49.1</td>
+    <td>48.5</td>
+    <td>50.5</td>
+</tr>
+<tr>
+    <td>60</td>
+    <td>59.4</td>
+    <td>58.7</td>
+    <td>61.9</td>
+</tr>
+<tr>
+    <td>70</td>
+    <td>68.9</td>
+    <td>68.4</td>
+    <td>72.1</td>
+</tr>
+<tr>
+    <td>80</td>
+    <td>78.8</td>
+    <td>79.0</td>
+    <td>83.1</td>
+</tr>
+<tr>
+    <td>90</td>
+    <td>86.7</td>
+    <td>87.0</td>
+    <td>91.6</td>
+</tr>
+<tr>
+    <td>100</td>
+    <td>97.0</td>
+    <td>96.6</td>
+    <td>103.1</td>
+</tr>
+<tr>
+    <td>110</td>
+    <td>106.2</td>
+    <td>108.1</td>
+    <td>113.7</td>
+</tr>
+<tr>
+    <td>120</td>
+    <td>115</td>
+    <td>116.0</td>
+    <td>123.1</td>
+</tr>
+<tr>
+    <td>130</td>
+    <td>120.9</td>
+    <td>122.4</td>
+    <td>129.4</td>
+</tr>
+</table>
