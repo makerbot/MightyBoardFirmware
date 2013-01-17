@@ -105,7 +105,7 @@ void Heater::reset() {
 	pid.setTarget(0);
 	next_pid_timeout.start(UPDATE_INTERVAL_MICROS);
 	//next_sense_timeout.start(sample_interval_micros);
-  calibration_offset = eeprom::getEeprom8(eeprom_offsets::HEATER_CALIBRATION + calibration_eeprom_offset, 0);
+  calibration_offset = (int8_t)eeprom::getEeprom8(eeprom_offsets::HEATER_CALIBRATION + calibration_eeprom_offset, 0);
 }
 
 void Heater::abort() {
@@ -136,7 +136,7 @@ void Heater::abort() {
 	pid.setTarget(0);
 	next_pid_timeout.start(UPDATE_INTERVAL_MICROS);
 	//next_sense_timeout.start(sample_interval_micros);
-  calibration_offset = eeprom::getEeprom8(eeprom_offsets::HEATER_CALIBRATION + calibration_eeprom_offset, 0);
+  calibration_offset = (int8_t)eeprom::getEeprom8(eeprom_offsets::HEATER_CALIBRATION + calibration_eeprom_offset, 0);
 }
 
 void Heater::disable(bool on){

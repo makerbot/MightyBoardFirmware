@@ -546,6 +546,27 @@ protected:
     void handleCounterUpdate(uint8_t index, bool up);
 };
 
+class HeatCalibrateMenu: public Menu {
+public:
+	HeatCalibrateMenu();
+	
+	micros_t getUpdateRate() {return 50L * 1000L;}
+    
+protected:
+    int8_t counterRight;
+    int8_t counterLeft;
+    int8_t counterPlatform;
+    bool singleTool;
+    
+    void resetState();
+    
+	void drawItem(uint8_t index, LiquidCrystalSerial& lcd, uint8_t line_number);
+    
+	void handleSelect(uint8_t index);
+    
+    void handleCounterUpdate(uint8_t index, bool up);
+};
+
 class ResetSettingsMenu: public Menu {
 public:
 	ResetSettingsMenu();

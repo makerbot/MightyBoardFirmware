@@ -67,7 +67,7 @@ static PROGMEM unsigned char BUTTONS1_MSG[] =   "A blinking 'M' means" "I'm wait
 static PROGMEM unsigned char BUTTONS2_MSG[] =   "A solid 'M' means   " "I'm working and will" "update my status    " "when I'm finished...";
 static PROGMEM unsigned char EXPLAIN_MSG[] =    "Our next steps will " "get me set up!      " "First, we'll restore" "my build platform...";                                  
 static PROGMEM unsigned char LEVEL_MSG[] =      "so it's nice and    " "level. It's probably" "a bit off from      " "shipping...         ";
-static PROGMEM unsigned char BETTER_MSG[] =     "Aaah, that feels    " "much better.        " "Let's go on and load" "some plastic!       ";
+static PROGMEM unsigned char BETTER_MSG[] =     "Aaah, that feels    " "much better.        " "Let's go on and load" "some filament!      ";
 static PROGMEM unsigned char TRYAGAIN_MSG[] =   "We'll try again!    " "                    " "                    " "                    ";
 static PROGMEM unsigned char GO_ON_MSG[]   =    "We'll keep going    " "and load some       " "plastic! For help go" "to makerbot.com/help";     
 static PROGMEM unsigned char SD_MENU_MSG[] =    "Awesome!            " "We'll go to the SD  " "card menu and you   " "can select a model! ";
@@ -166,8 +166,8 @@ static PROGMEM unsigned char EXTRUDER2_TEMP_MSG[] =   "L Extruder: ---/---C";
 static PROGMEM unsigned char PLATFORM_TEMP_MSG[]  =   "Platform:   ---/---C";
 static PROGMEM unsigned char EXTRUDER_TEMP_MSG[]  =   "Extruder:   ---/---C";
 
-
 static PROGMEM unsigned char PREHEAT_SET_MSG[] =  " Preheat Settings   ";
+static PROGMEM unsigned char HEAT_CAL_TITLE_MSG[] =  " Heat Calibration:  ";
 static PROGMEM unsigned char RIGHT_SPACES_MSG[] = "Right Tool          ";    // XXX old name: right[]
 static PROGMEM unsigned char LEFT_SPACES_MSG[]   = "Left Tool           ";   // XXX old name: left[]
 static PROGMEM unsigned char PLATFORM_SPACES_MSG[]  = "Platform        ";    // XXX old name: platform[]
@@ -202,6 +202,7 @@ static PROGMEM unsigned char PLATE_LEVEL_MSG[] =      "Level Build Plate  ";
 static PROGMEM unsigned char LED_BLINK_MSG[] =        "Blink LEDs         ";
 static PROGMEM unsigned char LED_STOP_MSG[] =         "Stop Blinking!     ";
 static PROGMEM unsigned char PREHEAT_SETTINGS_MSG[] = "Preheat Settings   ";
+static PROGMEM unsigned char HEAT_CALIBRATE_MSG[] =   "Heater Calibration ";
 static PROGMEM unsigned char SETTINGS_MSG[] =         "General Settings   ";
 static PROGMEM unsigned char RESET_MSG[] =            "Restore Defaults   ";
 static PROGMEM unsigned char NOZZLES_MSG[] =          "Calibrate Nozzles  ";

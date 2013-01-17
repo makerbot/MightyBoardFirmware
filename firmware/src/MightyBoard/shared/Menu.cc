@@ -44,6 +44,7 @@ UtilitiesMenu utils;
 SelectAlignmentMenu align;
 FilamentOKMenu filamentOK;
 InfoMenu info;
+HeatCalibrateMenu heat_calibrate;
 
 #pragma GCC diagnostic ignored "-Wswitch"
 
@@ -2001,6 +2002,199 @@ void Menu::notifyButtonPressed(ButtonArray::ButtonName button) {
   }
 }
 
+HeatCalibrateMenu::HeatCalibrateMenu() {
+  itemCount = 4;
+  reset();
+  counter_item[0] = 0;
+    for (uint8_t i = 1; i < itemCount; i++){
+    counter_item[i] = 1;
+  }
+}   
+void HeatCalibrateMenu::resetState(){
+  
+  singleTool = eeprom::isSingleTool();
+   
+  if(singleTool){
+    itemIndex = 2;
+    firstItemIndex = 2;
+  }else{
+    itemIndex = 1;
+    firstItemIndex = 1;
+  }
+  if(eeprom::hasHBP()){
+    itemCount = 4;
+  }else{
+    itemCount = 3;
+  }
+    
+  counterRight = eeprom::getEeprom8(eeprom_offsets::HEATER_CALIBRATION + 0, 0);
+  counterLeft = eeprom::getEeprom8(eeprom_offsets::HEATER_CALIBRATION + 1, 0);
+  counterPlatform = eeprom::getEeprom8(eeprom_offsets::HEATER_CALIBRATION + 2, 0);
+    
+}
+
+void HeatCalibrateMenu::drawItem(uint8_t index, LiquidCrystalSerial& lcd, uint8_t line_number) {
+    
+  switch (index) {
+        case 0:
+            lcd.writeFromPgmspace(HEAT_CAL_TITLE_MSG);
+            break;
+        case 1:
+            if(!singleTool){
+                lcd.writeFromPgmspace(RIGHT_SPACES_MSG);
+                if(selectIndex == 1){
+                    lcd.setCursor(14,line_number);
+                    lcd.writeFromPgmspace(ARROW_MSG);
+                }
+                lcd.setCursor(17,line_number);
+                if (counterRight < 0){
+                   lcd.write('-');
+                   lcd.setCursor(18,line_number);
+                   lcd.writeInt(256 - (uint8_t)(counterRight), 2);
+                }else{
+                   lcd.write(' ');
+                   lcd.setCursor(18,line_number);
+                   lcd.writeInt(counterRight,2);
+                }
+            }
+            break;
+        case 2:
+            if(singleTool){
+                lcd.writeFromPgmspace(RIGHT_SPACES_MSG);
+                lcd.setCursor(17, line_number);
+                if (counterRight < 0){
+                   lcd.write('-');
+                   lcd.setCursor(18,line_number);
+                   lcd.writeInt(256 - (uint8_t)(counterRight), 2);
+                }else{
+                   lcd.write(' ');
+                   lcd.setCursor(18,line_number);
+                   lcd.writeInt(counterRight,2);
+                }
+            }else{
+                lcd.writeFromPgmspace(LEFT_SPACES_MSG);
+                lcd.setCursor(17,line_number);
+                if (counterLeft < 0){
+                   lcd.write('-');
+                   lcd.setCursor(18,line_number);
+                   lcd.writeInt(256 - (uint8_t)(counterLeft), 2);
+                }else{
+                   lcd.write(' ');
+                   lcd.setCursor(18,line_number);
+                   lcd.writeInt(counterLeft,2);
+                }
+            }
+            if(selectIndex == 2){
+                lcd.setCursor(14,line_number);
+                lcd.writeFromPgmspace(ARROW_MSG);
+            }
+            break;
+         case 3:
+            lcd.writeFromPgmspace(PLATFORM_SPACES_MSG);
+            if(selectIndex == 3){
+                lcd.setCursor(14,line_number);
+                lcd.writeFromPgmspace(ARROW_MSG);
+            }
+            lcd.setCursor(17,line_number);
+            if (counterPlatform < 0){
+               lcd.write('-');
+               lcd.setCursor(18,line_number);
+               lcd.writeInt(256 - (uint8_t)(counterPlatform), 2);
+            }else{
+               lcd.write(' ');
+               lcd.setCursor(18,line_number);
+               lcd.writeInt(counterPlatform,2);
+            }
+            break;
+            
+  }
+}
+void HeatCalibrateMenu::handleCounterUpdate(uint8_t index, bool up){
+    switch (index) {
+        case 1:
+            // update right counter
+            if(up)
+                counterRight++;
+            else
+                counterRight--;
+            if(counterRight > 30){
+                counterRight = 30;
+            } if(counterRight < -30){
+              counterRight = -30;
+            }
+            break;
+        case 2:
+            if(singleTool){
+                // update right counter
+                if(up)
+                    counterRight++;
+                else
+                    counterRight--;
+                if(counterRight > 30){
+                    counterRight = 30; 
+                }if(counterRight < -30){
+                  counterRight = -30;
+                } 
+            }else{
+                // update left counter
+                if(up)
+                    counterLeft++;
+                else
+                    counterLeft--;
+                if(counterLeft > 30){
+                    counterLeft = 30;
+                }if(counterLeft < -30){
+                  counterLeft = -30;
+                }
+            }
+            break;
+        case 3:
+            // update platform counter
+            if(up)
+                counterPlatform++;
+            else
+                counterPlatform--;
+            if(counterPlatform > 30){
+                counterPlatform = 30;
+            } if(counterPlatform < -30){
+                counterPlatform = -30;
+            }
+            break;
+  }
+    
+}
+
+void HeatCalibrateMenu::handleSelect(uint8_t index) {
+  switch (index) {
+        case 1:
+            // store right tool setting
+            ATOMIC_BLOCK(ATOMIC_RESTORESTATE){
+              eeprom_write_byte((uint8_t*)(eeprom_offsets::HEATER_CALIBRATION + 0), (uint8_t)counterRight);
+            }
+            break;
+        case 2:
+            if(singleTool){
+                // store right tool setting
+                ATOMIC_BLOCK(ATOMIC_RESTORESTATE){
+                  eeprom_write_byte((uint8_t*)(eeprom_offsets::HEATER_CALIBRATION + 0), (uint8_t)counterRight);
+                }
+            }else{
+                // store left tool setting
+                ATOMIC_BLOCK(ATOMIC_RESTORESTATE){
+                  eeprom_write_byte((uint8_t*)(eeprom_offsets::HEATER_CALIBRATION + 1), (uint8_t)counterLeft);
+                }
+            }
+            break;
+        case 3:
+            // store platform setting
+            ATOMIC_BLOCK(ATOMIC_RESTORESTATE){
+              eeprom_write_byte((uint8_t*)(eeprom_offsets::HEATER_CALIBRATION + 2), (uint8_t)counterPlatform);
+            }
+            break;
+    }
+}
+
+
 PreheatSettingsMenu::PreheatSettingsMenu() {
   itemCount = 4;
   reset();
@@ -2841,7 +3035,7 @@ void UtilitiesMenu::handleSelect(uint8_t index) {
 
 
 InfoMenu::InfoMenu() {
-  itemCount = 6;
+  itemCount = 7;
   reset();
 }
 
@@ -2867,6 +3061,9 @@ void InfoMenu::drawItem(uint8_t index, LiquidCrystalSerial& lcd, uint8_t line_nu
     lcd.writeFromPgmspace(RESET_MSG);
     break;
   case 5:
+    lcd.writeFromPgmspace(HEAT_CALIBRATE_MSG);
+    break;
+  case 6:
     lcd.writeFromPgmspace(EXIT_MSG);
     break;
   }
@@ -2894,6 +3091,9 @@ void InfoMenu::handleSelect(uint8_t index) {
       interface::pushScreen(&reset_settings);
       break;
     case 5:
+      interface::pushScreen(&heat_calibrate);
+      break;
+    case 6:
       interface::popScreen();
       break;
     }

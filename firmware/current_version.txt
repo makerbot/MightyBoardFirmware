@@ -1,3 +1,5 @@
+7.0.10.1.0
+ * add heater calibration menu item for mech E testing
 7.0.8.1.0
  * fixes issue in ReplicatorG where the bot starts before the extruder reaches temperature
 7.0.7.1.0
