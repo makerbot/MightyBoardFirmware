@@ -414,7 +414,7 @@ void fullResetEEPROM() {
 	eeprom_write_byte((uint8_t*)(eeprom_offsets::TOTAL_BUILD_TIME + build_time_offsets::MINUTES), 0);
 
   // store the botstep type
-	eeprom_write_byte((uint8_t*)(eeprom_offsets::TOTAL_BUILD_TIME), BOTSTEP_16_STEP);
+	eeprom_write_byte((uint8_t*)(eeprom_offsets::BOTSTEP_TYPE), BOTSTEP_16_STEP);
 
   /// store the heater calibration bytes
   eeprom_write_block((uint8_t*)&(heater_calibrate[0]), (uint8_t*)(eeprom_offsets::HEATER_CALIBRATION), 3);
@@ -423,7 +423,6 @@ void fullResetEEPROM() {
  
  }
 }
-
 // we changed the way things are stored in EEPROM.  we need to make sure bots update accordingly
 void eepromResetv7(){
   
@@ -443,7 +442,7 @@ void eepromResetv7(){
     setDefaultAxisHomePositions();
 
     // store the botstep type
-    eeprom_write_byte((uint8_t*)(eeprom_offsets::TOTAL_BUILD_TIME), BOTSTEP_16_STEP);
+    eeprom_write_byte((uint8_t*)(eeprom_offsets::BOTSTEP_TYPE), BOTSTEP_16_STEP);
 
     /// store the heater calibration bytes
     eeprom_write_block((uint8_t*)&(heater_calibrate[0]), (uint8_t*)(eeprom_offsets::HEATER_CALIBRATION), 3);
