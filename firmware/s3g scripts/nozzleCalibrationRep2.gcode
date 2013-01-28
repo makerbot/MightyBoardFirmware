@@ -7,6 +7,15 @@
  
 M136 (enable build)
 M73 P0 (Set initial build percentage)
+
+(*** These lines set the primary extruder. On a single-extruder bot, this ***)
+(*** will always be the right extruder. On a dual-extruder bot it will be  ***)
+(*** the extruder you are printing with. Comment out the extruder not being ***)
+(*** used as the primary extruder. ***)
+M135 T0 (Set the Right extruder as the main Extruder)
+;M135 T1 (Set the Left extruder as the main Extruder)
+
+
 G162 X Y F2000 (home to XY axes maximum)
 G161 Z F900 (home to Z axis minimum)
 G92 X0 Y0 Z-5 A0 B0 (set Z to -5) 
@@ -20,12 +29,7 @@ G92 X152 Y75 Z0 A0 B0 (Replicator Home Position)
 G1 X-112 Y-73 Z150 F3300.0 (Waiting Position)
 G130 X20 Y20 A20 B20 (Lower stepper Vrefs while heating)
 
-(*** These lines set the primary extruder. On a single-extruder bot, this ***)
-(*** will always be the right extruder. On a dual-extruder bot it will be  ***)
-(*** the extruder you are printing with. Comment out the extruder not being ***)
-(*** used as the primary extruder. ***)
-M135 T0 (Set the Right extruder as the main Extruder)
-;M135 T1 (Set the Left extruder as the main Extruder)
+
 
 (*** To enable a heated build platform, remove the ";" at the beginning of these lines ***)
 M109 T0 S110 (Set the platform temp to 110C)
@@ -159,9 +163,10 @@ G1 F798.0
 G1 E92.00
 G1 F743.802
 
+G92 E0
 M135 T1
 M18 A B
-G92 E0
+
 G1 X-70 Y-60 Z0.9 F3300.0
 G1 F798.0
 G1 E0.3
