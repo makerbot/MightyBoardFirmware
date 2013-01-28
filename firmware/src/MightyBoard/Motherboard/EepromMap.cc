@@ -278,6 +278,10 @@ ATOMIC_BLOCK(ATOMIC_RESTORESTATE){
 
   setDefaultsAcceleration();
 
+	// set build time to zero
+	eeprom_write_word((uint16_t*)(eeprom_offsets::TOTAL_BUILD_TIME + build_time_offsets::HOURS), 0);
+	eeprom_write_byte((uint8_t*)(eeprom_offsets::TOTAL_BUILD_TIME + build_time_offsets::MINUTES), 0);
+
   eeprom_write_byte((uint8_t*)eeprom_offsets::FILAMENT_HELP_TEXT_ON, 1);
 
   /// Preheat heater settings
@@ -409,10 +413,6 @@ void fullResetEEPROM() {
 	eeprom_write_byte((uint8_t*)eeprom_offsets::HBP_PRESENT, 0);
 #endif
 	
-	// set build time to zero
-	eeprom_write_word((uint16_t*)(eeprom_offsets::TOTAL_BUILD_TIME + build_time_offsets::HOURS), 0);
-	eeprom_write_byte((uint8_t*)(eeprom_offsets::TOTAL_BUILD_TIME + build_time_offsets::MINUTES), 0);
-
   // store the botstep type
 	eeprom_write_byte((uint8_t*)(eeprom_offsets::BOTSTEP_TYPE), BOTSTEP_16_STEP);
 

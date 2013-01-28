@@ -31,11 +31,13 @@ static PROGMEM unsigned char BLANKLINE_MSG[] =  "                ";
 #else // Use US ENGLISH as default
 
 #ifdef MODEL_REPLICATOR
-static PROGMEM unsigned char SPLASH1_MSG[] = "  The Replicator    ";
-static PROGMEM unsigned char SPLASH2_MSG[] = "    ----------      ";
+static PROGMEM unsigned char SPLASH1_SINGLE_MSG[] = "  The Replicator    ";
+static PROGMEM unsigned char SPLASH1_DUAL_MSG[] =   "  The Replicator    ";
+static PROGMEM unsigned char SPLASH2_MSG[] =        "    ----------      ";
 #elif MODEL_REPLICATOR2
-static PROGMEM unsigned char SPLASH1_MSG[] = "   Replicator 2     ";
-static PROGMEM unsigned char SPLASH2_MSG[] = "  --------------    ";
+static PROGMEM unsigned char SPLASH1_SINGLE_MSG[] = " The Replicator 2   ";
+static PROGMEM unsigned char SPLASH1_DUAL_MSG[] =   " The Replicator 2X  ";
+static PROGMEM unsigned char SPLASH2_MSG[] =        "  --------------    ";
 #else
 static PROGMEM unsigned char SPLASH1_MSG[] = "     Makerbot       ";
 static PROGMEM unsigned char SPLASH2_MSG[] = "    ----------      ";
@@ -59,9 +61,11 @@ static PROGMEM unsigned char PLATFORM_MSG[] =   "Platform";
 static PROGMEM unsigned char TOOL_MSG[] =       "Extruder";
 
 #ifdef MODEL_REPLICATOR2
-static PROGMEM unsigned char START_MSG[] =      "Welcome!            " "I'm Replicator 2.   " "Press the red M to  " "get started!        ";
+static PROGMEM unsigned char START_MSG[] =      "Welcome! I'm        " "The Replicator 2.   " "Press the red M to  " "get started!        ";
+static PROGMEM unsigned char START_DUAL_MSG[] = "Welcome! I'm        " "The Replicator 2X.  " "Press the red M to  " "get started!        ";
 #else
-static PROGMEM unsigned char START_MSG[] =      "Welcome!            " "I'm the Replicator. " "Press the red M to  " "get started!        ";
+static PROGMEM unsigned char START_MSG[] =      "Welcome!            " "I'm The Replicator. " "Press the red M to  " "get started!        ";
+static PROGMEM unsigned char START_DUAL_MSG[] = "Welcome!            " "I'm The Replicator. " "Press the red M to  " "get started!        ";
 #endif
 static PROGMEM unsigned char BUTTONS1_MSG[] =   "A blinking 'M' means" "I'm waiting and will" "continue when you   " "press the button... ";
 static PROGMEM unsigned char BUTTONS2_MSG[] =   "A solid 'M' means   " "I'm working and will" "update my status    " "when I'm finished...";
@@ -69,7 +73,7 @@ static PROGMEM unsigned char EXPLAIN_MSG[] =    "Our next steps will " "get me s
 static PROGMEM unsigned char LEVEL_MSG[] =      "so it's nice and    " "level. It's probably" "a bit off from      " "shipping...         ";
 static PROGMEM unsigned char BETTER_MSG[] =     "Aaah, that feels    " "much better.        " "Let's go on and load" "some filament!      ";
 static PROGMEM unsigned char TRYAGAIN_MSG[] =   "We'll try again!    " "                    " "                    " "                    ";
-static PROGMEM unsigned char GO_ON_MSG[]   =    "We'll keep going    " "and load some       " "plastic! For help go" "to makerbot.com/help";     
+static PROGMEM unsigned char GO_ON_MSG[]   =    "We'll keep going    " "and load some       " "filament,For help go" "to makerbot.com/help";     
 static PROGMEM unsigned char SD_MENU_MSG[] =    "Awesome!            " "We'll go to the SD  " "card menu and you   " "can select a model! ";
 static PROGMEM unsigned char FAIL_MSG[] =       "We'll go to the main" "menu. If you need   " "help go to:         " "makerbot.com/help   ";
 static PROGMEM unsigned char START_TEST_MSG[]=  "I'm going to make   " "a series of lines so" "we can find my      " "nozzle alignment.   "; // XXX old name: start[]
@@ -104,16 +108,18 @@ static PROGMEM unsigned char EXPLAIN_TWO_S_MSG[]= "guide tube out.  Now" "feed f
 
 static PROGMEM unsigned char HEATING_BAR_MSG[] = "Please wait while I " "heat my extruder!   " "                    " "                    ";
 static PROGMEM unsigned char HEATING_PROG_MSG[]= "Heating Progress:   " "                    " "                    " "                    ";
-static PROGMEM unsigned char READY_SS_MSG[]    = "OK I'm ready!       " "Push the filament   " "down through...     " "                    ";
+static PROGMEM unsigned char READY_SS_MSG[]    = "OK I'm ready!       " "Push the filament   " "through...          " "                    ";
 static PROGMEM unsigned char READY_RIGHT_MSG[] = "OK I'm ready!       " "First we'll load the" "right extruder.     " "Push filament in... ";
 static PROGMEM unsigned char READY_LEFT_MSG[]  = "Great! Now we'll    " "load the left       " "extruder. Push      " "filament through... ";
-static PROGMEM unsigned char READY_SINGLE_MSG[]= "I'm ready! Pull the " "guide tube off and  " "push the filament   " "in until you feel...";
+static PROGMEM unsigned char READY_SINGLE_MSG[]= "I'm ready! Pull the " "guide tube off and  " "push the filament   " "through...          ";
 #ifdef MODEL_REPLICATOR2
-static PROGMEM unsigned char READY_REV_MSG[]   = "I'm ready! Detach   " "the guide tube, open" "the lever arm and   " "pull filament free. ";
+static PROGMEM unsigned char READY_REV_MSG[]   = "I'm ready! Pull the " "guide tube off and  " "pull the filament   " "gently...           ";
+static PROGMEM unsigned char READY_REV_DUAL_MSG[]   = "I'm ready! Detach   " "the guide tube, open" "the lever arm and   " "pull filament free. ";
 #else
 static PROGMEM unsigned char READY_REV_MSG[]   = "I'm ready! Pull the " "guide tube off and  " "pull the filament   " "gently...           ";
+static PROGMEM unsigned char READY_REV_DUAL_MSG[]   = "I'm ready! Pull the " "guide tube off and  " "pull the filament   " "gently...           ";
 #endif
-static PROGMEM unsigned char TUG_MSG[]         = "the motor tug it in." "Push for a few more " "seconds, then wait. " "                    ";
+static PROGMEM unsigned char TUG_MSG[]         = "until you feel the  " "motor tug it in.    " "Push for a few more " "seconds, then wait. ";
 static PROGMEM unsigned char STOP_MSG_MSG[]    = "When filament is    " "being extruded from " "the nozzle, Press M " "to stop extruding.  ";  // XXX old name: stop[]
 static PROGMEM unsigned char STOP_EXIT_MSG[]   = "When filament is    " "being extruded from " "the nozzle,         " "Press 'M' to exit.  "; 
 
@@ -131,7 +137,7 @@ static PROGMEM unsigned char HEIGHT_CHK_MSG[] = "height check out?";     // XXX 
 static PROGMEM unsigned char HEIGHT_GOOD_MSG[]= "My height is good!";   // XXX old name: yes[]
 static PROGMEM unsigned char TRY_AGAIN_MSG[]  = "Let's try again.";       // XXX old name: no[]
 
-static PROGMEM unsigned char QONE_MSG[] =       "Did plastic extrude ";
+static PROGMEM unsigned char QONE_MSG[] =       "Did filament extrude";
 static PROGMEM unsigned char QTWO_MSG[] =       "from the nozzle?";
 static PROGMEM unsigned char LOAD_RIGHT_MSG[] = "Load right"; 
 static PROGMEM unsigned char LOAD_LEFT_MSG[] =  "Load left"; 
