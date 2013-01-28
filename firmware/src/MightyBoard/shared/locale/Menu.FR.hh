@@ -7,10 +7,12 @@
 
 
 #ifdef MODEL_REPLICATOR
-static PROGMEM unsigned char SPLASH1_MSG[] = "   La Replicator    ";
+static PROGMEM unsigned char SPLASH1_SINGLE_MSG[] = "   La Replicator    ";
+static PROGMEM unsigned char SPLASH1_DUAL_MSG[] = "   La Replicator    ";
 static PROGMEM unsigned char SPLASH2_MSG[] = "     ---------      ";
 #elif MODEL_REPLICATOR2
-static PROGMEM unsigned char SPLASH1_MSG[] = "  La Replicator 2   ";
+static PROGMEM unsigned char SPLASH1_SINGLE_MSG[] = "  La Replicator 2   ";
+static PROGMEM unsigned char SPLASH1_DUAL_MSG[] = "  La Replicator 2X  ";
 static PROGMEM unsigned char SPLASH2_MSG[] = "   -------------    ";
 #else
 static PROGMEM unsigned char SPLASH1_MSG[] = "     Makerbot       ";
@@ -36,8 +38,10 @@ static PROGMEM unsigned char TOOL_MSG[] =                      "Extrudeur";
                                                               
 #ifdef MODEL_REPLICATOR2
 static PROGMEM unsigned char START_MSG[] =                     "Bonjour !           " "Je suis Replicator  " "   Appuyez sur le M " "rouge pour commencer";
+static PROGMEM unsigned char START_DUAL_MSG[] =                "Bonjour !           " "Je suis Replicator  " "   Appuyez sur le M " "rouge pour commencer";
 #else
 static PROGMEM unsigned char START_MSG[] =                     "Bonjour !           " "Je suis Replicator 2" "   Appuyez sur le M " "rouge pour commencer";
+static PROGMEM unsigned char START_DUAL_MSG[] =                "Bonjour !           " "Je suis Replicator2X" "   Appuyez sur le M " "rouge pour commencer";
 #endif
 static PROGMEM unsigned char BUTTONS1_MSG[] =                  "Le 'M' clignotant   " "signifie en attente " "de commande pour    " "continuer.          ";
 static PROGMEM unsigned char BUTTONS2_MSG[] =                  "Le 'M' fixe signifie" "que je travaille.   " "De nouvelles infos  " "quand travail fini. ";
@@ -55,8 +59,8 @@ static PROGMEM unsigned char END_MSG [] =                      "Choix enregistre
                                                               
 static PROGMEM unsigned char SELECT_MSG[] =                    "Selectionnez les    meilleures lignes.  ";
 static PROGMEM unsigned char DONE_MSG[]   =                    "Fini!";
-static PROGMEM unsigned char NO_MSG[]   =                      "Non";
-static PROGMEM unsigned char YES_MSG[]  =                      "Oui";
+static PROGMEM unsigned char NO_MSG[]   =                      "Non   ";
+static PROGMEM unsigned char YES_MSG[]  =                      "Oui   ";
                                                               
 static PROGMEM unsigned char XAXIS_MSG[] =                     "Axe X";
 static PROGMEM unsigned char YAXIS_MSG[] =                     "Axe Y";
@@ -84,6 +88,7 @@ static PROGMEM unsigned char READY_SS_MSG[]                  = "Replicator prete
 static PROGMEM unsigned char READY_RIGHT_MSG[]               = "Replicator prete.   " "Chargez du filament " "dans l'extrudeur de " "droite.             ";
 static PROGMEM unsigned char READY_SINGLE_MSG[]              = "Replicator prete.   " "Detachez le guide   " "et poussez le       " "filament...         ";
 static PROGMEM unsigned char READY_REV_MSG[]                 = "Replicator prete.   " "Detachez le guide et" "retirez doucement le" "filament...         ";
+static PROGMEM unsigned char READY_REV_DUAL_MSG[]            = "Replicator prete.   " "Detachez le guide et" "retirez doucement le" "filament...         ";
 static PROGMEM unsigned char READY_LEFT_MSG[]                = "Chargez maintenant  " "le filament dans    " "l'extrudeur gauche. " "                    ";
 static PROGMEM unsigned char TUG_MSG[]                       = "Dans la bague grise " "jusqu'a ce que le   " "moteur aggripe      " "le fil.             ";
 static PROGMEM unsigned char STOP_MSG_MSG[]                  = "Quand le filament   " "sort de la buse,    " "appuyez sur M pour  " "stopper l'extrudeur.";
@@ -107,10 +112,10 @@ static PROGMEM unsigned char QONE_MSG[] =                      "Du plastique sor
 static PROGMEM unsigned char QTWO_MSG[] =                      "il de l'extrudeur ? ";
 static PROGMEM unsigned char LOAD_RIGHT_MSG[]                = "Mettre a droite"; 
 static PROGMEM unsigned char LOAD_LEFT_MSG[]                 = "Mettre a gauche"; 
-static PROGMEM unsigned char LOAD_SINGLE_MSG[]               = "Mettre le plastique"; 
-static PROGMEM unsigned char UNLOAD_SINGLE_MSG[]             = "Retirer le plastique"; 
-static PROGMEM unsigned char UNLOAD_RIGHT_MSG[]              = "Retirer a gauche"; 
-static PROGMEM unsigned char UNLOAD_LEFT_MSG[]               = "Retirer a droite"; 
+static PROGMEM unsigned char LOAD_SINGLE_MSG[]               = "Mettre          "; 
+static PROGMEM unsigned char UNLOAD_SINGLE_MSG[]             = "Retirer         "; 
+static PROGMEM unsigned char UNLOAD_RIGHT_MSG[]              = "Retirer a droite"; 
+static PROGMEM unsigned char UNLOAD_LEFT_MSG[]               = "Retirer a gauche"; 
 
 static PROGMEM unsigned char JOG1_MSG[]                      = "    Mode manuel     ";
 static PROGMEM unsigned char JOG2X_MSG[]                     = "        X+          ";
