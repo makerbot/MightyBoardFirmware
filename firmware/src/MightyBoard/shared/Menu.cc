@@ -41,6 +41,7 @@ FilamentMenu filamentMenu;
 NozzleCalibrationScreen alignment;
 HeaterPreheat preheat;
 UtilitiesMenu utils;
+LevelTestMenu levelTestMenu;
 SelectAlignmentMenu align;
 FilamentOKMenu filamentOK;
 InfoMenu info;
@@ -2809,6 +2810,8 @@ void UtilitiesMenu::handleSelect(uint8_t index) {
     case 2:
       // level_plate script
             host::startOnboardBuild(utility::LEVEL_PLATE_STARTUP);
+            interface::popScreen();
+            interface::pushScreen(&levelTestMenu);
       break;
     case 4:
       // Show jog screen
@@ -2852,6 +2855,57 @@ void UtilitiesMenu::handleSelect(uint8_t index) {
 }
 
 
+LevelTestMenu::LevelTestMenu() {
+  itemCount = 4;
+  reset();
+}
+
+void LevelTestMenu::resetState(){
+  itemIndex = 2;
+  firstItemIndex = 2;
+}
+
+void LevelTestMenu::drawItem(uint8_t index, LiquidCrystalSerial& lcd, uint8_t line_number) {
+
+  switch(index){
+  case 0:
+    lcd.writeFromPgmspace(Q_RUN_POST_LEVEL_TEST);
+    break;
+  case 1:
+    break;
+  case 2:
+    lcd.writeFromPgmspace(NO_MSG);
+    break;
+  case 3:
+    lcd.writeFromPgmspace(YES_MSG);
+    break;
+  }
+}
+
+void LevelTestMenu::handleSelect(uint8_t index){
+
+  switch(index){
+  case 0:
+    break;
+  case 1:
+    break;
+  case 2:
+    interface::popScreen();
+    break;
+  case 3:
+    runTestPrint();
+    break;
+  }
+}
+
+void LevelTestMenu::runTestPrint(){
+  interface::popScreen();
+  host::startOnboardBuild(utility::POST_LEVEL);
+  interface::popScreen();
+  //This returns to the Main menu rather then the  utilities menu
+  interface::pushScreen(&utils);
+}
+
 InfoMenu::InfoMenu() {
   itemCount = 6;
   reset();
@@ -2883,6 +2937,7 @@ void InfoMenu::drawItem(uint8_t index, LiquidCrystalSerial& lcd, uint8_t line_nu
     break;
   }
 }
+
 
 void InfoMenu::handleSelect(uint8_t index) {
     

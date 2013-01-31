@@ -34,6 +34,7 @@ HOME_AXES_SCRIPT
 NOZZLE_CALIBRATE
 LEVEL_PLATE_DUAL
 LEVEL_PLATE_SINGLE
+POST_LEVEL_TEST
 
  namespace utility {
 	 
@@ -113,6 +114,12 @@ LEVEL_PLATE_SINGLE
       show_monitor = true;
 			buildFile = NozzleCalibrate;
 			break;
+    case POST_LEVEL:;
+     {
+      show_monitor = true;
+      buildFile = PostLevelTestPrint;
+      break;
+    }
 		default:
       is_playing = false;
 			return false;
@@ -127,6 +134,10 @@ LEVEL_PLATE_SINGLE
 		build_length += 15;
 	}
 #endif
+
+  if(buildFile == PostLevelTestPrint){
+    build_length = 4079;
+  }
 	 
 	 return is_playing;
  }

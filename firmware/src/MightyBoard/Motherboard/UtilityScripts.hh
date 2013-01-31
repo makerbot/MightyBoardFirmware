@@ -24,10 +24,11 @@ namespace utility {
 	
 	enum ScriptName{
 		HOME_AXES = 0,
-	LEVEL_PLATE_STARTUP = 1,
-	TOOLHEAD_CALIBRATE = 2,
-	LEVEL_PLATE_SECOND
-	};
+	  LEVEL_PLATE_STARTUP = 1,
+	  TOOLHEAD_CALIBRATE = 2,
+	  LEVEL_PLATE_SECOND = 3,
+    POST_LEVEL = 4
+  };
 	
  /// returns true if script is running
  bool isPlaying();
