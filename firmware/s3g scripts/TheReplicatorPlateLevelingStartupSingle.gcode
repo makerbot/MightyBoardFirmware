@@ -2,12 +2,9 @@
 (**** Do not run this code on any other kind of machine! ****)
 G21 (set units to mm)
 G90 (set positioning to absolute)
-M71 (Find the 4 knobs on the botton of the   platform and tightenfour or five turns.)
-M71 (I'm going to move   the extruder to     various positions   for adjustment.    )
-M71 (In each position,   we will need to     adjust 2 knobs at   the same time.      )
-M71 (Nozzles are at the  right height when   you can just slide asheet of paper     )
-M71 (between the nozzle  and the platform.   Grab a sheet of     paper to assist us.)
+
 M70 ( Please wait)
+
 (**** begin homing ****)
 G162 X Y F2500 (home XY axes maximum)
 G161 Z F1100 (home Z axis minimum)
@@ -17,6 +14,14 @@ G161 Z F100 (home Z axis minimum)
 G92 X152 Y75 Z0
 (M132 X Y Z A B (Recall stored home offsets for XYZAB axis)
 (**** end homing ****)
+
+M71 (Find the 4 knobs on the botton of the   platform and tightenfour or five turns.)
+M71 (I'm going to move   the extruder to     various positions   for adjustment.    )
+M71 (In each position,   we will need to     adjust 2 knobs at   the same time.      )
+M71 (Nozzles are at the  right height when   you can just slide asheet of paper     )
+M71 (between the nozzle  and the platform.   Grab a sheet of     paper to assist us.)
+M70 ( Please wait)
+
 
 M70 ( Please wait)
 G1 Z5 F3300.0

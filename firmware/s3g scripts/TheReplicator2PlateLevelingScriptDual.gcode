@@ -3,14 +3,6 @@
 G21
 G90
 
-; Display a message to explain leveling
-
-M71 (Tighten each of the three knobs under   the build platform  about four turns.)
-M71 (I'm going to move myextruder around to  different points so you can check...)
-M71 (the height. At each point, loosen the   specified knob untilthe nozzle almost...)
-M71 (touches the build   plate. The nozzle isat the right height when a thin piece...)
-M71 (of paper will slide between the nozzle  and build plate withsome friction.)
-
 M70 ( Please wait)
 
 G162 X Y F2500 (home XY axes maximum)
@@ -19,6 +11,16 @@ G92 Z-5 (set Z to -5)
 G1 Z0.0 (move Z to "0")
 G161 Z F100 (home Z axis minimum)
 G92 X152 Y75 Z0 
+
+; Display a message to explain leveling
+
+M71 (Tighten each of the three knobs under   the build platform  about four turns.)
+M71 (I'm going to move myextruder around to  different points so you can check...)
+M71 (the height. At each point, loosen the   specified knob untilthe nozzle almost...)
+M71 (touches the build   plate. The nozzle is at the right height when a thin piece...)
+M71 (of paper will slide between the nozzle  and build plate with some friction.)
+
+M70 ( Please wait)
 
 ; move to rear leveling pin
 G1 X16.5 Y70 F3000

@@ -129,10 +129,15 @@ POST_LEVEL_TEST
 	 build_length = pgm_read_word(Lengths + build);
 	 
 /// hack - not sure why the dual tool script has a longer length 
-#ifdef MODEL_REPLICATOR
-	if((build_length == LEVEL_PLATE_LEN) && !eeprom::isSingleTool()){
-		build_length += 15;
-	}
+//#ifdef MODEL_REPLICATOR
+//	if((build_length == LEVEL_PLATE_LEN) && !eeprom::isSingleTool()){
+		//build_length += 15;
+//	}
+//#endif
+#ifdef MODEL_REPLICATOR2
+  if((build_length == LEVEL_PLATE_LEN) && !eeprom::isSingleTool()){
+    build_length += 8;
+  }
 #endif
 
   if(buildFile == PostLevelTestPrint){
