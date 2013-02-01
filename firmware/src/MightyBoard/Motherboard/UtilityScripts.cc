@@ -21,7 +21,7 @@
  #include "UtilityScripts.hh"
  #include <avr/pgmspace.h>
  #include "EepromMap.hh"
- #include "Menu_locales.hh"
+
  
 /// the gcode and s3g files for these scripts are located in firmware/s3g_scripts
 /// the script loadDataFile.py converts s3g files to byte arrays to store in PROGMEM
@@ -34,11 +34,12 @@ HOME_AXES_SCRIPT
 NOZZLE_CALIBRATE
 LEVEL_PLATE_DUAL
 LEVEL_PLATE_SINGLE
-POST_LEVEL_TEST
 
  namespace utility {
 	 
 	 volatile bool is_playing;
+   volatile bool post_level_test;
+   uint8_t post_level_index = 0;
 	 int build_index = 0;
 	 int build_length = 0;
 	 uint8_t * buildFile;
@@ -52,7 +53,9 @@ POST_LEVEL_TEST
  void reset(){
 	 uint16_t build_index = 0;
 	 uint16_t build_length = 0;
+   uint8_t post_level_index = 0;
 	 is_playing = false;
+   post_level_test = false;
    show_monitor = true;
  
  }
@@ -72,7 +75,6 @@ POST_LEVEL_TEST
 		 byte = pgm_read_byte(buildFile + build_index++);
 		return byte;
 	}
-
 	else 
 		return 0;
  }
@@ -117,7 +119,7 @@ POST_LEVEL_TEST
     case POST_LEVEL:;
      {
       show_monitor = true;
-      buildFile = PostLevelTestPrint;
+      buildFile = NULL;
       break;
     }
 		default:
@@ -134,14 +136,25 @@ POST_LEVEL_TEST
 		//build_length += 15;
 //	}
 //#endif
+//When I redid the level plate script the sizes varied
 #ifdef MODEL_REPLICATOR2
   if((build_length == LEVEL_PLATE_LEN) && !eeprom::isSingleTool()){
     build_length += 8;
   }
 #endif
 
-  if(buildFile == PostLevelTestPrint){
-    build_length = 4079;
+  if(buildFile == NULL){
+    post_level_test = true;
+    if(eeprom::hasHBP()){
+      build_length = POST_LEVEL_HBP_START_LEN;
+      buildFile = PostLevelHBPPlaylist[post_level_index];
+      build_length = PostLevelHBPPlaylistLengths[post_level_index];
+    }
+    else{
+      build_length = POST_LEVEL_NOHBP_START_LEN;
+      buildFile = PostLevelNoHBPPlaylist[post_level_index];
+      build_length = PostLevelNoHBPPlaylistLengths[post_level_index];
+    }
   }
 	 
 	 return is_playing;
@@ -162,9 +175,33 @@ POST_LEVEL_TEST
  
  /// updates state to finished playback
  void finishPlayback(){
+  if(post_level_test){
+    if(continuePostLevelPlaylist()){
+      is_playing = true;
+      return;
+    }
+  }
 	is_playing = false;
+  post_level_test = false;
 	show_monitor = true;
  }
 
+ //change the currently building s3g to the next one on the playlist if needed
+ bool continuePostLevelPlaylist(){
+     if(post_level_index < POST_LEVEL_PLAYLIST_LEN-1){
+      post_level_index++;
+      if(eeprom::hasHBP()){
+        buildFile = PostLevelHBPPlaylist[post_level_index];
+        build_length = PostLevelHBPPlaylistLengths[post_level_index];
+      }
+      else{
+        buildFile = PostLevelNoHBPPlaylist[post_level_index];
+        build_length = PostLevelNoHBPPlaylistLengths[post_level_index];
+      }
+      build_index = 0;
+      return true;
+    }
+    return false;
+ }
 };
 

@@ -2903,7 +2903,6 @@ void LevelTestMenu::runTestPrint(){
   host::startOnboardBuild(utility::POST_LEVEL);
   interface::popScreen();
   //This returns to the Main menu rather then the  utilities menu
-  interface::pushScreen(&utils);
 }
 
 InfoMenu::InfoMenu() {
