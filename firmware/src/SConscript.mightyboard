@@ -203,7 +203,6 @@ else:
   exit()
 avrdude = avrdude_path+"/avrdude"
 avrdude_flags = "-F -V -p "+mcu.replace("atmega","m")
-avrdude_flags = avrdude_flags + " -C "+avr_tools_conf
 avrdude_flags = avrdude_flags + " -P "+upload_port
 avrdude_flags = avrdude_flags + " -c "+upload_prog
 avrdude_flags = avrdude_flags + " -b "+upload_baud

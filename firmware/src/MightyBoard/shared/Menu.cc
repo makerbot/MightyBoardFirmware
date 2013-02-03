@@ -2809,9 +2809,8 @@ void UtilitiesMenu::handleSelect(uint8_t index) {
       break;
     case 2:
       // level_plate script
-            host::startOnboardBuild(utility::LEVEL_PLATE_STARTUP);
-            interface::popScreen();
             interface::pushScreen(&levelTestMenu);
+            host::startOnboardBuild(utility::LEVEL_PLATE_STARTUP);
       break;
     case 4:
       // Show jog screen
@@ -2901,8 +2900,6 @@ void LevelTestMenu::handleSelect(uint8_t index){
 void LevelTestMenu::runTestPrint(){
   interface::popScreen();
   host::startOnboardBuild(utility::POST_LEVEL);
-  interface::popScreen();
-  //This returns to the Main menu rather then the  utilities menu
 }
 
 InfoMenu::InfoMenu() {

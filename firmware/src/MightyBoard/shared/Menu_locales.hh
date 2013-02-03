@@ -291,7 +291,7 @@ static PROGMEM unsigned char ERROR_INVALID_PLATFORM[] = "INVALID COMMAND:    I r
 static PROGMEM unsigned char ERROR_INVALID_TOOL[] = "INVALID TOOL:       I received a Left   Tool comand, but I  only have one Tool.";
 static PROGMEM unsigned char ACTIVE_FAN_MSG[]		 = "Filament Fan        ";
 
-static PROGMEM unsigned char Q_RUN_POST_LEVEL_TEST[] = "Want to run a print to see if level?";
+static PROGMEM unsigned char Q_RUN_POST_LEVEL_TEST[] = "Would you like to   " "run a test print?  ";
 
 #define POST_LEVEL_NOHBP_START_LEN 180
 #define POST_LEVEL_NOHBP_START static uint8_t PostLevelNoHBPStart[180] PROGMEM = { 153,  0,  0,  0,  0,  115,  116,  97,  114,  116,  95,  101,  110,  100,  95,  110,  111,  104,  98,  112,  0,  150,  0,  0,  132,  3,  82,  1,  0,  0,  20,  0,  131,  4,  166,  0,  0,  0,  20,  0,  140,  0,  0,  0,  0,  0,  0,  0,  0,  48,  248,  255,  255,  0,  0,  0,  0,  0,  0,  0,  0,  139,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  166,  0,  0,  0,  131,  4,  220,  5,  0,  0,  20,  0,  144,  31,  140,  151,  52,  0,  0,  242,  25,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  139,  64,  217,  255,  255,  191,  230,  255,  255,  96,  234,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  128,  0,  0,  0,  145,  1,  20,  145,  0,  20,  145,  4,  20,  145,  3,  20,  134,  0,  136,  0,  3,  2,  230,  0,  135,  0,  100,  0,  88,  2,  145,  1,  127,  145,  0,  127,  145,  4,  127,  145,  3,  127 };
