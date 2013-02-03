@@ -631,6 +631,9 @@ bool processQueryPacket(const InPacket& from_host, OutPacket& to_host) {
 	return false;
 }
 
+void clearMachineName(){
+	machineName[0] = 0;
+}
 char* getMachineName() {
 	// If the machine name hasn't been loaded, load it
 	if (machineName[0] == 0) {
