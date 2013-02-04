@@ -88,6 +88,7 @@ LEVEL_PLATE_SINGLE
 	 
    is_playing = true;
    build_index = 0;
+   post_level_index = 0;
    show_monitor = false;
 
      // get build file
