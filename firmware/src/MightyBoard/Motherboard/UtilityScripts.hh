@@ -26,11 +26,7 @@ POST_LEVEL_HBP_START
 POST_LEVEL_NOHBP_START
 POST_LEVEL_HBP_END
 POST_LEVEL_NOHBP_END
-/*POST_LEVEL_HBP_PLAYLIST
-POST_LEVEL_NOHBP_PLAYLIST
-POST_LEVEL_HBP_PLAYLIST_LENLIST
-POST_LEVEL_NOHBP_PLAYLIST_LENLIST
-*/
+
 
 #define POST_LEVEL_PLAYLIST_LEN 3
 
@@ -38,9 +34,9 @@ static uint8_t* PostLevelHBPPlaylist[] = {PostLevelHBPStart, PostLevelTestPrint,
 
 static uint8_t* PostLevelNoHBPPlaylist[] = {PostLevelNoHBPStart, PostLevelTestPrint, PostLevelNoHBPEnd};
 
-static uint16_t PostLevelHBPPlaylistLengths[] = {190, 6256, 56};
+static uint16_t PostLevelHBPPlaylistLengths[] = {POST_LEVEL_HBP_START_LEN, POST_LEVEL_TEST_LEN, POST_LEVEL_HBP_END_LEN};
 
-static uint16_t PostLevelNoHBPPlaylistLengths[] = {180, 6256, 50};
+static uint16_t PostLevelNoHBPPlaylistLengths[] = {POST_LEVEL_NOHBP_START_LEN, POST_LEVEL_TEST_LEN, POST_LEVEL_NOHBP_END_LEN};
 
 namespace utility {
 	
