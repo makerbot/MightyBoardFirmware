@@ -247,19 +247,14 @@ void factoryResetEEPROM() {
 
 	uint8_t vRefBase[] = {118,118,40,118,118};  //(XYAB maxed out)
 
+  setDefaultMachineName();
+
 ATOMIC_BLOCK(ATOMIC_RESTORESTATE){
-	/// Write 'MainBoard' settings
 #ifdef MODEL_REPLICATOR	
-  eeprom_write_block("The Replicator", (uint8_t*)eeprom_offsets::MACHINE_NAME,20); // name is null
   uint16_t vidPid[] = {0x23C1, 0xB404};		/// PID/VID for the MightyBoard!
 #elif MODEL_REPLICATOR2
-  eeprom_write_block("Replicator 2", (uint8_t*)eeprom_offsets::MACHINE_NAME,20); // name is null
-  uint16_t vidPid[] = {0x23C1, 0xB404};		/// PID/VID for the MightyBoard!
-#else
-  eeprom_write_block("Makerbot", (uint8_t*)eeprom_offsets::MACHINE_NAME,20); // name is null
   uint16_t vidPid[] = {0x23C1, 0xB404};		/// PID/VID for the MightyBoard!
 #endif
-
   eeprom_write_block(&(vRefBase[0]),(uint8_t*)(eeprom_offsets::DIGI_POT_SETTINGS), 5 );
   eeprom_write_byte((uint8_t*)eeprom_offsets::ENDSTOP_INVERSION, endstop_invert);
   eeprom_write_byte((uint8_t*)eeprom_offsets::AXIS_HOME_DIRECTION, home_direction);
@@ -278,9 +273,9 @@ ATOMIC_BLOCK(ATOMIC_RESTORESTATE){
 
   setDefaultsAcceleration();
 
-	// set build time to zero
-	eeprom_write_word((uint16_t*)(eeprom_offsets::TOTAL_BUILD_TIME + build_time_offsets::HOURS), 0);
-	eeprom_write_byte((uint8_t*)(eeprom_offsets::TOTAL_BUILD_TIME + build_time_offsets::MINUTES), 0);
+  // set build time to zero
+  eeprom_write_word((uint16_t*)(eeprom_offsets::TOTAL_BUILD_TIME + build_time_offsets::HOURS), 0);
+  eeprom_write_byte((uint8_t*)(eeprom_offsets::TOTAL_BUILD_TIME + build_time_offsets::MINUTES), 0);
 
   eeprom_write_byte((uint8_t*)eeprom_offsets::FILAMENT_HELP_TEXT_ON, 1);
 
@@ -304,6 +299,49 @@ ATOMIC_BLOCK(ATOMIC_RESTORESTATE){
   // startup script flag is cleared
   eeprom_write_byte((uint8_t*)eeprom_offsets::FIRST_BOOT_FLAG, 0);
 }
+}
+
+void setDefaultMachineName(){
+ATOMIC_BLOCK(ATOMIC_RESTORESTATE){
+#ifdef MODEL_REPLICATOR	
+  eeprom_write_block("The Replicator", (uint8_t*)eeprom_offsets::MACHINE_NAME,16);
+#elif MODEL_REPLICATOR2
+  if(isSingleTool()){
+    eeprom_write_block("Replicator 2", (uint8_t*)eeprom_offsets::MACHINE_NAME,16);
+  }
+  else {
+    eeprom_write_block("Replicator 2X", (uint8_t*)eeprom_offsets::MACHINE_NAME,16);
+  }
+#endif
+}
+}
+
+// this is a complete hack because it not worth screwing with the machine name system 
+// at this point.  changes here affect behavior all the way up the stack. 
+// we want the machine to toggle between 2 and 2X names when the tool count changes
+// normally this would happen with a factory reset - but we want it to happen right away
+// so folks in production don't get nervous.
+// we're checking if the stored name is the same as the default and returning true or false
+bool hasDefaultMachineName(){
+
+#ifdef MODEL_REPLICATOR
+	char default_name[] = "The Replicator";
+	for(int i = 0; i < 14; i++){
+		if((getEeprom8(eeprom_offsets::MACHINE_NAME + i,0)) == default_name[i]){
+			return false;
+		}
+	}
+#else
+	char default_name[] = "Replicator 2";
+	for(int i = 0; i < 12; i++){
+		if((getEeprom8(eeprom_offsets::MACHINE_NAME + i,0)) != default_name[i]){
+			return false;
+		}
+	}
+
+#endif
+
+	return true;
 }
 
 void setToolHeadCount(uint8_t count){

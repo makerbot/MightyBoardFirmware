@@ -110,6 +110,9 @@ void activePauseBuild(bool pause, command::SleepType type);
 /// stop onboard process (not a build)
 void stopProcess();
 
+/// a process by which we can force the machine to clear its stored name
+void clearMachineName();
+
 }
 
 #endif // HOST_HH_

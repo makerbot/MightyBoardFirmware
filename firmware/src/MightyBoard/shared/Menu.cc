@@ -846,7 +846,11 @@ void FilamentScreen::update(LiquidCrystalSerial& lcd, bool forceRedraw) {
           if(eeprom::isSingleTool()){
             lcd.writeFromPgmspace(READY_REV_MSG);
           } else {
-            lcd.writeFromPgmspace(READY_REV_DUAL_MSG);
+            if(axisID == 3){
+              lcd.writeFromPgmspace(READY_REV_DUAL_R_MSG);
+            } else {
+              lcd.writeFromPgmspace(READY_REV_DUAL_L_MSG);
+            }			
           }
           filamentState++;
         } 
@@ -862,10 +866,15 @@ void FilamentScreen::update(LiquidCrystalSerial& lcd, bool forceRedraw) {
         if(startup)
           lcd.writeFromPgmspace(STOP_MSG_MSG);
         else{
-          if(forward)
+          if(forward){
             lcd.writeFromPgmspace(STOP_EXIT_MSG);
-          else 
-            lcd.writeFromPgmspace(STOP_REVERSE_MSG);
+          } else { 		
+             if(eeprom::isSingleTool()){
+               lcd.writeFromPgmspace(STOP_REVERSE_MSG);
+	     } else {
+               lcd.writeFromPgmspace(STOP_REV_DUAL_MSG);
+	     }
+	  } 
         }
         Motherboard::getBoard().interfaceBlink(25,15);
         break;
@@ -3111,6 +3120,14 @@ void SettingsMenu::handleSelect(uint8_t index) {
       if(!singleExtruder){
         Motherboard::getBoard().getExtruderBoard(1).getExtruderHeater().set_target_temperature(0);
       }
+// if we're a replicator 2, we need to update the machine name when the toolhead count is changed
+// unless the user has set a custom machine name
+#ifdef MODEL_REPLICATOR2
+      if(eeprom::hasDefaultMachineName()){
+        eeprom::setDefaultMachineName();
+        host::clearMachineName();
+      }
+#endif
       lineUpdate = 1;
       break;
     case 5:

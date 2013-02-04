@@ -544,8 +544,8 @@ enum {
 namespace eeprom {
   void fullResetEEPROM();
   void eepromResetv7(); 
-	void factoryResetEEPROM();
-	void setToolHeadCount(uint8_t count);
+  void factoryResetEEPROM();
+  void setToolHeadCount(uint8_t count);
   void setDefaultSettings();
   void setCustomColor(uint8_t red, uint8_t green, uint8_t blue);
   bool isSingleTool();
@@ -554,5 +554,7 @@ namespace eeprom {
   void storeToolheadToleranceDefaults();
   void updateBuildTime(uint8_t new_hours, uint8_t new_minutes);
   void setDefaultAxisHomePositions();
+  bool hasDefaultMachineName();
+  void setDefaultMachineName();
 }
 #endif // EEPROMMAP_HHe

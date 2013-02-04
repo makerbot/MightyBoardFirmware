@@ -114,16 +114,23 @@ static PROGMEM unsigned char READY_LEFT_MSG[]  = "Great! Now we'll    " "load th
 static PROGMEM unsigned char READY_SINGLE_MSG[]= "I'm ready! Pull the " "guide tube off and  " "push the filament   " "through...          ";
 #ifdef MODEL_REPLICATOR2
 static PROGMEM unsigned char READY_REV_MSG[]   = "I'm ready! Pull the " "guide tube off and  " "pull the filament   " "gently...           ";
-static PROGMEM unsigned char READY_REV_DUAL_MSG[]   = "I'm ready! Detach   " "the guide tube, open" "the lever arm and   " "pull filament free. ";
+static PROGMEM unsigned char READY_REV_DUAL_R_MSG[]   = "I'm ready! Detach   " "the guide tube, open" "the lever arm and   " "pull filament free. ";
+static PROGMEM unsigned char READY_REV_DUAL_L_MSG[]   = "I'm ready! Detach   " "the guide tube, open" "the lever arm and   " "pull filament free. ";
 #else
 static PROGMEM unsigned char READY_REV_MSG[]   = "I'm ready! Pull the " "guide tube off and  " "pull the filament   " "gently...           ";
-static PROGMEM unsigned char READY_REV_DUAL_MSG[]   = "I'm ready! Pull the " "guide tube off and  " "pull the filament   " "gently...           ";
+static PROGMEM unsigned char READY_REV_DUAL_R_MSG[]   = "I'm ready! Detach   " "the guide tube and  " "move the lever to   " "the right.  Pull... ";
+static PROGMEM unsigned char READY_REV_DUAL_L_MSG[]   = "I'm ready! Detach   " "the guide tube and  " "move the lever to   " "the left.  Pull...  ";
 #endif
 static PROGMEM unsigned char TUG_MSG[]         = "until you feel the  " "motor tug it in.    " "Push for a few more " "seconds, then wait. ";
 static PROGMEM unsigned char STOP_MSG_MSG[]    = "When filament is    " "being extruded from " "the nozzle, Press M " "to stop extruding.  ";  // XXX old name: stop[]
 static PROGMEM unsigned char STOP_EXIT_MSG[]   = "When filament is    " "being extruded from " "the nozzle,         " "Press 'M' to exit.  "; 
-
+#ifdef MODEL_REPLICATOR2
 static PROGMEM unsigned char STOP_REVERSE_MSG[]= "When my filament is " "released,           " "Press 'M' to exit.  " "                    ";            
+static PROGMEM unsigned char STOP_REV_DUAL_MSG[]= "filament free and  " "close the lever.    " "Press 'M' to exit.  " "                    ";            
+#else
+static PROGMEM unsigned char STOP_REVERSE_MSG[]= "When my filament is " "released,           " "Press 'M' to exit.  " "                    ";            
+static PROGMEM unsigned char STOP_REV_DUAL_MSG[]= "When my filament is " "released,           " "Press 'M' to exit.  " "                    ";            
+#endif
 static PROGMEM unsigned char PUSH_HARDER_MSG[] = "OK! I'll keep my    " "motor running. You  " "may need to push    " "harder...           ";  // XXX old name: tryagain[]
 static PROGMEM unsigned char KEEP_GOING_MSG[]  = "We'll keep going.   " "If you're having    " "trouble, check out  " "makerbot.com/help   ";  // XXX old name: go_on[]
 static PROGMEM unsigned char FINISH_MSG[]      = "Great!  I'll stop   " "running my extruder." "Press M to continue." "                    ";  
