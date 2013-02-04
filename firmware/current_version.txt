@@ -1,3 +1,5 @@
+7.1.1.1.0
+ * beta version of 7.1 - the LevelPlate TestPrint is broken in this build
 7.0.8.1.0
  * fixes issue in ReplicatorG where the bot starts before the extruder reaches temperature
 7.0.7.1.0

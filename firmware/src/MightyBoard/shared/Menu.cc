@@ -41,6 +41,7 @@ FilamentMenu filamentMenu;
 NozzleCalibrationScreen alignment;
 HeaterPreheat preheat;
 UtilitiesMenu utils;
+LevelTestMenu levelTestMenu;
 SelectAlignmentMenu align;
 FilamentOKMenu filamentOK;
 InfoMenu info;
@@ -2817,6 +2818,7 @@ void UtilitiesMenu::handleSelect(uint8_t index) {
       break;
     case 2:
       // level_plate script
+            interface::pushScreen(&levelTestMenu);
             host::startOnboardBuild(utility::LEVEL_PLATE_STARTUP);
       break;
     case 4:
@@ -2861,6 +2863,54 @@ void UtilitiesMenu::handleSelect(uint8_t index) {
 }
 
 
+LevelTestMenu::LevelTestMenu() {
+  itemCount = 4;
+  reset();
+}
+
+void LevelTestMenu::resetState(){
+  itemIndex = 2;
+  firstItemIndex = 2;
+}
+
+void LevelTestMenu::drawItem(uint8_t index, LiquidCrystalSerial& lcd, uint8_t line_number) {
+
+  switch(index){
+  case 0:
+    lcd.writeFromPgmspace(Q_RUN_POST_LEVEL_TEST);
+    break;
+  case 1:
+    break;
+  case 2:
+    lcd.writeFromPgmspace(NO_MSG);
+    break;
+  case 3:
+    lcd.writeFromPgmspace(YES_MSG);
+    break;
+  }
+}
+
+void LevelTestMenu::handleSelect(uint8_t index){
+
+  switch(index){
+  case 0:
+    break;
+  case 1:
+    break;
+  case 2:
+    interface::popScreen();
+    break;
+  case 3:
+    runTestPrint();
+    break;
+  }
+}
+
+void LevelTestMenu::runTestPrint(){
+  interface::popScreen();
+  host::startOnboardBuild(utility::POST_LEVEL);
+}
+
 InfoMenu::InfoMenu() {
   itemCount = 6;
   reset();
@@ -2892,6 +2942,7 @@ void InfoMenu::drawItem(uint8_t index, LiquidCrystalSerial& lcd, uint8_t line_nu
     break;
   }
 }
+
 
 void InfoMenu::handleSelect(uint8_t index) {
     

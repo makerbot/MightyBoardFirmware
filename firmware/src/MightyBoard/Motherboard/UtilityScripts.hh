@@ -19,15 +19,38 @@
 #define UTILITY_SCRIPTS
 
 #include "Types.hh"
+#include "Menu_locales.hh"
+
+POST_LEVEL_TEST
+POST_LEVEL_HBP_START
+POST_LEVEL_NOHBP_START
+POST_LEVEL_HBP_END
+POST_LEVEL_NOHBP_END
+/*POST_LEVEL_HBP_PLAYLIST
+POST_LEVEL_NOHBP_PLAYLIST
+POST_LEVEL_HBP_PLAYLIST_LENLIST
+POST_LEVEL_NOHBP_PLAYLIST_LENLIST
+*/
+
+#define POST_LEVEL_PLAYLIST_LEN 3
+
+static uint8_t* PostLevelHBPPlaylist[] = {PostLevelHBPStart, PostLevelTestPrint, PostLevelHBPEnd};
+
+static uint8_t* PostLevelNoHBPPlaylist[] = {PostLevelNoHBPStart, PostLevelTestPrint, PostLevelNoHBPEnd};
+
+static uint16_t PostLevelHBPPlaylistLengths[] = {190, 6256, 56};
+
+static uint16_t PostLevelNoHBPPlaylistLengths[] = {180, 6256, 50};
 
 namespace utility {
 	
 	enum ScriptName{
 		HOME_AXES = 0,
-	LEVEL_PLATE_STARTUP = 1,
-	TOOLHEAD_CALIBRATE = 2,
-	LEVEL_PLATE_SECOND
-	};
+	  LEVEL_PLATE_STARTUP = 1,
+	  TOOLHEAD_CALIBRATE = 2,
+	  LEVEL_PLATE_SECOND = 3,
+    POST_LEVEL = 4
+  };
 	
  /// returns true if script is running
  bool isPlaying();
@@ -52,6 +75,11 @@ namespace utility {
 
  /// return true if we should show the monitor screen during the utility script
  bool showMonitor();
+
+ //returns true if there are more parts othe the Post Leveling script to run
+ //if there is more to be played it indexs to the next part of the script
+ bool continuePostLevelPlaylist();
+
 };
 
 #endif

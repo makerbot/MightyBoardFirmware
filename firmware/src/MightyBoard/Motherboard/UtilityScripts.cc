@@ -21,14 +21,14 @@
  #include "UtilityScripts.hh"
  #include <avr/pgmspace.h>
  #include "EepromMap.hh"
- #include "Menu_locales.hh"
+
  
 /// the gcode and s3g files for these scripts are located in firmware/s3g_scripts
 /// the script loadDataFile.py converts s3g files to byte arrays to store in PROGMEM
 /// the script lengths are given by the output of the loadDataFile.py script
  static uint16_t Lengths[4]  PROGMEM = { 95, /// Home Axes
                                          LEVEL_PLATE_LEN,
-                                         5538}; /// nozzle (toolhead) calibrate
+                                         4351}; /// nozzle (toolhead) calibrate
                             
 HOME_AXES_SCRIPT
 NOZZLE_CALIBRATE
@@ -38,6 +38,8 @@ LEVEL_PLATE_SINGLE
  namespace utility {
 	 
 	 volatile bool is_playing;
+   volatile bool post_level_test;
+   uint8_t post_level_index = 0;
 	 int build_index = 0;
 	 int build_length = 0;
 	 uint8_t * buildFile;
@@ -51,7 +53,9 @@ LEVEL_PLATE_SINGLE
  void reset(){
 	 uint16_t build_index = 0;
 	 uint16_t build_length = 0;
+   uint8_t post_level_index = 0;
 	 is_playing = false;
+   post_level_test = false;
    show_monitor = true;
  
  }
@@ -71,7 +75,6 @@ LEVEL_PLATE_SINGLE
 		 byte = pgm_read_byte(buildFile + build_index++);
 		return byte;
 	}
-
 	else 
 		return 0;
  }
@@ -113,6 +116,12 @@ LEVEL_PLATE_SINGLE
       show_monitor = true;
 			buildFile = NozzleCalibrate;
 			break;
+    case POST_LEVEL:;
+     {
+      show_monitor = true;
+      buildFile = NULL;
+      break;
+    }
 		default:
       is_playing = false;
 			return false;
@@ -121,12 +130,19 @@ LEVEL_PLATE_SINGLE
      // get build length
 	 build_length = pgm_read_word(Lengths + build);
 	 
-/// hack - not sure why the dual tool script has a longer length 
-#ifdef MODEL_REPLICATOR
-	if((build_length == LEVEL_PLATE_LEN) && !eeprom::isSingleTool()){
-		build_length += 15;
-	}
-#endif
+  if(buildFile == NULL){
+    post_level_test = true;
+    if(eeprom::hasHBP()){
+      build_length = POST_LEVEL_HBP_START_LEN;
+      buildFile = PostLevelHBPPlaylist[post_level_index];
+      build_length = PostLevelHBPPlaylistLengths[post_level_index];
+    }
+    else{
+      build_length = POST_LEVEL_NOHBP_START_LEN;
+      buildFile = PostLevelNoHBPPlaylist[post_level_index];
+      build_length = PostLevelNoHBPPlaylistLengths[post_level_index];
+    }
+  }
 	 
 	 return is_playing;
  }
@@ -146,9 +162,33 @@ LEVEL_PLATE_SINGLE
  
  /// updates state to finished playback
  void finishPlayback(){
+  if(post_level_test){
+    if(continuePostLevelPlaylist()){
+      is_playing = true;
+      return;
+    }
+  }
 	is_playing = false;
+  post_level_test = false;
 	show_monitor = true;
  }
 
+ //change the currently building s3g to the next one on the playlist if needed
+ bool continuePostLevelPlaylist(){
+     if(post_level_index < POST_LEVEL_PLAYLIST_LEN-1){
+      post_level_index++;
+      if(eeprom::hasHBP()){
+        buildFile = PostLevelHBPPlaylist[post_level_index];
+        build_length = PostLevelHBPPlaylistLengths[post_level_index];
+      }
+      else{
+        buildFile = PostLevelNoHBPPlaylist[post_level_index];
+        build_length = PostLevelNoHBPPlaylistLengths[post_level_index];
+      }
+      build_index = 0;
+      return true;
+    }
+    return false;
+ }
 };
 
