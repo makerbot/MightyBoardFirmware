@@ -48,7 +48,6 @@ namespace utility {
 		HOME_AXES = 0,
 	  LEVEL_PLATE_STARTUP = 1,
 	  TOOLHEAD_CALIBRATE = 2,
-	  LEVEL_PLATE_SECOND = 3,
     POST_LEVEL = 4
   };
 	
@@ -69,9 +68,6 @@ namespace utility {
  
  /// reset pointers
  void reset();
-
- /// change the build index of the script
- void getSecondLevelOffset(void);
 
  /// return true if we should show the monitor screen during the utility script
  bool showMonitor();
