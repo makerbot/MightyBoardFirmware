@@ -1,5 +1,6 @@
 7.1.2.1.0
  * fixed "retry" in level plate
+ * fixed the LevelPlate TestPrint brokeness
 7.1.1.1.0
  * beta version of 7.1 - the LevelPlate TestPrint is broken in this build
 7.0.8.1.0
