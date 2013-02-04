@@ -28,7 +28,7 @@
 /// the script lengths are given by the output of the loadDataFile.py script
  static uint16_t Lengths[4]  PROGMEM = { 95, /// Home Axes
                                          LEVEL_PLATE_LEN,
-                                         4618}; /// nozzle (toolhead) calibrate
+                                         4351}; /// nozzle (toolhead) calibrate
                             
 HOME_AXES_SCRIPT
 NOZZLE_CALIBRATE
@@ -130,19 +130,6 @@ LEVEL_PLATE_SINGLE
      // get build length
 	 build_length = pgm_read_word(Lengths + build);
 	 
-/// hack - not sure why the dual tool script has a longer length 
-//#ifdef MODEL_REPLICATOR
-//	if((build_length == LEVEL_PLATE_LEN) && !eeprom::isSingleTool()){
-		//build_length += 15;
-//	}
-//#endif
-//When I redid the level plate script the sizes varied
-#ifdef MODEL_REPLICATOR2
-  if((build_length == LEVEL_PLATE_LEN) && !eeprom::isSingleTool()){
-    build_length += 8;
-  }
-#endif
-
   if(buildFile == NULL){
     post_level_test = true;
     if(eeprom::hasHBP()){
