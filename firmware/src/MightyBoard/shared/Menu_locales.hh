@@ -112,7 +112,7 @@ static PROGMEM unsigned char READY_SS_MSG[]    = "OK I'm ready!       " "Push th
 static PROGMEM unsigned char READY_RIGHT_MSG[] = "OK I'm ready!       " "First we'll load the" "right extruder.     " "Push filament in... ";
 static PROGMEM unsigned char READY_LEFT_MSG[]  = "Great! Now we'll    " "load the left       " "extruder. Push      " "filament through... ";
 static PROGMEM unsigned char READY_SINGLE_MSG[]= "I'm ready! Pull the " "guide tube off and  " "push the filament   " "through...          ";
-#ifdef MODEL_REPLICATOR2
+#ifdef MODEL_REPLICATOR
 static PROGMEM unsigned char READY_REV_MSG[]   = "I'm ready! Pull the " "guide tube off and  " "pull the filament   " "gently...           ";
 static PROGMEM unsigned char READY_REV_DUAL_R_MSG[]   = "I'm ready! Detach   " "the guide tube, open" "the lever arm and   " "pull filament free. ";
 static PROGMEM unsigned char READY_REV_DUAL_L_MSG[]   = "I'm ready! Detach   " "the guide tube, open" "the lever arm and   " "pull filament free. ";
@@ -126,7 +126,7 @@ static PROGMEM unsigned char STOP_MSG_MSG[]    = "When filament is    " "being e
 static PROGMEM unsigned char STOP_EXIT_MSG[]   = "When filament is    " "being extruded from " "the nozzle,         " "Press 'M' to exit.  "; 
 #ifdef MODEL_REPLICATOR2
 static PROGMEM unsigned char STOP_REVERSE_MSG[]= "When my filament is " "released,           " "Press 'M' to exit.  " "                    ";            
-static PROGMEM unsigned char STOP_REV_DUAL_MSG[]= "filament free and  " "close the lever.    " "Press 'M' to exit.  " "                    ";            
+static PROGMEM unsigned char STOP_REV_DUAL_MSG[]="filament free and   " "close the lever.    " "Press 'M' to exit.  " "                    ";            
 #else
 static PROGMEM unsigned char STOP_REVERSE_MSG[]= "When my filament is " "released,           " "Press 'M' to exit.  " "                    ";            
 static PROGMEM unsigned char STOP_REV_DUAL_MSG[]= "When my filament is " "released,           " "Press 'M' to exit.  " "                    ";            
