@@ -144,8 +144,8 @@ static PROGMEM unsigned char HEIGHT_CHK_MSG[] = "height check out?";     // XXX 
 static PROGMEM unsigned char HEIGHT_GOOD_MSG[]= "My height is good!";   // XXX old name: yes[]
 static PROGMEM unsigned char TRY_AGAIN_MSG[]  = "Let's try again.";       // XXX old name: no[]
 
-static PROGMEM unsigned char QONE_MSG[] =       "Did filament extrude";
-static PROGMEM unsigned char QTWO_MSG[] =       "from the nozzle?";
+static PROGMEM unsigned char QONE_MSG[] =       "Did the filament";
+static PROGMEM unsigned char QTWO_MSG[] =       "extrude?        ";
 static PROGMEM unsigned char LOAD_RIGHT_MSG[] = "Load right"; 
 static PROGMEM unsigned char LOAD_LEFT_MSG[] =  "Load left"; 
 static PROGMEM unsigned char LOAD_SINGLE_MSG[] ="Load"; 
