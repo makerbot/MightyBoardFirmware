@@ -395,7 +395,12 @@ void storeToolheadToleranceDefaults(){
 #ifdef MODEL_REPLICATOR
   uint32_t offsets[3] = {33L*1000,0,0};
 #else
-  uint32_t offsets[3] = {35L*1000,0,0};
+  #ifdef MODEL_REPLICATOR2
+    uint32_t offsets[3] = {35L*1000,0,0};
+  #else
+    //This was put here for future debugging, it can be removed if necessary
+    uint32_t offsets[3] = {99L*1000,0,0};
+  #endif
 #endif
 	eeprom_write_block((uint8_t*)&(offsets[0]),(uint8_t*)(eeprom_offsets::TOOLHEAD_OFFSET_SETTINGS_MM), 12 );
 }
@@ -491,6 +496,7 @@ void eepromResetv7(){
   int32_t x_nozzle_offset = getEeprom32(eeprom_offsets::TOOLHEAD_OFFSET_SETTINGS, 0);
   /// check to see if offsets are in 5.5 and earlier state (< 1mm) or 6.0 state (~33mm)
   /// ACK what a mess
+
   if(x_nozzle_offset  < 3L * replicator_axis_steps_per_mm::axis_steps_per_mm[0] * 10){
     //Add the full toolhead offset.  This was formerly stored in RepG  
     // add 33mm to get the complete distance
@@ -499,6 +505,7 @@ void eepromResetv7(){
     // take out the dependence on steps per mm.  and multiply by 100 (for a final scaling factor of 1000)
     x_nozzle_offset =  100 * (x_nozzle_offset /replicator_axis_steps_per_mm::axis_steps_per_mm[0]); 
   }
+    
 	// toolhead offset defaults
 	storeToolheadToleranceDefaults();
   ATOMIC_BLOCK(ATOMIC_RESTORESTATE){  
