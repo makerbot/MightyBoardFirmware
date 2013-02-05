@@ -397,7 +397,7 @@ void WelcomeScreen::notifyButtonPressed(ButtonArray::ButtonName button) {
            Motherboard::getBoard().interfaceBlink(0,0);
            welcomeState++; 
            if(levelSuccess == FAIL)
-             host::startOnboardBuild(utility::LEVEL_PLATE_SECOND);
+             host::startOnboardBuild(utility::LEVEL_PLATE_STARTUP);
            else
              host::startOnboardBuild(utility::LEVEL_PLATE_STARTUP);
            break;
@@ -431,7 +431,7 @@ void WelcomeScreen::notifyButtonPressed(ButtonArray::ButtonName button) {
           Motherboard::getBoard().interfaceBlink(0,0);
           welcomeState++; 
           if(levelSuccess == FAIL)
-            host::startOnboardBuild(utility::LEVEL_PLATE_SECOND);
+            host::startOnboardBuild(utility::LEVEL_PLATE_STARTUP);
           else
             host::startOnboardBuild(utility::LEVEL_PLATE_STARTUP);
             break;

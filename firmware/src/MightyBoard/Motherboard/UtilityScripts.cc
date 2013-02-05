@@ -88,21 +88,13 @@ LEVEL_PLATE_SINGLE
 	 
    is_playing = true;
    build_index = 0;
+   post_level_index = 0;
    show_monitor = false;
 
      // get build file
 	switch (build){
     case HOME_AXES:
 			buildFile = HomeAxes;		
-			break;
-		case LEVEL_PLATE_SECOND:
-			if(eeprom::isSingleTool()){
-				buildFile = LevelPlateSingle;
-			} else{
-				buildFile = LevelPlateDual; 
-			}
-			build = LEVEL_PLATE_STARTUP;
-			getSecondLevelOffset();
 			break;
 		case LEVEL_PLATE_STARTUP:
 			if(eeprom::isSingleTool()){
@@ -147,19 +139,6 @@ LEVEL_PLATE_SINGLE
 	 return is_playing;
  }
      
- void getSecondLevelOffset(){
-	 // find the homing command (after all the intro text)
-	 uint8_t messageCount = 0;
-	 while(messageCount < 5){
-		 while(pgm_read_byte(buildFile + build_index) != 149)
-			build_index++;
-		build_index++;
-		messageCount++;
-	 }
-	 build_index--;
-	
- }
- 
  /// updates state to finished playback
  void finishPlayback(){
   if(post_level_test){
