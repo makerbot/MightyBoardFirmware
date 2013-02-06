@@ -87,22 +87,35 @@ static PROGMEM unsigned char HEATING_BAR_MSG[]               = "Chauffage en cou
 static PROGMEM unsigned char READY_SS_MSG[]                  = "Replicator prete.   " "Poussez le filament " "dans la tete...     " "                    ";
 static PROGMEM unsigned char READY_RIGHT_MSG[]               = "Replicator prete.   " "Chargez du filament " "dans l'extrudeur de " "droite.             ";
 static PROGMEM unsigned char READY_SINGLE_MSG[]              = "Replicator prete.   " "Detachez le guide   " "et poussez le       " "filament...         ";
-static PROGMEM unsigned char READY_REV_MSG[]                 = "Replicator prete.   " "Detachez le guide et" "retirez doucement le" "filament...         ";
-static PROGMEM unsigned char READY_REV_DUAL_MSG[]            = "Replicator prete.   " "Detachez le guide et" "retirez doucement le" "filament...         ";
 static PROGMEM unsigned char READY_LEFT_MSG[]                = "Chargez maintenant  " "le filament dans    " "l'extrudeur gauche. " "                    ";
+#ifdef MODEL_REPLICATOR
+static PROGMEM unsigned char READY_REV_MSG[]                 = "Replicator prete.   " "Detachez le guide et" "retirez doucement le" "filament...         ";
+static PROGMEM unsigned char READY_REV_DUAL_R_MSG[]          = "Replicator prete.   " "Detachez le guide et" "retirez doucement le" "filament...         ";
+static PROGMEM unsigned char READY_REV_DUAL_L_MSG[]          = "Replicator prete.   " "Detachez le guide et" "retirez doucement le" "filament...         ";
+#else
+static PROGMEM unsigned char READY_REV_MSG[]                 = "Replicator prete.   " "Detachez le guide et" "retirez doucement le" "filament...         ";
+static PROGMEM unsigned char READY_REV_DUAL_R_MSG[]          = "Replicator prete.   " "Detachez le guide et" "retirez doucement le" "filament a droite...";
+static PROGMEM unsigned char READY_REV_DUAL_L_MSG[]          = "Replicator prete.   " "Detachez le guide et" "retirez doucement le" "filament a gauche...";
+#endif
 static PROGMEM unsigned char TUG_MSG[]                       = "Dans la bague grise " "jusqu'a ce que le   " "moteur aggripe      " "le fil.             ";
-static PROGMEM unsigned char STOP_MSG_MSG[]                  = "Quand le filament   " "sort de la buse,    " "appuyez sur M pour  " "stopper l'extrudeur.";
-static PROGMEM unsigned char STOP_EXIT_MSG[]                 = "Quand le filament   " "sort de la buse,    " "appuyez sur M pour  " "quitter.            ";
-static PROGMEM unsigned char STOP_REVERSE_MSG[]              = "Quand le filament   " "est totalement sorti" "appuyez sur M pour  " "quitter.            ";
-static PROGMEM unsigned char PUSH_HARDER_MSG[]               = "Vous devriez        " "ressayer en         " "appuyant plus fort  " "                    ";
+static PROGMEM unsigned char STOP_MSG_MSG[]                  = "Quand le filament   " "sort de la buse,    " "appuyez sur 'M' pour" "stopper l'extrudeur.";
+static PROGMEM unsigned char STOP_EXIT_MSG[]                 = "Quand le filament   " "sort de la buse,    " "appuyez sur 'M' pour" "quitter.            ";
+#ifdef MODEL_REPLICATOR2
+static PROGMEM unsigned char STOP_REVERSE_MSG[]              = "Quand le filament   " "est totalement sorti" "appuyez sur 'M' pour" "quitter.            ";
+static PROGMEM unsigned char STOP_REV_DUAL_MSG[]             = "filament libere et  " "fermez le loquet.   " "Appuyez sur 'M' pour" "quitter.            ";            
+#else
+static PROGMEM unsigned char STOP_REVERSE_MSG[]              = "Quand le filament   " "est totalement sorti" "appuyez sur 'M' pour" "quitter.            ";
+static PROGMEM unsigned char STOP_REV_DUAL_MSG[]             = "Quand le filament   " "est libéré,         " "appuyez sur 'M' pour" "quitter.            ";
+#endif
+static PROGMEM unsigned char PUSH_HARDER_MSG[]               = "Vous devriez        " "réessayer en        " "appuyant plus fort  " "                    ";
 static PROGMEM unsigned char KEEP_GOING_MSG[]                = "Continuons !        " "Besoin d'aide ?     " "Allez sur           " "makerbot.com/help   ";
 static PROGMEM unsigned char FINISH_MSG[]                    = "Arret extrudeur en  " "cours. Appuyez sur M" "pour continuer.     " "                    ";
 static PROGMEM unsigned char GO_ON_LEFT_MSG[]                = "Continuons !        " "Chargez du filament " "dans l'extrudeur    " "gauche...           ";
-static PROGMEM unsigned char TIMEOUT_MSG[]	                 = "Le moteur ne repond " "plus depuis 5 min.  " "appuyez sur M pour  " "quitter             ";
+static PROGMEM unsigned char TIMEOUT_MSG[]                   = "Le moteur ne repond " "plus depuis 5 min.  " "appuyez sur M pour  " "quitter             ";
 
 
-static PROGMEM unsigned char READY1_MSG[] =                    "Tout va bien ?     ";
-static PROGMEM unsigned char READY2_MSG[] =                    "Lancer impression ?";
+static PROGMEM unsigned char READY1_MSG[]                    = "Tout va bien ?     ";
+static PROGMEM unsigned char READY2_MSG[]                    = "Lancer impression ?";
 static PROGMEM unsigned char NOZZLE_MSG_MSG[]                = "La hauteur de ";
 static PROGMEM unsigned char HEIGHT_CHK_MSG[]                = "la buse est ok ? ";
 static PROGMEM unsigned char HEIGHT_GOOD_MSG[]               = "Bonne hauteur !   ";
@@ -158,8 +171,6 @@ static PROGMEM unsigned char CARDERROR_MSG[]                 = "Err Lecture Cart
 static PROGMEM unsigned char CARDFORMAT_MSG[]                = "Impossible de lire  " "ce format de carteSD" "Reformatez cette    " "carte en FAT16.    ";
 static PROGMEM unsigned char STATICFAIL_MSG[]                = "Une erreur a eu lieu" "en lisant la carteSD" "                    " "                   ";
 static PROGMEM unsigned char CARDSIZE_MSG[]                  = "Les cartes SD d'une " "capacite superieure " " a 2Go ne sont pas  " "supportees         ";
-
-
 
 static PROGMEM unsigned char BUILD_MSG[] =                     "Imprimer depuis SD ";
 static PROGMEM unsigned char PREHEAT_MSG[] =                   "Prechauffage       ";
@@ -261,6 +272,8 @@ static PROGMEM unsigned char ERROR_SD_CARD_GENERIC[]         = " Err lecture car
 static PROGMEM unsigned char ERROR_SD_CARD_FILE_LENGTH[]     = " Lecture impossible:" " nom de fichier trop" " long. Essayer avec " " moins de 27 caract. ";
 static PROGMEM unsigned char ERROR_TEMP_RESET_EXTERNALLY[]   = "Temperature changee " "par autre chose.    " "Reessayer de select." "le menu Filament. ";
 static PROGMEM unsigned char ACTIVE_FAN_MSG[]		         = "Ventilateur         ";
+
+static PROGMEM unsigned char Q_RUN_POST_LEVEL_TEST[]         = "Voulez vous lancer  " "une impr. d'essai ?";
 
 // XXX REALLY UGLY HACK
 // to change me, take the gcode source in s3g scripts directory of firmware/src
