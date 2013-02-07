@@ -631,6 +631,9 @@ bool processQueryPacket(const InPacket& from_host, OutPacket& to_host) {
 	return false;
 }
 
+void clearMachineName(){
+	machineName[0] = 0;
+}
 char* getMachineName() {
 	// If the machine name hasn't been loaded, load it
 	if (machineName[0] == 0) {
@@ -682,8 +685,8 @@ sdcard::SdErrorCode startBuildFromSD() {
     // start build from utility script
 void startOnboardBuild(uint8_t  build){
 	
-	if(utility::startPlayback(build)){
-		currentState = HOST_STATE_BUILDING_ONBOARD;
+    if(utility::startPlayback(build)){
+	currentState = HOST_STATE_BUILDING_ONBOARD;
     Motherboard::getBoard().getInterfaceBoard().RecordOnboardStartIdx();
     Motherboard::getBoard().setBoardStatus(Motherboard::STATUS_ONBOARD_SCRIPT, true);
     command::reset();

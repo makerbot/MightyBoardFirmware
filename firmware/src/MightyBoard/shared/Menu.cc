@@ -41,6 +41,7 @@ FilamentMenu filamentMenu;
 NozzleCalibrationScreen alignment;
 HeaterPreheat preheat;
 UtilitiesMenu utils;
+LevelTestMenu levelTestMenu;
 SelectAlignmentMenu align;
 FilamentOKMenu filamentOK;
 InfoMenu info;
@@ -72,7 +73,11 @@ void SplashScreen::update(LiquidCrystalSerial& lcd, bool forceRedraw) {
 
   if (forceRedraw) {
     lcd.setCursor(0,0);
-    lcd.writeFromPgmspace(SPLASH1_MSG);
+    if(eeprom::isSingleTool()){
+      lcd.writeFromPgmspace(SPLASH1_SINGLE_MSG);
+    } else {
+      lcd.writeFromPgmspace(SPLASH1_DUAL_MSG);
+    }      
 
     lcd.setCursor(0,1);
     lcd.writeFromPgmspace(SPLASH2_MSG);
@@ -317,7 +322,11 @@ void WelcomeScreen::update(LiquidCrystalSerial& lcd, bool forceRedraw) {
 		lcd.setCursor(0,0);
     switch (welcomeState){
         case WELCOME_START:
-            lcd.writeFromPgmspace(START_MSG);
+            if (eeprom::isSingleTool()){
+              lcd.writeFromPgmspace(START_MSG);
+            } else {
+              lcd.writeFromPgmspace(START_DUAL_MSG);
+            }
             Motherboard::getBoard().interfaceBlink(25,15);
              break;
         case WELCOME_BUTTONS1:
@@ -388,7 +397,7 @@ void WelcomeScreen::notifyButtonPressed(ButtonArray::ButtonName button) {
            Motherboard::getBoard().interfaceBlink(0,0);
            welcomeState++; 
            if(levelSuccess == FAIL)
-             host::startOnboardBuild(utility::LEVEL_PLATE_SECOND);
+             host::startOnboardBuild(utility::LEVEL_PLATE_STARTUP);
            else
              host::startOnboardBuild(utility::LEVEL_PLATE_STARTUP);
            break;
@@ -422,7 +431,7 @@ void WelcomeScreen::notifyButtonPressed(ButtonArray::ButtonName button) {
           Motherboard::getBoard().interfaceBlink(0,0);
           welcomeState++; 
           if(levelSuccess == FAIL)
-            host::startOnboardBuild(utility::LEVEL_PLATE_SECOND);
+            host::startOnboardBuild(utility::LEVEL_PLATE_STARTUP);
           else
             host::startOnboardBuild(utility::LEVEL_PLATE_STARTUP);
             break;
@@ -706,7 +715,7 @@ void FilamentScreen::update(LiquidCrystalSerial& lcd, bool forceRedraw) {
         filamentState = FILAMENT_STOP;
     }
     /// if heating timer has eleapsed, alert user that the heater is not getting hot as expected
-    else if (filamentTimer.hasElapsed()){
+    else if (!startup && filamentTimer.hasElapsed()){
       Motherboard::getBoard().StopProgressBar();
       lcd.clear();
       lcd.setCursor(0,0);
@@ -729,7 +738,7 @@ void FilamentScreen::update(LiquidCrystalSerial& lcd, bool forceRedraw) {
     }
   }
   /// if not in FILAMENT_WAIT state and the motor times out (5 minutes) alert the user
-  else if(filamentTimer.hasElapsed()){
+  else if(!startup && filamentTimer.hasElapsed()){
     if(startup){
       filamentState = FILAMENT_OK;
       interface::pushScreen(&filamentOK);
@@ -835,7 +844,15 @@ void FilamentScreen::update(LiquidCrystalSerial& lcd, bool forceRedraw) {
         }else if(forward){
           lcd.writeFromPgmspace(READY_SINGLE_MSG);
         }else{
-          lcd.writeFromPgmspace(READY_REV_MSG);
+          if(eeprom::isSingleTool()){
+            lcd.writeFromPgmspace(READY_REV_MSG);
+          } else {
+            if(axisID == 3){
+              lcd.writeFromPgmspace(READY_REV_DUAL_R_MSG);
+            } else {
+              lcd.writeFromPgmspace(READY_REV_DUAL_L_MSG);
+            }			
+          }
           filamentState++;
         } 
         Motherboard::getBoard().interfaceBlink(25,15);
@@ -850,10 +867,15 @@ void FilamentScreen::update(LiquidCrystalSerial& lcd, bool forceRedraw) {
         if(startup)
           lcd.writeFromPgmspace(STOP_MSG_MSG);
         else{
-          if(forward)
+          if(forward){
             lcd.writeFromPgmspace(STOP_EXIT_MSG);
-          else 
-            lcd.writeFromPgmspace(STOP_REVERSE_MSG);
+          } else { 		
+             if(eeprom::isSingleTool()){
+               lcd.writeFromPgmspace(STOP_REVERSE_MSG);
+	     } else {
+               lcd.writeFromPgmspace(STOP_REV_DUAL_MSG);
+	     }
+	  } 
         }
         Motherboard::getBoard().interfaceBlink(25,15);
         break;
@@ -1638,14 +1660,14 @@ void MonitorMode::update(LiquidCrystalSerial& lcd, bool forceRedraw) {
             case host::HOST_STATE_BUILDING_FROM_SD:
                 name = host::getBuildName();
                 int8_t name_length;
-                //limit name length to 19, which is 15+'.s3g' 
-                // we remove the .s3g and we should only print 15 characters of the name
+                //limit name length to 19, which is 15+'.x3g' 
+                // we remove the .x3g and we should only print 15 characters of the name
                 name_length = strlen(name);
                 if (name_length > 19) name_length = 19;
-                // assume the last 4 characters are '.s3g' and don't print those
+                // assume the last 4 characters are '.x3g' and don't print those
                 while(name_length-- > 4)
                     lcd.write(*name++);
-                if(!((name[0] == '.') && ((name[1] == 's') || (name[1]=='x')) && (name[2] == '3') && (name[3] == 'g'))){
+                if(!((name[0] == '.') && (name[1]=='x') && (name[2] == '3') && (name[3] == 'g'))){
                     while(name_length-- >= 0)
                       lcd.write(*name++);
                 }
@@ -1699,14 +1721,14 @@ void MonitorMode::update(LiquidCrystalSerial& lcd, bool forceRedraw) {
                 case host::HOST_STATE_BUILDING_FROM_SD:
                     name = host::getBuildName();
                     int8_t name_length;
-                    //limit name length to 19, which is 15+'.s3g' 
-                    // we remove the .s3g and we should only print 15 characters of the name
+                    //limit name length to 19, which is 15+'.x3g' 
+                    // we remove the .x3g and we should only print 15 characters of the name
                     name_length = strlen(name);
                     if (name_length > 19) name_length = 19;
-                    // assume the last 4 characters are '.s3g' and don't print those
+                    // assume the last 4 characters are '.x3g' and don't print those
                     while(name_length-- > 4)
                         lcd.write(*name++);
-                    if(!((name[0] == '.') && ((name[1] == 's') || (name[1]=='x')) && (name[2] == '3') && (name[3] == 'g'))){
+                    if(!((name[0] == '.') && (name[1]=='x') && (name[2] == '3') && (name[3] == 'g'))){
                         while(name_length-- >= 0)
                           lcd.write(*name++);
                     }
@@ -2796,6 +2818,7 @@ void UtilitiesMenu::handleSelect(uint8_t index) {
       break;
     case 2:
       // level_plate script
+            interface::pushScreen(&levelTestMenu);
             host::startOnboardBuild(utility::LEVEL_PLATE_STARTUP);
       break;
     case 4:
@@ -2840,6 +2863,54 @@ void UtilitiesMenu::handleSelect(uint8_t index) {
 }
 
 
+LevelTestMenu::LevelTestMenu() {
+  itemCount = 4;
+  reset();
+}
+
+void LevelTestMenu::resetState(){
+  itemIndex = 2;
+  firstItemIndex = 2;
+}
+
+void LevelTestMenu::drawItem(uint8_t index, LiquidCrystalSerial& lcd, uint8_t line_number) {
+
+  switch(index){
+  case 0:
+    lcd.writeFromPgmspace(Q_RUN_POST_LEVEL_TEST);
+    break;
+  case 1:
+    break;
+  case 2:
+    lcd.writeFromPgmspace(NO_MSG);
+    break;
+  case 3:
+    lcd.writeFromPgmspace(YES_MSG);
+    break;
+  }
+}
+
+void LevelTestMenu::handleSelect(uint8_t index){
+
+  switch(index){
+  case 0:
+    break;
+  case 1:
+    break;
+  case 2:
+    interface::popScreen();
+    break;
+  case 3:
+    runTestPrint();
+    break;
+  }
+}
+
+void LevelTestMenu::runTestPrint(){
+  interface::popScreen();
+  host::startOnboardBuild(utility::POST_LEVEL);
+}
+
 InfoMenu::InfoMenu() {
   itemCount = 6;
   reset();
@@ -2871,6 +2942,7 @@ void InfoMenu::drawItem(uint8_t index, LiquidCrystalSerial& lcd, uint8_t line_nu
     break;
   }
 }
+
 
 void InfoMenu::handleSelect(uint8_t index) {
     
@@ -3099,6 +3171,14 @@ void SettingsMenu::handleSelect(uint8_t index) {
       if(!singleExtruder){
         Motherboard::getBoard().getExtruderBoard(1).getExtruderHeater().set_target_temperature(0);
       }
+// if we're a replicator 2, we need to update the machine name when the toolhead count is changed
+// unless the user has set a custom machine name
+#ifdef MODEL_REPLICATOR2
+      if(eeprom::hasDefaultMachineName()){
+        eeprom::setDefaultMachineName();
+        host::clearMachineName();
+      }
+#endif
       lineUpdate = 1;
       break;
     case 5:
@@ -3151,12 +3231,12 @@ void SDMenu::resetState() {
   sliding_menu = false;
 }
 
-//Returns true if the file is an s3g file
+//Returns true if the file is an x3g file
 //Keeping this in C instead of C++ saves 20 bytes
-bool isXS3GFile(char *filename, uint8_t len) {
+bool isX3GFile(char *filename, uint8_t len) {
     if ((len >= 4) && 
         (filename[len-4]== '.') && 
-        ((filename[len-3]== 's') || (filename[len-3] == 'x')) &&
+        (filename[len-3] == 'x') &&
         (filename[len-2]== '3')  && 
         (filename[len-1]== 'g')) return true;
     return false;
@@ -3202,7 +3282,7 @@ uint8_t SDMenu::countFiles() {
       break;
     }
 
-    if (isXS3GFile(fnbuf,idx) && !(fnbuf[0] == '.')) count++;
+    if (isX3GFile(fnbuf,idx) && !(fnbuf[0] == '.')) count++;
 
   } while (e == sdcard::SD_SUCCESS);
 
@@ -3249,7 +3329,7 @@ bool SDMenu::getFilename(uint8_t index, char buffer[], uint8_t buffer_size) {
         return false;
       }
       
-    } while ((e == sdcard::SD_SUCCESS) && (!isXS3GFile(fnbuf,idx) || (fnbuf[0] == '.')));
+    } while ((e == sdcard::SD_SUCCESS) && (!isX3GFile(fnbuf,idx) || (fnbuf[0] == '.')));
 
     if (e != sdcard::SD_SUCCESS) {
        return false;
