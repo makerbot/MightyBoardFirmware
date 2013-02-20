@@ -38,8 +38,6 @@ LEVEL_PLATE_SINGLE
  namespace utility {
 	 
 	 volatile bool is_playing;
-   volatile bool post_level_test;
-   uint8_t post_level_index = 0;
 	 int build_index = 0;
 	 int build_length = 0;
 	 uint8_t * buildFile;
@@ -53,9 +51,7 @@ LEVEL_PLATE_SINGLE
  void reset(){
 	 uint16_t build_index = 0;
 	 uint16_t build_length = 0;
-   uint8_t post_level_index = 0;
 	 is_playing = false;
-   post_level_test = false;
    show_monitor = true;
  
  }
@@ -88,7 +84,6 @@ LEVEL_PLATE_SINGLE
 	 
    is_playing = true;
    build_index = 0;
-   post_level_index = 0;
    show_monitor = false;
 
      // get build file
@@ -108,12 +103,6 @@ LEVEL_PLATE_SINGLE
       show_monitor = true;
 			buildFile = NozzleCalibrate;
 			break;
-    case POST_LEVEL:;
-     {
-      show_monitor = true;
-      buildFile = NULL;
-      break;
-    }
 		default:
       is_playing = false;
 			return false;
@@ -122,52 +111,13 @@ LEVEL_PLATE_SINGLE
      // get build length
 	 build_length = pgm_read_word(Lengths + build);
 	 
-  if(buildFile == NULL){
-    post_level_test = true;
-    if(eeprom::hasHBP()){
-      build_length = POST_LEVEL_HBP_START_LEN;
-      buildFile = PostLevelHBPPlaylist[post_level_index];
-      build_length = PostLevelHBPPlaylistLengths[post_level_index];
-    }
-    else{
-      build_length = POST_LEVEL_NOHBP_START_LEN;
-      buildFile = PostLevelNoHBPPlaylist[post_level_index];
-      build_length = PostLevelNoHBPPlaylistLengths[post_level_index];
-    }
-  }
-	 
 	 return is_playing;
  }
      
  /// updates state to finished playback
  void finishPlayback(){
-  if(post_level_test){
-    if(continuePostLevelPlaylist()){
-      is_playing = true;
-      return;
-    }
-  }
-	is_playing = false;
-  post_level_test = false;
+	is_playing = false;;
 	show_monitor = true;
- }
-
- //change the currently building s3g to the next one on the playlist if needed
- bool continuePostLevelPlaylist(){
-     if(post_level_index < POST_LEVEL_PLAYLIST_LEN-1){
-      post_level_index++;
-      if(eeprom::hasHBP()){
-        buildFile = PostLevelHBPPlaylist[post_level_index];
-        build_length = PostLevelHBPPlaylistLengths[post_level_index];
-      }
-      else{
-        buildFile = PostLevelNoHBPPlaylist[post_level_index];
-        build_length = PostLevelNoHBPPlaylistLengths[post_level_index];
-      }
-      build_index = 0;
-      return true;
-    }
-    return false;
  }
 };
 
