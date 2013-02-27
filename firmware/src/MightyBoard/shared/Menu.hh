@@ -671,19 +671,6 @@ private:
 
 };
 
-class LevelTestMenu: public Menu {
-public:
-  LevelTestMenu();
-
-protected:
-  void drawItem(uint8_t index, LiquidCrystalSerial& lcd, uint8_t line_number);
-
-  void handleSelect(uint8_t index);
-
-  void resetState();
-  
-  void runTestPrint();
-};
 
 class InfoMenu: public Menu {
 public:
