@@ -78,12 +78,17 @@ USB_ClassInfo_CDC_Device_t VirtualSerial_CDC_Interface =
 			},
 	};
 
+/** Main program entry point. This routine contains the overall program flow, including initial
+ *  setup of all components and the main program loop.
+ */
+
+
 ISR(PCINT1_vect, ISR_NAKED)
 /* This ISR handles the enabling/disabling of the USB Controller
    base on a pinchange on the vbus */
 {
 
-	bool vbus_detect = bit_is_clear(PINC, 4); //USB should be active when PINC4 is low
+	bool vbus_detect = bit_is_clear(PINC, 4); //USB should be active when PIN C4 is low
 
 	if(vbus_detect) //USB plugged in
 	{
@@ -96,9 +101,9 @@ ISR(PCINT1_vect, ISR_NAKED)
 			USB_Attach();
 			USB_IsInitialized = true;
 			USB_ResetInterface();
-		}
-	}
-	else
+		}	
+	}	
+	if(!(vbus_detect))
 	{
 		if(USB_IsInitialized)
 		{
@@ -107,13 +112,10 @@ ISR(PCINT1_vect, ISR_NAKED)
 			USB_CLK_Freeze();
 			USB_PLL_Off();
 			USB_IsInitialized = false;
-		}
+		}	
 	}
+	reti();
 }
-
-/** Main program entry point. This routine contains the overall program flow, including initial
- *  setup of all components and the main program loop.
- */
 int main(void)
 {
 	SetupHardware();
@@ -123,18 +125,18 @@ int main(void)
 
 	sei();
 
+	//To handle if the bot is booted and does not have a viable USB connection
+	if(bit_is_set(PINC, 4) && USB_IsInitialized)
+	{
+		USB_Detach();
+		USB_Controller_Disable();
+		USB_CLK_Freeze();
+		USB_PLL_Off();
+		USB_IsInitialized = false;
+	}
+
 	for (;;)
 	{
-		//To handle if the bot is booted and does not have a viable USB connection
-		if(bit_is_set(PINC, 4) & USB_IsInitialized)
-		{
-			USB_Detach();
-			USB_Controller_Disable();
-			USB_CLK_Freeze();
-			USB_PLL_Off();
-			USB_IsInitialized = false;
-		}
-
 		while(USB_IsInitialized)
 		{
 			/* Only try to read in bytes from the CDC interface if the transmit buffer is not full */
@@ -144,7 +146,7 @@ int main(void)
 
 				/* Read bytes from the USB OUT endpoint into the USART transmit buffer */
 				if (!(ReceivedByte < 0))
-				  RingBuffer_Insert(&USBtoUSART_Buffer, ReceivedByte);
+					RingBuffer_Insert(&USBtoUSART_Buffer, ReceivedByte);
 			}
 		
 			/* Check if the UART receive buffer flush timer has expired or the buffer is nearly full */
@@ -160,8 +162,8 @@ int main(void)
 
 				/* Read bytes from the USART receive buffer into the USB IN endpoint */
 				while (BufferCount--)
-				  CDC_Device_SendByte(&VirtualSerial_CDC_Interface, RingBuffer_Remove(&USARTtoUSB_Buffer));
-				  
+					CDC_Device_SendByte(&VirtualSerial_CDC_Interface, RingBuffer_Remove(&USARTtoUSB_Buffer));
+			  
 				/* Turn off TX LED(s) once the TX pulse period has elapsed */
 				if (PulseMSRemaining.TxLEDPulse && !(--PulseMSRemaining.TxLEDPulse))
 				  LEDs_TurnOffLEDs(LEDMASK_TX);
@@ -173,31 +175,31 @@ int main(void)
 		
 			/* Load the next byte from the USART transmit buffer into the USART */
 			if (!(RingBuffer_IsEmpty(&USBtoUSART_Buffer))) {
-			  Serial_TxByte(RingBuffer_Remove(&USBtoUSART_Buffer));
-			  	
-			  	LEDs_TurnOnLEDs(LEDMASK_RX);
+				Serial_TxByte(RingBuffer_Remove(&USBtoUSART_Buffer));
+		  	
+		  		LEDs_TurnOnLEDs(LEDMASK_RX);
 				PulseMSRemaining.RxLEDPulse = TX_RX_LED_PULSE_MS;
 			}
 		
 			CDC_Device_USBTask(&VirtualSerial_CDC_Interface);
 			USB_USBTask();
-		}
+		}			
 	}
 }
 
 /** Configures the board hardware and chip peripherals for the demo's functionality. */
 void SetupHardware(void)
 {
+	// Setup pin change interrupt
+	PCMSK1 |= (1 << PCINT10);
+	PCICR |= (1 << PCIE1);
+	
+	DDRC &= ~(1 << DDC4);
+	PORTC |= (1 << PORTC4);
+
 	/* Disable watchdog if enabled by bootloader/fuses */
 	MCUSR &= ~(1 << WDRF);
 	wdt_disable();
-
-	/* Setup pin change interrupt */
-	PCMSK1 |= (1 << PCINT10);
-	PCICR |= (1 << PCIE1);
-
-	DDRC &= ~(1 << DDC4);
-	PORTC |= (1 << PORTC4);
 
 	/* Hardware Initialization */
 	Serial_Init(115200, false);
