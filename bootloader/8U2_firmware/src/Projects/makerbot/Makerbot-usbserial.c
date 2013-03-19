@@ -78,10 +78,6 @@ USB_ClassInfo_CDC_Device_t VirtualSerial_CDC_Interface =
 			},
 	};
 
-/** Main program entry point. This routine contains the overall program flow, including initial
- *  setup of all components and the main program loop.
- */
-
 
 ISR(PCINT1_vect, ISR_NAKED)
 /* This ISR handles the enabling/disabling of the USB Controller
@@ -116,6 +112,11 @@ ISR(PCINT1_vect, ISR_NAKED)
 	}
 	reti();
 }
+
+
+/** Main program entry point. This routine contains the overall program flow, including initial
+ *  setup of all components and the main program loop.
+ */
 int main(void)
 {
 	SetupHardware();
