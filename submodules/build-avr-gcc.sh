@@ -24,7 +24,7 @@ then
 	wget -N -P incoming http://ftp.gnu.org/gnu/binutils/binutils-${BINUTILS_VERSION}.tar.bz2
 	bzip2 -dc incoming/binutils-${BINUTILS_VERSION}.tar.bz2 | tar xf -
 fi
-if test -d binutils-${BINUTILS_VERSION}/obj-avr
+if test ! -d binutils-${BINUTILS_VERSION}/obj-avr
 then
 	cd binutils-${BINUTILS_VERSION}
 	mkdir obj-avr
@@ -76,15 +76,16 @@ then
 	cd ../..
 fi
 
+wget -N -P incoming http://download.savannah.gnu.org/releases/avr-libc/avr-libc-1.7.1.tar.bz2
 if test ! -d avr-libc-${AVR_LIBC_VERSION}
 then
 	bzip2 -dc incoming/avr-libc-${AVR_LIBC_VERSION}.tar.bz2 | tar xf -
 	if test -f incoming/avr-libc-${AVR_LIBC_VERSION}-gcc-${GCC_VERSION}.patch
 	then
-		patch -p0 < incoming/avr-libc-${AVR_LIBC_VERSION}-gcc-${GCC_VERSION}.patch
-		# cd avr-libc-${AVR_LIBC_VERSION}
+		cd avr-libc-${AVR_LIBC_VERSION}
+		patch -p1 < ../incoming/avr-libc-${AVR_LIBC_VERSION}-gcc-${GCC_VERSION}.patch
 		# autoreconf
-		# cd ..
+		cd ..
 	fi
 	cd avr-libc-${AVR_LIBC_VERSION}
 	./configure --prefix=${PREFIX} --build=$(./config.guess) --host=avr
