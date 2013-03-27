@@ -295,7 +295,7 @@ static PROGMEM unsigned char ERROR_SD_CARD_GENERIC[] = " SD card read error";
 static PROGMEM unsigned char ERROR_TEMP_RESET_EXTERNALLY[] = "My temperature was  changed externally. Reselect filament   menu to try again.";
 
 static PROGMEM unsigned char ERROR_INVALID_PLATFORM[] = "INVALID COMMAND:    I received a commandfor a heated plate, but I don't have one";
-static PROGMEM unsigned char ERROR_INVALID_TOOL[] = "INVALID TOOL:       I received a Left   Tool comand, but I  only have one Tool.";
+static PROGMEM unsigned char ERROR_INVALID_TOOL[] =     "INVALID TOOL:       I received a Left   Tool command, but I only have one Tool. ";
 static PROGMEM unsigned char ACTIVE_FAN_MSG[]		 = "Filament Fan        ";
 
 /// the gcode and s3g files for these scripts are located in firmware/s3g_scripts
