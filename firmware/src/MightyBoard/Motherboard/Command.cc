@@ -636,9 +636,11 @@ void runCommandSlice() {
 				interface::popScreen();
 				sleep_mode = SLEEP_ACTIVE;
 				uint8_t pot_value = 20;
-				for(uint8_t i = 0; i < 2; ++i)
-				{
-					steppers::setAxisPotValue(i, pot_value);
+				if (!(sleep_type == SLEEP_TYPE_FILAMENT)) {
+					for(uint8_t i = 0; i < 2; ++i)
+					{
+						steppers::setAxisPotValue(i, pot_value);
+					}
 				}
 				if(sleep_type == SLEEP_TYPE_COLD){
 					for(uint8_t i = 3; i < 5; ++i)
@@ -650,11 +652,13 @@ void runCommandSlice() {
 			// restart called while still moving to waiting position
 			// wait for move to wait position to finish before restarting
 			}else if(((sleep_mode == SLEEP_MOVING_WAIT) && st_empty()) ||
-					(sleep_mode == SLEEP_RESTART)){
+						(sleep_mode == SLEEP_RESTART)){
 				uint8_t pot_value = 127;
-				for(uint8_t i = 0; i < 2; ++i)
-				{
-					steppers::setAxisPotValue(i, pot_value);
+				if (!(sleep_type == SLEEP_TYPE_FILAMENT)) {
+					for(uint8_t i = 0; i < 2; ++i)
+					{
+						steppers::setAxisPotValue(i, pot_value);
+					}
 				}
 				if(sleep_type == SLEEP_TYPE_COLD){
 					for(uint8_t i = 3; i < 5; ++i)

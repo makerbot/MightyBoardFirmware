@@ -24,6 +24,7 @@
 #include "Menu_locales.hh"
 #include "Piezo.hh"
 #include "Main.hh"
+#include "StepperAccelPlanner.hh"
 
 CancelBuildMenu cancel_build_menu;
 BuildStats build_stats_screen;
@@ -35,6 +36,7 @@ ActiveBuildMenu active_build_menu;
 JogMode jogger;
 BotStats bot_stats;
 SettingsMenu set;
+StopHeightMenu height;
 PreheatSettingsMenu preheatSettings;
 ResetSettingsMenu reset_settings;
 FilamentMenu filamentMenu;
@@ -1627,8 +1629,11 @@ void MonitorMode::setBuildPercentage(uint8_t percent){
   buildPercentage = percent;
 }
 
+bool display_time = 0;
 
 void MonitorMode::update(LiquidCrystalSerial& lcd, bool forceRedraw) {
+  uint8_t build_hours;
+  uint8_t build_minutes;
 
   Motherboard& board = Motherboard::getBoard();
     
@@ -1639,6 +1644,9 @@ void MonitorMode::update(LiquidCrystalSerial& lcd, bool forceRedraw) {
     board.StartProgressBar(0,8, 20);
   }
    
+
+
+
   char * name;
   if (forceRedraw) {
                 
@@ -1672,6 +1680,8 @@ void MonitorMode::update(LiquidCrystalSerial& lcd, bool forceRedraw) {
                 }
                     
                     
+                lcd.setCursor(13,0);
+                lcd.writeFromPgmspace(CLEAR_TIME_SPECIFYING_LETTERS);
                 lcd.setCursor(16,0);
                 lcd.writeFromPgmspace(BUILD_PERCENT_MSG);
                 
@@ -1732,6 +1742,8 @@ void MonitorMode::update(LiquidCrystalSerial& lcd, bool forceRedraw) {
                           lcd.write(*name++);
                     }
                     
+                    lcd.setCursor(13,0);
+                    lcd.writeFromPgmspace(CLEAR_TIME_SPECIFYING_LETTERS);
                     lcd.setCursor(16,0);
                     lcd.writeFromPgmspace(BUILD_PERCENT_MSG);
                     break;
@@ -1835,16 +1847,34 @@ void MonitorMode::update(LiquidCrystalSerial& lcd, bool forceRedraw) {
     state = host::getHostState();
     if(!heating && ((state == host::HOST_STATE_BUILDING) || (state == host::HOST_STATE_BUILDING_FROM_SD)))
     {
-      if(buildPercentage < 100)
-      {
-        lcd.setCursor(17,0);
-        lcd.writeInt(buildPercentage,2);
-      }
-      else if(buildPercentage == 100)
-      {
+      if(display_time) {
+
+        host::getPrintTime(build_hours, build_minutes);
         lcd.setCursor(16,0);
-        lcd.writeFromPgmspace(DONE_MSG);
+        lcd.writeFromPgmspace(TIME_SPECIFYING_LETTERS);
+        lcd.setCursor(14,0);
+        lcd.writeInt(build_hours,2);
+        
+        lcd.setCursor(17,0);
+        lcd.writeInt(build_minutes,2);
+      } else {
+
+        lcd.setCursor(13,0);
+        lcd.writeFromPgmspace(CLEAR_TIME_SPECIFYING_LETTERS);
+        lcd.setCursor(16,0);
+        lcd.writeFromPgmspace(BUILD_PERCENT_MSG);
+        if(buildPercentage < 100)
+        {
+          lcd.setCursor(17,0);
+          lcd.writeInt(buildPercentage,2);
+        }
+        else if(buildPercentage == 100)
+        {
+          lcd.setCursor(16,0);
+          lcd.writeFromPgmspace(DONE_MSG);
+        }
       }
+      display_time = !display_time;
     }
     break;
   }
@@ -2227,16 +2257,16 @@ void ResetSettingsMenu::handleSelect(uint8_t index) {
 }
 
 #ifdef ACTIVE_COOLING_FAN
-  const static uint8_t FanIdx = 4;
+  const static uint8_t FanIdx = 5; // XXX: increased by 1 to create space for new menu (filament change height stop), just a note
 #else
-  const static uint8_t FanIdx = 3;
+  const static uint8_t FanIdx = 4; // XXX: increased by 1 to create space for new menu (filament change height stop), just a note
 #endif
 
 ActiveBuildMenu::ActiveBuildMenu(){
 #ifdef ACTIVE_COOLING_FAN
-  itemCount = 8;
+  itemCount = 9; // XXX: increased by 1 to create space for new menu (filament change height stop), just a note
 #else
-  itemCount = 7;
+  itemCount = 8; // XXX: increased by 1 to create space for new menu (filament change height stop), just a note
 #endif  
   reset();
   for (uint8_t i = 0; i < itemCount; i++){
@@ -2276,6 +2306,13 @@ void ActiveBuildMenu::drawItem(uint8_t index, LiquidCrystalSerial& lcd, uint8_t 
             }
             break;
         case 3:
+            if(!steppers::isZHomed()){
+                lcd.writeFromPgmspace(WAIT_FOR_HOMING_MSG);
+            } else {
+                lcd.writeFromPgmspace(CHANGE_FILAMENT_HEIGHT_MSG); // XXX: Changed to be change filament height stop menu name
+            }
+            break;
+        case 4:
             if(!steppers::isZHomed()){
                 lcd.writeFromPgmspace(WAIT_FOR_HOMING_MSG);
             } else {
@@ -2375,6 +2412,7 @@ void ActiveBuildMenu::handleSelect(uint8_t index){
       interface::pushScreen(&build_stats_screen);
       break;
     case 2:
+      // Change filament
       if(steppers::isZHomed()){
           preheatActive = true;
           host::pauseBuild(false);
@@ -2386,7 +2424,13 @@ void ActiveBuildMenu::handleSelect(uint8_t index){
           is_sleeping = true;
       }
       break;
-    case 0:
+    case 3:
+      // Set stop at filament height value
+      if(steppers::isZHomed()){
+          interface::pushScreen(&height);
+      }
+      break;
+     case 0:
       // pause command execution
       is_paused = !is_paused;
       host::pauseBuild(is_paused);
@@ -2403,7 +2447,8 @@ void ActiveBuildMenu::handleSelect(uint8_t index){
       // Cancel build
       interface::pushScreen(&cancel_build_menu);
       break;
-    case 3:
+    case 4:
+      // Sleep (Cold Pause)
       if(steppers::isZHomed()){
         is_sleeping = !is_sleeping;
         if(is_sleeping){
@@ -2920,6 +2965,101 @@ void InfoMenu::handleSelect(uint8_t index) {
       break;
     }
 }
+
+
+
+StopHeightMenu::StopHeightMenu() {
+  itemCount = 3;
+  reset();
+  for (uint8_t i = 0; i < itemCount; i++) {
+    counter_item[i] = 0;
+  }
+  counter_item[1] = 1;
+  stopHeightEnabled = 0;
+}
+
+void StopHeightMenu::resetState(){
+  stopHeightValue = eeprom::getEeprom8(eeprom_offsets::STOP_HEIGHT_VALUE, 0); // XXX
+}
+
+void StopHeightMenu::drawItem(uint8_t index, LiquidCrystalSerial& lcd, uint8_t line_number) {
+
+  switch (index) {
+    case 0:
+      lcd.writeFromPgmspace(HEIGHT_EN_MSG); // XXX
+      lcd.setCursor(14,line_number); // XXX
+      stopHeightEnabled = plan_get_height_stop_enable();
+      if(stopHeightEnabled)
+          lcd.writeFromPgmspace(ON_MSG);
+      else
+          lcd.writeFromPgmspace(OFF_MSG);
+      break;
+   case 1:
+      lcd.writeFromPgmspace(HEIGHT_VALUE_MSG); // XXX
+      lcd.setCursor(11,line_number);
+      if(selectIndex == 1)
+         lcd.writeFromPgmspace(ARROW_MSG);
+      else
+        lcd.writeFromPgmspace(NO_ARROW_MSG);
+      lcd.setCursor(14,line_number);
+      lcd.writeInt(stopHeightValue, 3);
+      break;
+   case 2:
+      lcd.writeFromPgmspace(EXIT_MSG);
+      break;
+  }
+}
+
+void StopHeightMenu::handleCounterUpdate(uint8_t index, bool up){
+    switch (index) {
+     case 1:
+        // update left counter
+        if(up) {
+            stopHeightValue++;
+        }
+        else {
+            stopHeightValue--;
+        }
+        // keep within appropriate boundaries
+        if(stopHeightValue > 150) {// XXX
+            stopHeightValue = 1;
+        }
+        else if(stopHeightValue < 1) {
+            stopHeightValue = 150;
+        }
+
+        ATOMIC_BLOCK(ATOMIC_RESTORESTATE){
+          eeprom_write_byte((uint8_t*)eeprom_offsets::STOP_HEIGHT_VALUE, stopHeightValue); // XXX
+        }
+        break;
+    }
+    
+}
+
+void StopHeightMenu::handleSelect(uint8_t index) {
+  switch (index) {
+    case 0:
+      // update height stop enable selection
+      stopHeightEnabled = !stopHeightEnabled;
+      plan_read_height_stop_position(stopHeightEnabled);
+      lineUpdate = 1;
+      break;
+    case 1:
+      // update height stop value preferences
+      ATOMIC_BLOCK(ATOMIC_RESTORESTATE){
+        eeprom_write_byte((uint8_t*)eeprom_offsets::STOP_HEIGHT_VALUE, stopHeightValue); // XXX
+      }
+      plan_read_height_stop_position(stopHeightEnabled);
+      lineUpdate = 1;
+      break;
+    case 2:
+      interface::popScreen();
+      break;
+    }
+}
+
+
+
 
 
 SettingsMenu::SettingsMenu() {

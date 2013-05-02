@@ -248,6 +248,11 @@ void plan_init(FPTYPE extruderAdvanceK, FPTYPE extruderAdvanceK2, bool zhold);
 // Add a new linear movement to the buffer.
 void plan_buffer_line(FPTYPE feed_rate, const uint32_t &dda_rate, const uint8_t &extruder, bool use_accel, uint8_t active_toolhead);
 
+// Fetch value (from the EEPROM) used to pause print so the filament can be changed midprint at a specific height and receive the enable variable
+void plan_read_height_stop_position(bool height_stop_enable);
+// Return enable variable
+bool plan_get_height_stop_enable();
+
 // Set position. Used for G92 instructions.
 void plan_set_position(const int32_t &x, const int32_t &y, const int32_t &z, const int32_t &a, const int32_t &b);
 void plan_set_e_position(const int32_t &a, const int32_t &b);

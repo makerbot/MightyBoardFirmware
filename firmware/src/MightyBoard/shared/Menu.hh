@@ -630,6 +630,31 @@ private:
     
 };
 
+class StopHeightMenu: public Menu {
+public:
+	StopHeightMenu();
+	
+	micros_t getUpdateRate() {return 100L * 1000L;}
+    
+    
+protected:
+	void resetState();
+    
+	void drawItem(uint8_t index, LiquidCrystalSerial& lcd, uint8_t line_number);
+    
+	void handleSelect(uint8_t index);
+	
+	void handleCounterUpdate(uint8_t index, bool up);
+    
+private:
+    
+	// Enable for stopping at a specified height to change filament
+	uint8_t  stopHeightEnabled;
+	// Value in millimeters for stopping at a specified height to change filament
+	uint8_t   stopHeightValue;
+    
+};
+
 class FilamentMenu: public Menu {
 public:
 	FilamentMenu();
