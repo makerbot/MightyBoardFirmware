@@ -1077,9 +1077,6 @@ void plan_init(FPTYPE extruderAdvanceK, FPTYPE extruderAdvanceK2, bool zhold) {
 // icroseconds specify how many microseconds the move should take to perform. To aid acceleration
 // calculation the caller must also provide the physical length of the line in millimeters.
 // The stepper module, gaurantees this never gets called with 0 steps
-bool filament_change_stop_enable = true;
-uint32_t filament_change_stop_height = 1200;
-
 void plan_buffer_line(FPTYPE feed_rate, const uint32_t &dda_rate, const uint8_t &extruder, bool use_accel, uint8_t active_toolhead)
 {
 	//If we have an empty buffer, then disable slowdown until the buffer has become at least 1/2 full
@@ -1555,7 +1552,7 @@ void plan_buffer_line(FPTYPE feed_rate, const uint32_t &dda_rate, const uint8_t 
 void plan_read_height_stop_position(bool height_stop_enable) {
 
 	stopHeightEnabled = height_stop_enable;
-	stopHeightValue = eeprom::getEeprom8(eeprom_offsets::STOP_HEIGHT_VALUE, 0); // XXX
+	stopHeightValue = eeprom::getEeprom8(eeprom_offsets::STOP_HEIGHT_VALUE, 0);
 
 }
 

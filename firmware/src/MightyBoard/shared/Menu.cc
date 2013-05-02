@@ -2257,16 +2257,16 @@ void ResetSettingsMenu::handleSelect(uint8_t index) {
 }
 
 #ifdef ACTIVE_COOLING_FAN
-  const static uint8_t FanIdx = 5; // XXX: increased by 1 to create space for new menu (filament change height stop), just a note
+  const static uint8_t FanIdx = 5;
 #else
-  const static uint8_t FanIdx = 4; // XXX: increased by 1 to create space for new menu (filament change height stop), just a note
+  const static uint8_t FanIdx = 4;
 #endif
 
 ActiveBuildMenu::ActiveBuildMenu(){
 #ifdef ACTIVE_COOLING_FAN
-  itemCount = 9; // XXX: increased by 1 to create space for new menu (filament change height stop), just a note
+  itemCount = 9;
 #else
-  itemCount = 8; // XXX: increased by 1 to create space for new menu (filament change height stop), just a note
+  itemCount = 8;
 #endif  
   reset();
   for (uint8_t i = 0; i < itemCount; i++){
@@ -2309,7 +2309,7 @@ void ActiveBuildMenu::drawItem(uint8_t index, LiquidCrystalSerial& lcd, uint8_t 
             if(!steppers::isZHomed()){
                 lcd.writeFromPgmspace(WAIT_FOR_HOMING_MSG);
             } else {
-                lcd.writeFromPgmspace(CHANGE_FILAMENT_HEIGHT_MSG); // XXX: Changed to be change filament height stop menu name
+                lcd.writeFromPgmspace(CHANGE_FILAMENT_HEIGHT_MSG);
             }
             break;
         case 4:
@@ -2979,15 +2979,15 @@ StopHeightMenu::StopHeightMenu() {
 }
 
 void StopHeightMenu::resetState(){
-  stopHeightValue = eeprom::getEeprom8(eeprom_offsets::STOP_HEIGHT_VALUE, 0); // XXX
+  stopHeightValue = eeprom::getEeprom8(eeprom_offsets::STOP_HEIGHT_VALUE, 0);
 }
 
 void StopHeightMenu::drawItem(uint8_t index, LiquidCrystalSerial& lcd, uint8_t line_number) {
 
   switch (index) {
     case 0:
-      lcd.writeFromPgmspace(HEIGHT_EN_MSG); // XXX
-      lcd.setCursor(14,line_number); // XXX
+      lcd.writeFromPgmspace(HEIGHT_EN_MSG);
+      lcd.setCursor(14,line_number);
       stopHeightEnabled = plan_get_height_stop_enable();
       if(stopHeightEnabled)
           lcd.writeFromPgmspace(ON_MSG);
@@ -2995,7 +2995,7 @@ void StopHeightMenu::drawItem(uint8_t index, LiquidCrystalSerial& lcd, uint8_t l
           lcd.writeFromPgmspace(OFF_MSG);
       break;
    case 1:
-      lcd.writeFromPgmspace(HEIGHT_VALUE_MSG); // XXX
+      lcd.writeFromPgmspace(HEIGHT_VALUE_MSG);
       lcd.setCursor(11,line_number);
       if(selectIndex == 1)
          lcd.writeFromPgmspace(ARROW_MSG);
@@ -3021,7 +3021,7 @@ void StopHeightMenu::handleCounterUpdate(uint8_t index, bool up){
             stopHeightValue--;
         }
         // keep within appropriate boundaries
-        if(stopHeightValue > 150) {// XXX
+        if(stopHeightValue > 150) {
             stopHeightValue = 1;
         }
         else if(stopHeightValue < 1) {
@@ -3029,7 +3029,7 @@ void StopHeightMenu::handleCounterUpdate(uint8_t index, bool up){
         }
 
         ATOMIC_BLOCK(ATOMIC_RESTORESTATE){
-          eeprom_write_byte((uint8_t*)eeprom_offsets::STOP_HEIGHT_VALUE, stopHeightValue); // XXX
+          eeprom_write_byte((uint8_t*)eeprom_offsets::STOP_HEIGHT_VALUE, stopHeightValue);
         }
         break;
     }
@@ -3047,7 +3047,7 @@ void StopHeightMenu::handleSelect(uint8_t index) {
     case 1:
       // update height stop value preferences
       ATOMIC_BLOCK(ATOMIC_RESTORESTATE){
-        eeprom_write_byte((uint8_t*)eeprom_offsets::STOP_HEIGHT_VALUE, stopHeightValue); // XXX
+        eeprom_write_byte((uint8_t*)eeprom_offsets::STOP_HEIGHT_VALUE, stopHeightValue);
       }
       plan_read_height_stop_position(stopHeightEnabled);
       lineUpdate = 1;
