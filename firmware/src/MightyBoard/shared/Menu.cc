@@ -1630,6 +1630,7 @@ void MonitorMode::setBuildPercentage(uint8_t percent){
 }
 
 bool display_time = 0;
+bool two_digit_hours = 0;
 
 void MonitorMode::update(LiquidCrystalSerial& lcd, bool forceRedraw) {
   uint8_t build_hours;
@@ -1680,8 +1681,13 @@ void MonitorMode::update(LiquidCrystalSerial& lcd, bool forceRedraw) {
                 }
                     
                     
-                lcd.setCursor(13,0);
-                lcd.writeFromPgmspace(CLEAR_TIME_SPECIFYING_LETTERS);
+                if (two_digit_hours) {
+                  lcd.setCursor(13,0);
+                  lcd.writeFromPgmspace(CLEAR_TIME_SPECIFYING_LETTERS);
+                } else {
+                  lcd.setCursor(14,0);
+                  lcd.writeFromPgmspace(CLEAR_TIME_SPECIFYING_LETTERS_1DIGIT_H);
+                }
                 lcd.setCursor(16,0);
                 lcd.writeFromPgmspace(BUILD_PERCENT_MSG);
                 
@@ -1742,8 +1748,13 @@ void MonitorMode::update(LiquidCrystalSerial& lcd, bool forceRedraw) {
                           lcd.write(*name++);
                     }
                     
-                    lcd.setCursor(13,0);
-                    lcd.writeFromPgmspace(CLEAR_TIME_SPECIFYING_LETTERS);
+                    if (two_digit_hours) {
+                      lcd.setCursor(13,0);
+                      lcd.writeFromPgmspace(CLEAR_TIME_SPECIFYING_LETTERS);
+                    } else {
+                      lcd.setCursor(14,0);
+                      lcd.writeFromPgmspace(CLEAR_TIME_SPECIFYING_LETTERS_1DIGIT_H);
+                    }
                     lcd.setCursor(16,0);
                     lcd.writeFromPgmspace(BUILD_PERCENT_MSG);
                     break;
@@ -1852,15 +1863,24 @@ void MonitorMode::update(LiquidCrystalSerial& lcd, bool forceRedraw) {
         host::getPrintTime(build_hours, build_minutes);
         lcd.setCursor(16,0);
         lcd.writeFromPgmspace(TIME_SPECIFYING_LETTERS);
-        lcd.setCursor(14,0);
-        lcd.writeInt(build_hours,2);
+        lcd.setCursor(15,0);
+        if (two_digit_hours) {
+          lcd.writeInt(build_hours,2);
+        } else {
+          lcd.writeInt(build_hours,1);
+        }
         
         lcd.setCursor(17,0);
         lcd.writeInt(build_minutes,2);
       } else {
 
-        lcd.setCursor(13,0);
-        lcd.writeFromPgmspace(CLEAR_TIME_SPECIFYING_LETTERS);
+        if (two_digit_hours) {
+          lcd.setCursor(13,0);
+          lcd.writeFromPgmspace(CLEAR_TIME_SPECIFYING_LETTERS);
+        } else {
+          lcd.setCursor(14,0);
+          lcd.writeFromPgmspace(CLEAR_TIME_SPECIFYING_LETTERS_1DIGIT_H);
+        }
         lcd.setCursor(16,0);
         lcd.writeFromPgmspace(BUILD_PERCENT_MSG);
         if(buildPercentage < 100)
@@ -2309,18 +2329,19 @@ void ActiveBuildMenu::drawItem(uint8_t index, LiquidCrystalSerial& lcd, uint8_t 
             if(!steppers::isZHomed()){
                 lcd.writeFromPgmspace(WAIT_FOR_HOMING_MSG);
             } else {
-                lcd.writeFromPgmspace(CHANGE_FILAMENT_HEIGHT_MSG);
-            }
-            break;
-        case 4:
-            if(!steppers::isZHomed()){
-                lcd.writeFromPgmspace(WAIT_FOR_HOMING_MSG);
-            } else {
                 if(!is_sleeping){
                   lcd.writeFromPgmspace(SLEEP_MSG);
                 }else {
                   lcd.writeFromPgmspace(RESTART_MSG);
                 }
+            }
+            break;
+        // Z Pause Height/Change Filament Height menu
+        case 4:
+            if(!steppers::isZHomed()){
+                lcd.writeFromPgmspace(WAIT_FOR_HOMING_MSG);
+            } else {
+                lcd.writeFromPgmspace(CHANGE_FILAMENT_HEIGHT_MSG);
             }
             break;
         case FanIdx+1:
@@ -2408,28 +2429,6 @@ void ActiveBuildMenu::handleCounterUpdate(uint8_t index, bool up){
 void ActiveBuildMenu::handleSelect(uint8_t index){
   
   switch (index) {
-    case FanIdx +2:
-      interface::pushScreen(&build_stats_screen);
-      break;
-    case 2:
-      // Change filament
-      if(steppers::isZHomed()){
-          preheatActive = true;
-          host::pauseBuild(false);
-          is_paused = false;
-          // record the start screen here
-          Motherboard::getBoard().getInterfaceBoard().RecordOnboardStartIdx();
-          interface::pushScreen(&filamentMenu);
-          host::activePauseBuild(true, command::SLEEP_TYPE_FILAMENT);
-          is_sleeping = true;
-      }
-      break;
-    case 3:
-      // Set stop at filament height value
-      if(steppers::isZHomed()){
-          interface::pushScreen(&height);
-      }
-      break;
      case 0:
       // pause command execution
       is_paused = !is_paused;
@@ -2447,7 +2446,20 @@ void ActiveBuildMenu::handleSelect(uint8_t index){
       // Cancel build
       interface::pushScreen(&cancel_build_menu);
       break;
-    case 4:
+    case 2:
+      // Change filament
+      if(steppers::isZHomed()){
+          preheatActive = true;
+          host::pauseBuild(false);
+          is_paused = false;
+          // record the start screen here
+          Motherboard::getBoard().getInterfaceBoard().RecordOnboardStartIdx();
+          interface::pushScreen(&filamentMenu);
+          host::activePauseBuild(true, command::SLEEP_TYPE_FILAMENT);
+          is_sleeping = true;
+      }
+      break;
+    case 3:
       // Sleep (Cold Pause)
       if(steppers::isZHomed()){
         is_sleeping = !is_sleeping;
@@ -2464,6 +2476,12 @@ void ActiveBuildMenu::handleSelect(uint8_t index){
         lineUpdate = true;
       }
       break;
+    case 4:
+      // Set stop at filament height value
+      if(steppers::isZHomed()){
+          interface::pushScreen(&height);
+      }
+      break;
 #ifdef ACTIVE_COOLING_FAN
     case FanIdx:
       FanOn = !FanOn;
@@ -2471,6 +2489,9 @@ void ActiveBuildMenu::handleSelect(uint8_t index){
       lineUpdate = true;
       break;
 #endif
+    case FanIdx +2:
+      interface::pushScreen(&build_stats_screen);
+      break;
     case FanIdx+3:
       host::pauseBuild(false);
       interface::popScreen();
@@ -2969,7 +2990,7 @@ void InfoMenu::handleSelect(uint8_t index) {
 
 
 StopHeightMenu::StopHeightMenu() {
-  itemCount = 3;
+  itemCount = 4;
   reset();
   for (uint8_t i = 0; i < itemCount; i++) {
     counter_item[i] = 0;
@@ -2980,32 +3001,40 @@ StopHeightMenu::StopHeightMenu() {
 
 void StopHeightMenu::resetState(){
   stopHeightValue = eeprom::getEeprom8(eeprom_offsets::STOP_HEIGHT_VALUE, 0);
+  itemIndex = 1;
+  firstItemIndex = 1;
 }
 
 void StopHeightMenu::drawItem(uint8_t index, LiquidCrystalSerial& lcd, uint8_t line_number) {
 
   switch (index) {
-    case 0:
-      lcd.writeFromPgmspace(HEIGHT_EN_MSG);
-      lcd.setCursor(14,line_number);
-      stopHeightEnabled = plan_get_height_stop_enable();
-      if(stopHeightEnabled)
-          lcd.writeFromPgmspace(ON_MSG);
-      else
-          lcd.writeFromPgmspace(OFF_MSG);
+   case 0:
+      lcd.setCursor(0,0);
+      lcd.writeFromPgmspace(CHANGE_FILAMENT_HEIGHT_HEADING);
       break;
    case 1:
       lcd.writeFromPgmspace(HEIGHT_VALUE_MSG);
       lcd.setCursor(11,line_number);
-      if(selectIndex == 1)
+      if(selectIndex == 1) {
          lcd.writeFromPgmspace(ARROW_MSG);
-      else
+      } else {
         lcd.writeFromPgmspace(NO_ARROW_MSG);
+      }
       lcd.setCursor(14,line_number);
       lcd.writeInt(stopHeightValue, 3);
       break;
    case 2:
-      lcd.writeFromPgmspace(EXIT_MSG);
+      lcd.writeFromPgmspace(HEIGHT_EN_MSG);
+      lcd.setCursor(14,line_number);
+      stopHeightEnabled = plan_get_height_stop_enable();
+      if(stopHeightEnabled) {
+          lcd.writeFromPgmspace(ON_MSG);
+      } else {
+          lcd.writeFromPgmspace(OFF_MSG);
+      }
+      break;
+   case 3:
+      lcd.writeFromPgmspace(DONE_MSG);
       break;
   }
 }
@@ -3038,12 +3067,6 @@ void StopHeightMenu::handleCounterUpdate(uint8_t index, bool up){
 
 void StopHeightMenu::handleSelect(uint8_t index) {
   switch (index) {
-    case 0:
-      // update height stop enable selection
-      stopHeightEnabled = !stopHeightEnabled;
-      plan_read_height_stop_position(stopHeightEnabled);
-      lineUpdate = 1;
-      break;
     case 1:
       // update height stop value preferences
       ATOMIC_BLOCK(ATOMIC_RESTORESTATE){
@@ -3053,6 +3076,12 @@ void StopHeightMenu::handleSelect(uint8_t index) {
       lineUpdate = 1;
       break;
     case 2:
+      // update height stop enable selection
+      stopHeightEnabled = !stopHeightEnabled;
+      plan_read_height_stop_position(stopHeightEnabled);
+      lineUpdate = 1;
+      break;
+    case 3:
       interface::popScreen();
       break;
     }

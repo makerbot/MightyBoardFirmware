@@ -392,7 +392,7 @@ static PROGMEM unsigned char RESET_MSG[] =				"Restore Defaults   ";
 static PROGMEM unsigned char NOZZLES_MSG[] =				"Calibrate Nozzles  ";
 static PROGMEM unsigned char TOOL_COUNT_MSG[]   =			"Tool Count         ";
 static PROGMEM unsigned char SOUND_MSG[] =				"Sound              ";
-static PROGMEM unsigned char HEIGHT_EN_MSG[] =				"Stop Print         ";
+static PROGMEM unsigned char HEIGHT_EN_MSG[] =				"Pause Active       ";
 static PROGMEM unsigned char HEIGHT_VALUE_MSG[] =			"Z Position      mm ";
 static PROGMEM unsigned char LED_MSG[] =				"LED Color          ";
 static PROGMEM unsigned char LED_HEAT_MSG[] =				"Heat LEDs          ";
@@ -463,10 +463,12 @@ static PROGMEM unsigned char BUILD_FINISHED_MSG []  =			"Build Finished!     " \
 									"Build Time      h  m";
 static PROGMEM unsigned char TIME_SPECIFYING_LETTERS[] =		"h  m";
 static PROGMEM unsigned char CLEAR_TIME_SPECIFYING_LETTERS[] =		"      ";
+static PROGMEM unsigned char CLEAR_TIME_SPECIFYING_LETTERS_1DIGIT_H[] =	"     ";
 
 static PROGMEM unsigned char BACK_TO_MONITOR_MSG[]  =			"Back to Monitor    ";
 static PROGMEM unsigned char STATS_MSG[]			 =	"Build Statistics   ";
-static PROGMEM unsigned char CHANGE_FILAMENT_HEIGHT_MSG[]	 =	"Change Stop Height ";
+static PROGMEM unsigned char CHANGE_FILAMENT_HEIGHT_MSG[]	 =	"Z Pause Height     ";
+static PROGMEM unsigned char CHANGE_FILAMENT_HEIGHT_HEADING[]	 =	"   Z Pause Height   ";
 static PROGMEM unsigned char CANCEL_BUILD_MSG[]     =			"Cancel Build       "; 
 static PROGMEM unsigned char CHANGE_FILAMENT_MSG[]  =			"Change Filament    "; 
 
