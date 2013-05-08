@@ -78,6 +78,42 @@ USB_ClassInfo_CDC_Device_t VirtualSerial_CDC_Interface =
 			},
 	};
 
+
+ISR(PCINT1_vect, ISR_NAKED)
+/* This ISR handles the enabling/disabling of the USB Controller
+   base on a pinchange on the vbus */
+{
+
+	bool vbus_detect = bit_is_clear(PINC, 4); //USB should be active when PIN C4 is low
+
+	if(vbus_detect) //USB plugged in
+	{
+		if(!(USB_IsInitialized))
+		{
+			USB_PLL_On();
+			while(!(USB_PLL_IsReady()));
+			USB_CLK_Unfreeze();
+			USB_Controller_Enable();
+			USB_Attach();
+			USB_IsInitialized = true;
+			USB_ResetInterface();
+		}	
+	}	
+	if(!(vbus_detect))
+	{
+		if(USB_IsInitialized)
+		{
+			USB_Detach();
+			USB_Controller_Disable();
+			USB_CLK_Freeze();
+			USB_PLL_Off();
+			USB_IsInitialized = false;
+		}	
+	}
+	reti();
+}
+
+
 /** Main program entry point. This routine contains the overall program flow, including initial
  *  setup of all components and the main program loop.
  */
@@ -90,58 +126,78 @@ int main(void)
 
 	sei();
 
+	//To handle if the bot is booted and does not have a viable USB connection
+	if(bit_is_set(PINC, 4) && USB_IsInitialized)
+	{
+		USB_Detach();
+		USB_Controller_Disable();
+		USB_CLK_Freeze();
+		USB_PLL_Off();
+		USB_IsInitialized = false;
+	}
+
 	for (;;)
 	{
-		/* Only try to read in bytes from the CDC interface if the transmit buffer is not full */
-		if (!(RingBuffer_IsFull(&USBtoUSART_Buffer)))
+		while(USB_IsInitialized)
 		{
-			int16_t ReceivedByte = CDC_Device_ReceiveByte(&VirtualSerial_CDC_Interface);
+			/* Only try to read in bytes from the CDC interface if the transmit buffer is not full */
+			if (!(RingBuffer_IsFull(&USBtoUSART_Buffer)))
+			{
+				int16_t ReceivedByte = CDC_Device_ReceiveByte(&VirtualSerial_CDC_Interface);
 
-			/* Read bytes from the USB OUT endpoint into the USART transmit buffer */
-			if (!(ReceivedByte < 0))
-			  RingBuffer_Insert(&USBtoUSART_Buffer, ReceivedByte);
-		}
-		
-		/* Check if the UART receive buffer flush timer has expired or the buffer is nearly full */
-		RingBuff_Count_t BufferCount = RingBuffer_GetCount(&USARTtoUSB_Buffer);
-		if ((TIFR0 & (1 << TOV0)) || (BufferCount > BUFFER_NEARLY_FULL))
-		{
-			TIFR0 |= (1 << TOV0);
-
-			if (USARTtoUSB_Buffer.Count) {
-				LEDs_TurnOnLEDs(LEDMASK_TX);
-				PulseMSRemaining.TxLEDPulse = TX_RX_LED_PULSE_MS;
+				/* Read bytes from the USB OUT endpoint into the USART transmit buffer */
+				if (!(ReceivedByte < 0))
+					RingBuffer_Insert(&USBtoUSART_Buffer, ReceivedByte);
 			}
+		
+			/* Check if the UART receive buffer flush timer has expired or the buffer is nearly full */
+			RingBuff_Count_t BufferCount = RingBuffer_GetCount(&USARTtoUSB_Buffer);
+			if ((TIFR0 & (1 << TOV0)) || (BufferCount > BUFFER_NEARLY_FULL))
+			{
+				TIFR0 |= (1 << TOV0);
 
-			/* Read bytes from the USART receive buffer into the USB IN endpoint */
-			while (BufferCount--)
-			  CDC_Device_SendByte(&VirtualSerial_CDC_Interface, RingBuffer_Remove(&USARTtoUSB_Buffer));
+				if (USARTtoUSB_Buffer.Count) {
+					LEDs_TurnOnLEDs(LEDMASK_TX);
+					PulseMSRemaining.TxLEDPulse = TX_RX_LED_PULSE_MS;
+				}
+
+				/* Read bytes from the USART receive buffer into the USB IN endpoint */
+				while (BufferCount--)
+					CDC_Device_SendByte(&VirtualSerial_CDC_Interface, RingBuffer_Remove(&USARTtoUSB_Buffer));
 			  
-			/* Turn off TX LED(s) once the TX pulse period has elapsed */
-			if (PulseMSRemaining.TxLEDPulse && !(--PulseMSRemaining.TxLEDPulse))
-			  LEDs_TurnOffLEDs(LEDMASK_TX);
+				/* Turn off TX LED(s) once the TX pulse period has elapsed */
+				if (PulseMSRemaining.TxLEDPulse && !(--PulseMSRemaining.TxLEDPulse))
+				  LEDs_TurnOffLEDs(LEDMASK_TX);
 
-			/* Turn off RX LED(s) once the RX pulse period has elapsed */
-			if (PulseMSRemaining.RxLEDPulse && !(--PulseMSRemaining.RxLEDPulse))
-			  LEDs_TurnOffLEDs(LEDMASK_RX);
-		}
+				/* Turn off RX LED(s) once the RX pulse period has elapsed */
+				if (PulseMSRemaining.RxLEDPulse && !(--PulseMSRemaining.RxLEDPulse))
+				  LEDs_TurnOffLEDs(LEDMASK_RX);
+			}
 		
-		/* Load the next byte from the USART transmit buffer into the USART */
-		if (!(RingBuffer_IsEmpty(&USBtoUSART_Buffer))) {
-		  Serial_TxByte(RingBuffer_Remove(&USBtoUSART_Buffer));
+			/* Load the next byte from the USART transmit buffer into the USART */
+			if (!(RingBuffer_IsEmpty(&USBtoUSART_Buffer))) {
+				Serial_TxByte(RingBuffer_Remove(&USBtoUSART_Buffer));
 		  	
-		  	LEDs_TurnOnLEDs(LEDMASK_RX);
-			PulseMSRemaining.RxLEDPulse = TX_RX_LED_PULSE_MS;
-		}
+		  		LEDs_TurnOnLEDs(LEDMASK_RX);
+				PulseMSRemaining.RxLEDPulse = TX_RX_LED_PULSE_MS;
+			}
 		
-		CDC_Device_USBTask(&VirtualSerial_CDC_Interface);
-		USB_USBTask();
+			CDC_Device_USBTask(&VirtualSerial_CDC_Interface);
+			USB_USBTask();
+		}			
 	}
 }
 
 /** Configures the board hardware and chip peripherals for the demo's functionality. */
 void SetupHardware(void)
 {
+	// Setup pin change interrupt
+	PCMSK1 |= (1 << PCINT10);
+	PCICR |= (1 << PCIE1);
+	
+	DDRC &= ~(1 << DDC4);
+	PORTC |= (1 << PORTC4);
+
 	/* Disable watchdog if enabled by bootloader/fuses */
 	MCUSR &= ~(1 << WDRF);
 	wdt_disable();
