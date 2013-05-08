@@ -2155,8 +2155,8 @@ void PreheatSettingsMenu::handleCounterUpdate(uint8_t index, bool up){
                 counterRight++;
             else
                 counterRight--;
-            if(counterRight > 260){
-                counterRight = 260;
+            if(counterRight > 280){
+                counterRight = 280;
             } if(counterRight < 0){
               counterRight = 0;
             }
@@ -2168,8 +2168,8 @@ void PreheatSettingsMenu::handleCounterUpdate(uint8_t index, bool up){
                     counterRight++;
                 else
                     counterRight--;
-                if(counterRight > 260){
-                    counterRight = 260; 
+                if(counterRight > 280){
+                    counterRight = 280; 
                 }if(counterRight < 0){
                   counterRight = 0;
                 } 
@@ -2179,8 +2179,8 @@ void PreheatSettingsMenu::handleCounterUpdate(uint8_t index, bool up){
                     counterLeft++;
                 else
                     counterLeft--;
-                if(counterLeft > 260){
-                    counterLeft = 260;
+                if(counterLeft > 280){
+                    counterLeft = 280;
                 }if(counterLeft < 0){
                   counterLeft = 0;
                 }
@@ -2192,8 +2192,8 @@ void PreheatSettingsMenu::handleCounterUpdate(uint8_t index, bool up){
                 counterPlatform++;
             else
                 counterPlatform--;
-            if(counterPlatform > 120){
-                counterPlatform = 120;
+            if(counterPlatform > 130){
+                counterPlatform = 130;
             } if(counterPlatform < 0){
                 counterPlatform = 0;
             }

@@ -428,29 +428,41 @@ static PROGMEM unsigned char WAIT_FOR_HOMING_MSG[] =			"Waiting for Homing ";
 
 static PROGMEM unsigned char HEATER_INACTIVITY_MSG[] =			"Heaters shutdown    " \
 									"due to inactivity   ";
-static PROGMEM unsigned char HEATER_FAIL_SOFTWARE_CUTOFF_MSG[] =	"Extruder Overheat!  " \
+static PROGMEM unsigned char HEATER_FAIL_SOFTWARE_CUTOFF_MSG[] =	"Heating Failure #1! " \
 									"Software Temp Limit " \
 									"Reached! Please     " \
 									"Shutdown or Restart ";
-static PROGMEM unsigned char HEATER_FAIL_HARDWARE_CUTOFF_MSG[] =	"Extruder Overheat!  " \
+//static PROGMEM unsigned char HEATER_FAIL_HARDWARE_CUTOFF_MSG[] =	"Extruder Overheat!  " \
 									"Safety Cutoff       " \
 									"Triggered! Please   " \
 									"Shutdown or Restart ";
-static PROGMEM unsigned char HEATER_FAIL_NOT_HEATING_MSG[] =		"Heating Failure!    " \
+static PROGMEM unsigned char HEATER_FAIL_NOT_HEATING_MSG[] =		"Heating Failure #2! " \
 									"My extruders are not" \
 									"heating properly.   " \
 									"Check my connections";
-static PROGMEM unsigned char HEATER_FAIL_DROPPING_TEMP_MSG[] =		"Heating Failure!    " \
+static PROGMEM unsigned char HEATER_FAIL_DROPPING_TEMP_MSG[] =		"Heating Failure #3! " \
 									"My extruders are    " \
 									"losing temperature. " \
 									"Check my connections";
-static PROGMEM unsigned char HEATER_FAIL_NOT_PLUGGED_IN_MSG[] =		"Heater Error!       " \
+
+static PROGMEM unsigned char HEATER_FAIL_NOT_PLUGGED_IN_MSG[] =		"Heating Failure #3! " \
 									"My temperature reads" \
 									"are failing! Please " \
 									"Check my connections";
-static PROGMEM unsigned char HEATER_FAIL_READ_MSG[] =  			"Heater Error!       " \
+
+static PROGMEM unsigned char HEATER_FAIL_READ_TEMP_OUT_OF_RANGE_MSG[] =	"Heating Failure #4! " \
 									"I'm reading out of  " \
 									"range temperatures. " \
+									"Check my connections";
+
+static PROGMEM unsigned char HEATER_FAIL_READ_CH1_MSG[] =		"Heating Failure #5! " \
+									"My temperature reads" \
+									"are failing! Please " \
+									"Check my connections";
+
+static PROGMEM unsigned char HEATER_FAIL_READ_CH2_MSG[] =  		"Heating Failure #6! " \
+									"My temperature reads" \
+									"are failing! Please " \
 									"Check my connections";
 
 static PROGMEM unsigned char TOTAL_TIME_MSG[]       =			"Estimated Build Time" \
@@ -518,7 +530,7 @@ static PROGMEM unsigned char ERROR_PLATFORM_HEATING_TIMEOUT[] =		"I timed out wh
 static PROGMEM unsigned char ERROR_HEATING_TIMEOUT[] =			"I timed out while  " \
 									"attempting to heat " \
 									"my extruder.       ";
-static PROGMEM unsigned char ERROR_SD_CARD_BUILDING[] =			" I'm already building";
+static PROGMEM unsigned char ERROR_SD_CARD_BUILDING[] =			"I'm already building";
 static PROGMEM unsigned char ERROR_SD_CARD_GENERIC[] =			" SD card read error";
 static PROGMEM unsigned char ERROR_TEMP_RESET_EXTERNALLY[] =		"My temperature was " \
 									"changed externally." \
@@ -529,10 +541,10 @@ static PROGMEM unsigned char ERROR_INVALID_PLATFORM[] =			"INVALID COMMAND:    "
 									"I received a command" \
 									"for a heated plate, " \
 									"but I don't have one";
-static PROGMEM unsigned char ERROR_INVALID_TOOL[] =			"INVALID TOOL:      " \
-									"I received a Left  " \
-									"Tool command, but I" \
-									"only have one Tool.";
+static PROGMEM unsigned char ERROR_INVALID_TOOL[] =			"INVALID TOOL:       " \
+									"I received a Left   " \
+									"Tool command, but I " \
+									"only have one Tool. ";
 static PROGMEM unsigned char ACTIVE_FAN_MSG[]		 =		"Filament Fan       ";
 
 /// the gcode and s3g files for these scripts are located in firmware/s3g_scripts

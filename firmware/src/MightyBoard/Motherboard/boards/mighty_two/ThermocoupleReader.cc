@@ -159,15 +159,18 @@ void ThermocoupleReader::initConfig(){
  * @return last temperature reading for channel
  * 
  */
-int16_t ThermocoupleReader::GetChannelTemperature(uint8_t channel){
+uint8_t ThermocoupleReader::GetChannelTemperature(uint8_t channel, int16_t &read_temperature){
 	
-	if (channel == CHANNEL_ONE){
-		return channel_one_temp;
-	}else{
+	if (error_code == 0) {
+		if (channel == CHANNEL_ONE){
+			read_temperature = channel_one_temp;
+		}else{
 
-		return channel_two_temp;
+			read_temperature = channel_two_temp;
+		}
 	}
 
+	return error_code;
 }
 
 
@@ -245,28 +248,39 @@ bool ThermocoupleReader::update() {
 			cold_temp = TemperatureTable::TempReadtoCelsius((int16_t)(raw >> 2), TemperatureTable::table_cold_junction, MAX_TEMP);
 			break;
 		case CHANNEL_ONE:
-			if (raw == UNPLUGGED_TEMPERATURE){
-				channel_one_temp = UNPLUGGED_TEMPERATURE;
+			if (config_reg == channel_one_config) {
+				error_code = 1;
+			}else if (raw == UNPLUGGED_TEMPERATURE){
+				//channel_one_temp = UNPLUGGED_TEMPERATURE; // XXX: Not using this error handling method
+				error_code = 3;
 			}else{
 				temp = TemperatureTable::TempReadtoCelsius((int16_t)raw, TemperatureTable::table_thermocouple, MAX_TEMP);
 				if (temp != MAX_TEMP){
 					channel_one_temp = temp + cold_temp;
+					error_code = 0;
 				/// MAX_TEMP is a flagged temperature we look for in ThermocoupleDual.cc, the handler for the heater class 
 				}else{
-					channel_two_temp = MAX_TEMP;
+					//channel_two_temp = MAX_TEMP; // XXX: Not using this error handling method
+					error_code = 4;
 				}
 			}
 			break;
 		case CHANNEL_TWO:
-			if (raw == UNPLUGGED_TEMPERATURE){
-				channel_two_temp = UNPLUGGED_TEMPERATURE;
+			if (config_reg == channel_two_config) {
+				error_code = 2;
+			}else if (raw == UNPLUGGED_TEMPERATURE){
+
+				//channel_two_temp = UNPLUGGED_TEMPERATURE; // XXX: Not using this error handling method
+				error_code = 3;
 			}else{
 				temp = TemperatureTable::TempReadtoCelsius((int16_t)raw, TemperatureTable::table_thermocouple, MAX_TEMP);
 				if (temp != MAX_TEMP){
 					channel_two_temp = temp + cold_temp;
+					error_code = 0;
 				/// MAX_TEMP is a flagged temperature we look for in ThermocoupleDual.cc, the handler for the heater class 
 				}else{
-					channel_two_temp = MAX_TEMP;
+					//channel_two_temp = MAX_TEMP; // XXX: Not using this error handling method
+					error_code = 4;
 				}
 			}
 			break;

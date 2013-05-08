@@ -79,6 +79,9 @@ private:
         Pin sck_pin; ///< Clock pin (output)
         Pin do_pin;  ///< Data out pin (output)
         Pin di_pin;  ///< Data in pin (output)
+
+	// Errors to be reported when reading temperature
+	uint8_t error_code; ///	NO_ERROR = 0, ADC_CH1_CONFIG_BYTE_INCORRECT = 1, ADC_CH2_CONFIG_BYTE_INCORRECT = 2, UNPLUGGED_TEMPERATURE = 3, MAX_TEMP = 4
         
         /// 
         uint8_t config_state;
@@ -111,7 +114,7 @@ public:
 	
 	uint8_t getLastUpdated(){ return last_temp_updated;}
 	
-	int16_t GetChannelTemperature(uint8_t channel);
+	uint8_t GetChannelTemperature(uint8_t channel, int16_t &read_temperature);
 	
 	int16_t get_cold_temperature() {return cold_temp;}
 	
@@ -120,6 +123,6 @@ public:
 	const static int16_t UNPLUGGED_TEMPERATURE = 0x7fff;
 	
 	/// safety value if ADC read is out of range
-    const static int16_t MAX_TEMP = 400;
+	const static int16_t MAX_TEMP = 400;
 };
 #endif // THERMOCOUPLE_READER_HH_

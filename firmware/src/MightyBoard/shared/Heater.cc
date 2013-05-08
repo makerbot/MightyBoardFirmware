@@ -282,7 +282,27 @@ void Heater::manage_temperature() {
 			fail_count++;
 			
 			if (fail_count > SENSOR_MAX_BAD_READINGS) {
-				fail_mode = HEATER_FAIL_BAD_READS;
+				fail_mode = HEATER_FAIL_TEMP_OUT_OF_RANGE;
+				fail();
+			}
+			return;
+			break;
+		case TemperatureSensor::SS_ADC_CH1_COMMUNICATION_ERROR:
+			// config byte did not match on channel 1 read, causing a communication error
+			fail_count++;
+			
+			if (fail_count > SENSOR_MAX_BAD_READINGS) {
+				fail_mode = HEATER_FAIL_BAD_READS_CH1;
+				fail();
+			}
+			return;
+			break;
+		case TemperatureSensor::SS_ADC_CH2_COMMUNICATION_ERROR:
+			// config byte did not match on channel 2 read, causing a communication error
+			fail_count++;
+			
+			if (fail_count > SENSOR_MAX_BAD_READINGS) {
+				fail_mode = HEATER_FAIL_BAD_READS_CH2;
 				fail();
 			}
 			return;

@@ -19,6 +19,7 @@
 #define THERMISTOR_TABLE
 
 const static int NUMTEMPS = 20;
+const static int NUMTEMPS_ALL[3] = {NUMTEMPS, 29, 11};
 
 #include <stdint.h>
 
