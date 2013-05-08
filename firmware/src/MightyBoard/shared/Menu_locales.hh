@@ -440,27 +440,28 @@ static PROGMEM unsigned char HEATER_FAIL_NOT_HEATING_MSG[] =		"Heating Failure #
 									"My extruders are not" \
 									"heating properly.   " \
 									"Check my connections";
+
 static PROGMEM unsigned char HEATER_FAIL_DROPPING_TEMP_MSG[] =		"Heating Failure #3! " \
 									"My extruders are    " \
 									"losing temperature. " \
 									"Check my connections";
 
-static PROGMEM unsigned char HEATER_FAIL_NOT_PLUGGED_IN_MSG[] =		"Heating Failure #3! " \
+static PROGMEM unsigned char HEATER_FAIL_NOT_PLUGGED_IN_MSG[] =		"Heating Failure #4! " \
 									"My temperature reads" \
 									"are failing! Please " \
 									"Check my connections";
 
-static PROGMEM unsigned char HEATER_FAIL_READ_TEMP_OUT_OF_RANGE_MSG[] =	"Heating Failure #4! " \
+static PROGMEM unsigned char HEATER_FAIL_READ_TEMP_OUT_OF_RANGE_MSG[] =	"Heating Failure #5! " \
 									"I'm reading out of  " \
 									"range temperatures. " \
 									"Check my connections";
 
-static PROGMEM unsigned char HEATER_FAIL_READ_CH1_MSG[] =		"Heating Failure #5! " \
+static PROGMEM unsigned char HEATER_FAIL_READ_CH1_MSG[] =		"Heating Failure #6! " \
 									"My temperature reads" \
 									"are failing! Please " \
 									"Check my connections";
 
-static PROGMEM unsigned char HEATER_FAIL_READ_CH2_MSG[] =  		"Heating Failure #6! " \
+static PROGMEM unsigned char HEATER_FAIL_READ_CH2_MSG[] =  		"Heating Failure #7! " \
 									"My temperature reads" \
 									"are failing! Please " \
 									"Check my connections";
