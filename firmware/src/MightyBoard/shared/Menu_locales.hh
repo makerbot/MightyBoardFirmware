@@ -432,10 +432,11 @@ static PROGMEM unsigned char HEATER_FAIL_SOFTWARE_CUTOFF_MSG[] =	"Heating Failur
 									"Software Temp Limit " \
 									"Reached! Please     " \
 									"Shutdown or Restart ";
-//static PROGMEM unsigned char HEATER_FAIL_HARDWARE_CUTOFF_MSG[] =	"Extruder Overheat!  " \
+/*static PROGMEM unsigned char HEATER_FAIL_HARDWARE_CUTOFF_MSG[] =	"Extruder Overheat!  " \
 									"Safety Cutoff       " \
 									"Triggered! Please   " \
 									"Shutdown or Restart ";
+*/
 static PROGMEM unsigned char HEATER_FAIL_NOT_HEATING_MSG[] =		"Heating Failure #2! " \
 									"My extruders are not" \
 									"heating properly.   " \
@@ -497,6 +498,12 @@ static PROGMEM unsigned char CHANGE_FILAMENT_WAIT_MSG[] =		"Changing Filament:  
 static PROGMEM unsigned char CHANGE_FILAMENT_PREP_MSG[] =		"Changing Filament:  " \
 									"I'm going to my wait" \
 									"position.           ";
+
+static PROGMEM unsigned char TIMED_OUT_OF_CHANGE_FILAMENT[] =		"I timed out while   " \
+									"waiting for filament" \
+									"change. Going to    " \
+									"sleep.              ";
+
 static PROGMEM unsigned char SLEEP_WAIT_MSG[] =				"Preparing for sleep:" \
 									"I'm completing any  " \
 									"queued moves.       "; 

@@ -1,3 +1,6 @@
+7.3.3.1.0
+ * Added timeout to change filament mode as the motors are staying at full torque
+ * Corrected issue that prevented the printer from checking for heaters not working
 7.3.2.1.0
  * Fixed temperature conversion table inconsistencies
  * Added error numbers to all heater failures

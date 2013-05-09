@@ -574,8 +574,8 @@ void runCommandSlice() {
 			mode = READY;
 		}else if(!Motherboard::getBoard().getExtruderBoard(currentToolIndex).getExtruderHeater().isHeating() && 
 			!Motherboard::getBoard().getExtruderBoard(currentToolIndex).getExtruderHeater().isPaused()){
-				mode = READY;
-			}
+			mode = READY;
+		}
 	}
 	if (mode == WAIT_ON_PLATFORM) {
 		if(command_buffer_timeout.hasElapsed()){
@@ -635,7 +635,14 @@ void runCommandSlice() {
 			}else if((sleep_mode == SLEEP_MOVING) && st_empty()){
 				interface::popScreen();
 				sleep_mode = SLEEP_ACTIVE;
+				// If we are in change filament type sleep, play tune and start the timeout counter
+				if (sleep_type == SLEEP_TYPE_FILAMENT) {
+					command_buffer_timeout.start(USER_FILAMENT_INPUT_TIMEOUT);
+					Piezo::playTune(TUNE_FILAMENT_START);
+				}
+				// If we are not sleeping, lower current/torque of the stepper motors
 				uint8_t pot_value = 20;
+				// If changing filament, do no lower holding torque/current to the gantry motors
 				if (!(sleep_type == SLEEP_TYPE_FILAMENT)) {
 					for(uint8_t i = 0; i < 2; ++i)
 					{
@@ -647,6 +654,35 @@ void runCommandSlice() {
 					{
 						steppers::setAxisPotValue(i, pot_value);
 					}
+				}
+			// sleep_active state, this is where we actually sleep
+			// Transitioning to previous state with type COLD if a timeout is reaching
+			}else if(sleep_mode == SLEEP_ACTIVE) {
+				// Check to see if we are changing filament and have timed out
+				if ((sleep_type == SLEEP_TYPE_FILAMENT) && command_buffer_timeout.hasElapsed()) {
+					// Reset timer
+					command_buffer_timeout = Timeout();
+					// Change sleep to cold sleep and cool down motors
+					sleep_type = SLEEP_TYPE_COLD;
+					// Pop the change filament screen
+					interface::popScreen();
+					// Display the warning indicating we time out
+					Motherboard::getBoard().getInterfaceBoard().errorMessage(TIMED_OUT_OF_CHANGE_FILAMENT);
+					// Lower current to the stepper motors except for the Z motor effectively lowering hold torque
+					uint8_t pot_value = 20;
+					for(uint8_t i = 0; i < 2; ++i)
+					{
+						steppers::setAxisPotValue(i, pot_value);
+					}
+					for(uint8_t i = 3; i < 5; ++i)
+					{
+						steppers::setAxisPotValue(i, pot_value);
+					}
+					// cool heaters
+					Motherboard &board = Motherboard::getBoard();
+					board.getExtruderBoard(0).getExtruderHeater().set_target_temperature(0);
+					board.getExtruderBoard(1).getExtruderHeater().set_target_temperature(0);
+					board.getPlatformHeater().set_target_temperature(0);
 				}
 			// restart called or
 			// restart called while still moving to waiting position
