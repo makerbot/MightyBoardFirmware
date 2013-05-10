@@ -582,15 +582,6 @@ void Motherboard::runMotherboardSlice() {
 				break;
 			case HEATER_FAIL_TEMP_OUT_OF_RANGE:
 				interfaceBoard.errorMessage(HEATER_FAIL_READ_TEMP_OUT_OF_RANGE_MSG);
-				//heatShutdown = false;
-				break;
-			case HEATER_FAIL_BAD_READS_CH1:
-				interfaceBoard.errorMessage(HEATER_FAIL_READ_CH1_MSG);
-				//heatShutdown = false;
-				break;
-			case HEATER_FAIL_BAD_READS_CH2:
-				interfaceBoard.errorMessage(HEATER_FAIL_READ_CH2_MSG);
-				//heatShutdown = false;
 				break;
 			case HEATER_FAIL_NOT_PLUGGED_IN:
 				errorResponse(HEATER_FAIL_NOT_PLUGGED_IN_MSG);

@@ -37,7 +37,7 @@
 // max adc: 1023
 
 #ifdef MODEL_REPLICATOR
-const TempTable default_therm_table PROGMEM = {
+const static Entry default_therm_table[] PROGMEM = {
 	{1,	841},
 	{54,	255},
 	{107,	209},
@@ -60,7 +60,7 @@ const TempTable default_therm_table PROGMEM = {
 	{1008,	3}
 };
 #else // MODEL_REPLICATOR2
-const TempTable default_therm_table PROGMEM = {
+const static Entry default_therm_table[] PROGMEM = {
 	{1,	916},
 	{54,	265},
 	{107,	216},
@@ -119,17 +119,6 @@ const static Entry thermocouple_lookup[] PROGMEM = {
 
 /// cold temperature lookup table provided by ADS1118 data sheet
 const static Entry cold_temp_lookup[] PROGMEM = {
-	//{0x3920,	-55},
-	//{0x3CE0,	-25},
-	//{0x3FF8,	-0.25},
-	//{0,		0},
-	//{0x0008,	0.25},
-	//{0x0320,	25},
-	//{0x0640,	50},
-	//{0x0960,	75},
-	//{0x0A00,	80},
-	//{0x0C80,	100},
-	//{0x1000,	128},
 	{-1760,	-55},
 	{-800,	-25},
 	{-8,	-0.25},
@@ -179,19 +168,10 @@ inline Entry getEntry(int8_t entryIdx, int8_t table_id) {
 /// @return Temperature reading, in degrees Celcius
 int16_t TempReadtoCelsius(int16_t reading, int8_t table_idx, int16_t max_allowed_value) {
 	int8_t bottom = 0;
-	int8_t current_NUMTEMPS;
-	switch(table_idx){
-		case table_thermistor:
-			current_NUMTEMPS = NUMTEMPS_ALL[0];
-			break;
-		case table_thermocouple:
-			current_NUMTEMPS = NUMTEMPS_ALL[1];
-			break;
-		case table_cold_junction:
-			current_NUMTEMPS = NUMTEMPS_ALL[2];
-			break;
-	}
-	int8_t top = current_NUMTEMPS - 1;
+	int8_t current_numtemps;
+  current_numtemps = NUMTEMPS_ALL[table_idx];
+
+	int8_t top = current_numtemps - 1;
 	int8_t mid = (bottom+top)/2;
 	int8_t t;
 	Entry e;
@@ -212,7 +192,7 @@ int16_t TempReadtoCelsius(int16_t reading, int8_t table_idx, int16_t max_allowed
 		// out of scale; safety mode
 		return max_allowed_value;
 	}
-	if (top == current_NUMTEMPS-1 && reading > et.adc) {
+	if (top == current_numtemps-1 && reading > et.adc) {
 		// out of scale; safety mode
 		return max_allowed_value;
 	}

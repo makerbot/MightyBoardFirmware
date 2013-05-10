@@ -640,16 +640,13 @@ void runCommandSlice() {
 					command_buffer_timeout.start(USER_FILAMENT_INPUT_TIMEOUT);
 					Piezo::playTune(TUNE_FILAMENT_START);
 				}
-				// If we are not sleeping, lower current/torque of the stepper motors
+				// If we are cold sleeping, lower current/torque of the stepper motors
 				uint8_t pot_value = 20;
-				// If changing filament, do no lower holding torque/current to the gantry motors
-				if (!(sleep_type == SLEEP_TYPE_FILAMENT)) {
+				if(sleep_type == SLEEP_TYPE_COLD){
 					for(uint8_t i = 0; i < 2; ++i)
 					{
 						steppers::setAxisPotValue(i, pot_value);
 					}
-				}
-				if(sleep_type == SLEEP_TYPE_COLD){
 					for(uint8_t i = 3; i < 5; ++i)
 					{
 						steppers::setAxisPotValue(i, pot_value);

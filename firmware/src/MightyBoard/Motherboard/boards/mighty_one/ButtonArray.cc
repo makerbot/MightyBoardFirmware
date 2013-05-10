@@ -63,7 +63,7 @@ void ButtonArray::scanButtons() {
 		/// right hold
 		if(!(newJ & (1 << RIGHT))){
 			if(!right_holding){
-				rightHold.start(ResetDelay);
+				rightHold.start(10000000);
 				right_holding = true;
 			}
 		}

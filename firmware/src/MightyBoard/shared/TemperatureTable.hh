@@ -18,8 +18,7 @@
 #ifndef THERMISTOR_TABLE
 #define THERMISTOR_TABLE
 
-const static int NUMTEMPS = 20;
-const static int NUMTEMPS_ALL[3] = {NUMTEMPS, 29, 11};
+const static int NUMTEMPS_ALL[3] = {20, 29, 11};
 
 #include <stdint.h>
 
@@ -43,9 +42,5 @@ typedef struct {
 	int16_t adc;
 	int16_t value;
 } Entry;
-
-typedef Entry TempTable[NUMTEMPS];
-
-extern const TempTable default_therm_table;
 
 #endif // THERMISTOR_TABLE

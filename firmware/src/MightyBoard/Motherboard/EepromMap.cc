@@ -106,9 +106,6 @@ void SetDefaultsThermal(uint16_t eeprom_base)
 	eeprom_write_dword( (uint32_t*)(eeprom_base + therm_eeprom_offsets::THERM_R0), THERM_R0_DEFAULT_VALUE);
 	eeprom_write_dword( (uint32_t*)(eeprom_base + therm_eeprom_offsets::THERM_T0), THERM_T0_DEFAULT_VALUE);
 	eeprom_write_dword( (uint32_t*)(eeprom_base + therm_eeprom_offsets::THERM_BETA), THERM_BETA_DEFAULT_VALUE);
-	/// write the default thermal table.
-	eeprom_write_block( (const uint8_t*)default_therm_table,
-			(uint8_t*)(eeprom_base + therm_eeprom_offsets::THERM_DATA), sizeof(uint16_t)*2*NUMTEMPS);
 
 }
 

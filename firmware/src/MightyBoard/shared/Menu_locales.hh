@@ -457,16 +457,6 @@ static PROGMEM unsigned char HEATER_FAIL_READ_TEMP_OUT_OF_RANGE_MSG[] =	"Heating
 									"range temperatures. " \
 									"Check my connections";
 
-static PROGMEM unsigned char HEATER_FAIL_READ_CH1_MSG[] =		"Heating Failure #6! " \
-									"My temperature reads" \
-									"are failing! Please " \
-									"Check my connections";
-
-static PROGMEM unsigned char HEATER_FAIL_READ_CH2_MSG[] =  		"Heating Failure #7! " \
-									"My temperature reads" \
-									"are failing! Please " \
-									"Check my connections";
-
 static PROGMEM unsigned char TOTAL_TIME_MSG[]       =			"Estimated Build Time" \
 									"Lifetime Total:    h";
 static PROGMEM unsigned char LAST_TIME_MSG[]        =			"Last Build:     h  m";

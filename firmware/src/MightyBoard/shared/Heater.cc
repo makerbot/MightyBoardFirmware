@@ -44,6 +44,9 @@ const int16_t HEATER_CUTOFF_TEMPERATURE = 300;
 /// temperatures below setting by this amount will flag as "not heating up"
 const int16_t HEAT_FAIL_THRESHOLD = 30;
 
+// don't trigger heating up checking for target temperatures less than this
+const int16_t HEAT_FAIL_CHECK_THRESHOLD = 30;
+
 /// if the starting temperature is less than this amount, we will check heating progress
 /// to get to this temperature, the heater has already been checked.
 const int16_t HEAT_CHECKED_THRESHOLD = 50;
@@ -181,7 +184,7 @@ void Heater::set_target_temperature(int16_t target_temp)
 		value_fail_count = 0;
 	
 		// start a progress timer to verify we are getting temp change over time.
-		if(target_temp > HEAT_FAIL_THRESHOLD){
+		if(target_temp > HEAT_FAIL_CHECK_THRESHOLD){
 			// if the current temp is greater than a (low) threshold, don't check the heating up time, because
 			// we've already done that to get to this temperature
 			if((target_temp > current_temperature + HEAT_PROGRESS_THRESHOLD) && (current_temperature < HEAT_CHECKED_THRESHOLD))
@@ -272,7 +275,6 @@ void Heater::manage_temperature() {
 			// We're waiting for the ADC, so don't update the temperature yet.
 			current_temperature = 2;
 			return;
-			break;
 		case TemperatureSensor::SS_OK:
 			// Result was ok, so reset the fail counter, and continue.
 			fail_count = 0;
@@ -286,27 +288,6 @@ void Heater::manage_temperature() {
 				fail();
 			}
 			return;
-			break;
-		case TemperatureSensor::SS_ADC_CH1_COMMUNICATION_ERROR:
-			// config byte did not match on channel 1 read, causing a communication error
-			fail_count++;
-			
-			if (fail_count > SENSOR_MAX_BAD_READINGS) {
-				fail_mode = HEATER_FAIL_BAD_READS_CH1;
-				fail();
-			}
-			return;
-			break;
-		case TemperatureSensor::SS_ADC_CH2_COMMUNICATION_ERROR:
-			// config byte did not match on channel 2 read, causing a communication error
-			fail_count++;
-			
-			if (fail_count > SENSOR_MAX_BAD_READINGS) {
-				fail_mode = HEATER_FAIL_BAD_READS_CH2;
-				fail();
-			}
-			return;
-			break;
 		case TemperatureSensor::SS_ERROR_UNPLUGGED:
 		default:
 			// If we get too many bad readings in a row, shut down the heater.
@@ -318,7 +299,6 @@ void Heater::manage_temperature() {
 			}
 			current_temperature = BAD_TEMPERATURE;
 			return;
-			break;
 		}
 
 		current_temperature = sensor.getTemperature() + calibration_offset;

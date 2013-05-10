@@ -38,8 +38,6 @@ public:
 		SS_ADC_WAITING,     ///< Temperature failed to update, still waiting for ADC
 		SS_ERROR_UNPLUGGED, ///< Temperature failed to update, the sensor is unplugged.
 		SS_BAD_READ,			///< Temperature is outside the expected range
-		SS_ADC_CH1_COMMUNICATION_ERROR,	///< Configuration byte received with read of channel 1 was different from byte that was sent.
-		SS_ADC_CH2_COMMUNICATION_ERROR	///< Configuration byte received with read of channel 2 was different from byte that was sent.
 	};
 
 

@@ -23,6 +23,7 @@
 #define THERMOCOUPLE_READER_HH_
 
 #include "Pin.hh"
+#include "TemperatureSensor.hh"
 
 /// Configuration Register Maps for the ADS1118 ADC
 
@@ -75,29 +76,29 @@ public:
 	};
 
 private:
-        Pin cs_pin;  ///< Chip select pin (output)
-        Pin sck_pin; ///< Clock pin (output)
-        Pin do_pin;  ///< Data out pin (output)
-        Pin di_pin;  ///< Data in pin (output)
+  Pin cs_pin;  ///< Chip select pin (output)
+  Pin sck_pin; ///< Clock pin (output)
+  Pin do_pin;  ///< Data out pin (output)
+  Pin di_pin;  ///< Data in pin (output)
 
-	// Errors to be reported when reading temperature
-	uint8_t error_code; ///	NO_ERROR = 0, ADC_CH1_CONFIG_BYTE_INCORRECT = 1, ADC_CH2_CONFIG_BYTE_INCORRECT = 2, UNPLUGGED_TEMPERATURE = 3, MAX_TEMP = 4
+	TemperatureSensor::SensorState error_code; 
         
-        /// 
-        uint8_t config_state;
-        uint8_t read_state;
-        uint8_t temp_check_counter;
+  /// 
+  uint8_t config_state;
+  uint8_t read_state;
+  uint8_t temp_check_counter;
+
+  int16_t cold_temp;
+  uint16_t channel_one_temp;
+  uint16_t channel_two_temp;  
+
+  uint16_t channel_one_config; 	// config register settings to read thermocouple data
+  uint16_t channel_two_config; 	// config register settings to read thermocouple data
+  uint16_t cold_temp_config; 		// config register settings to read cold junction temperature
+
+  uint16_t last_temp_updated;
+  uint16_t last_config;
         
-        int16_t cold_temp;
-        uint16_t channel_one_temp;
-        uint16_t channel_two_temp;  
-        
-        uint16_t channel_one_config; 	// config register settings to read thermocouple data
-        uint16_t channel_two_config; 	// config register settings to read thermocouple data
-        uint16_t cold_temp_config; 		// config register settings to read cold junction temperature
-        
-        uint16_t last_temp_updated;
-      
         
 public:
         /// Create a new thermocouple instance, and attach it to the given pins.
@@ -114,7 +115,7 @@ public:
 	
 	uint8_t getLastUpdated(){ return last_temp_updated;}
 	
-	uint8_t GetChannelTemperature(uint8_t channel, int16_t &read_temperature);
+	TemperatureSensor::SensorState GetChannelTemperature(uint8_t channel, int16_t &read_temperature);
 	
 	int16_t get_cold_temperature() {return cold_temp;}
 	

@@ -9,13 +9,10 @@ Heating Failure #1
 
 #### Message displayed:
 
-"Heating Failure #1"
-
-"Software Temp Limit"
-
-"Reached! Please"
-
-"Shutdown or Restart"
+    "Heating Failure #1"  
+    "Software Temp Limit"  
+    "Reached! Please"  
+    "Shutdown or Restart"  
 
 #### Cause:
 
@@ -31,13 +28,10 @@ Heating Failure #2
 
 #### Message displayed:
 
-"Heating Failure #2"
-
-"My extruders are not"
-
-"heating properly."
-
-"Check my connections"
+    "Heating Failure #2"  
+    "My extruders are not"  
+    "heating properly."  
+    "Check my connections"  
 
 #### Cause:
 
@@ -53,13 +47,10 @@ Heating Failure #3
 
 #### Message displayed:
 
-"Heating Failure #3"
-
-"My extruders are"
-
-"losing temperature."
-
-"Check my connections"
+    "Heating Failure #3"  
+    "My extruders are"  
+    "losing temperature."  
+    "Check my connections"  
 
 #### Cause:
 
@@ -74,13 +65,10 @@ Heating Failure #4
 
 #### Message displayed:
 
-"Heating Failure #4"
-
-"My temperature reads"
-
-"are failing! Please"
-
-"Check my connections"
+    "Heating Failure #4"  
+    "My temperature reads"  
+    "are failing! Please"  
+    "Check my connections"  
 
 #### Cause:
 
@@ -95,13 +83,10 @@ Heating Failure #5
 
 #### Message displayed:
 
-"Heating Failure #5"
-
-"I'm reading out of"
-
-"range temperatures."
-
-"Check my connections"
+    "Heating Failure #5"   
+    "I'm reading out of"  
+    "range temperatures."  
+    "Check my connections"  
 
 #### Cause:
 
@@ -111,44 +96,3 @@ Voltage read from a temperature sensor a number of consecutive times is out of t
 
 The printer should shut off the heater, cancel the print in progress, and flash lights.
 
-Heating Failure #6
------
-
-#### Message displayed:
-
-"Heating Failure #6"
-
-"My temperature reads"
-
-"are failing! Please"
-
-"Check my connections"
-
-#### Cause:
-
-Basic communication check with the part of the ADC that handles thermocouples for extruder A has failed a number of consecutive tries.
-
-#### Printer Action:
-
-The printer should shut off the heater, cancel the print in progress, and flash lights.
-
-Heating Failure #7
------
-
-#### Message displayed:
-
-"Heating Failure #7"
-
-"My temperature reads"
-
-"are failing! Please"
-
-"Check my connections"
-
-#### Cause:
-
-Basic communication check with the part of the ADC that handles thermocouples for extruder B has failed a number of consecutive tries.
-
-#### Printer Action:
-
-The printer should shut off the heater, cancel the print in progress, and flash lights.
