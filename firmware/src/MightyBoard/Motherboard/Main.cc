@@ -105,10 +105,10 @@ void reset(bool hard_reset) {
 			brown_out = true;
 		}
 		
-    // clear watch dog timer and re-enable
+		// clear watch dog timer and re-enable
 		if(hard_reset)
 		{ 
-      // ATODO: remove disable
+			// ATODO: remove disable
 			wdt_disable();
 			MCUSR = 0x0;
 			wdt_enable(WDTO_8S); // 8 seconds is max timeout
@@ -116,22 +116,22 @@ void reset(bool hard_reset) {
 		
 		// initialize major classes
 		Motherboard& board = Motherboard::getBoard();	
-    sdcard::reset();
-    Piezo::reset();
+		sdcard::reset();
+		Piezo::reset();
 		utility::reset();
 		command::reset();
 		eeprom::init();
-    steppers::init();
+		steppers::init();
 		steppers::abort();
 		steppers::reset();
 		board.reset(hard_reset);
 
-	// brown out occurs on normal power shutdown, so this is not a good message		
-	//	if(brown_out)
-	//	{
-	//		board.getInterfaceBoard().errorMessage("Brown-Out Reset     Occured", 27);
-	//		board.startButtonWait();
-	//	}
+		// brown out occurs on normal power shutdown, so this is not a good message
+		//	if(brown_out)
+		//	{
+		//		board.getInterfaceBoard().errorMessage("Brown-Out Reset     Occured", 27);
+		//		board.startButtonWait();
+		//	}
 	}
 }
 
@@ -139,10 +139,10 @@ int main() {
 
 	Motherboard& board = Motherboard::getBoard();
 #ifdef REVG
-  INTERFACE_POWER.setDirection(true);
-  INTERFACE_POWER.setValue(false);
+	INTERFACE_POWER.setDirection(true);
+	INTERFACE_POWER.setValue(false);
 #endif
-  board.init();
+	board.init();
 	reset(true);
 	sei();
 	    
@@ -158,16 +158,16 @@ int main() {
 		stackAlertCounter ++;
 		if ( stackAlertCounter >= 5000 ) {
 			if (( StackCount() == 0 )) {  //( ! stackAlertLockout ) && 
-        board.errorResponse(ERROR_SRAM);
+				board.errorResponse(ERROR_SRAM);
 				stackAlertLockout = true;
 			}
 			stackAlertCounter = 0;
-	  }
+		}
 #endif
-    // check for new tones
-    Piezo::runPiezoSlice();
+		// check for new tones
+		Piezo::runPiezoSlice();
 
-    // reset the watch dog timer
+		// reset the watch dog timer
 		wdt_reset();
 
 	}
