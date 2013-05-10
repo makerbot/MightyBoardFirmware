@@ -98,6 +98,14 @@ void InterfaceBoard::queueScreen(ScreenType screen){
     case WELCOME_SCREEN:
       pushScreen(&welcomeScreen);
       break;
+    case ACTIVE_BUILD_SCREEN:
+      if (screenStack[screenIndex] != &activeScreen){
+        pushScreen(&activeScreen);
+      }
+      break;
+    case CHANGE_FILAMENT_SCREEN:
+      pushScreen(&filamentScreen);
+      break;
 		default:
 			break;
 		}
@@ -185,8 +193,8 @@ void InterfaceBoard::doUpdate() {
             if((((1<<button) & waitingMask) != 0) &&
                 !user_wait_override){
                  waitingMask = 0;
-           // } else if (button == ButtonArray::EGG){
-             //   pushScreen(&snake);
+            } else if (button == ButtonArray::EGG){
+                pushScreen(&snakeScreen);
             } else {
                 screenStack[screenIndex]->notifyButtonPressed(button);
             }

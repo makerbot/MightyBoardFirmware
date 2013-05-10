@@ -6,7 +6,7 @@
 static uint8_t previousJ;
 static uint8_t previousG;
 //bool  center_holding = false;
-//bool right_holding = false;
+bool right_holding = false;
 
 static const uint8_t ARROW_BUTTON_MAP = 0x78;
 static const uint8_t CENTER_BUTTON_MAP = 0x04;
@@ -68,6 +68,7 @@ void ButtonArray::scanButtons() {
 			centerHold = Timeout();
 			return;
 		}
+*/
 		/// right hold
 		if(!(newJ & (1 << RIGHT))){
 			if(!right_holding){
@@ -85,7 +86,7 @@ void ButtonArray::scanButtons() {
 			buttonPressWaiting = true;
 			rightHold = Timeout();
 			return;
-		}*/
+		}
 		
 		if(!(newG&(1<<CENTER))){
 			buttonPress = CENTER;

@@ -99,6 +99,8 @@ void ThermocoupleReader::init() {
 	sck_pin.setValue(false);  // Clock select is active low
 	
 	last_temp_updated = NULL;
+
+  error_code = TemperatureSensor::SS_OK;
 	
 	initConfig();
 }
@@ -117,6 +119,7 @@ void ThermocoupleReader::initConfig(){
 	temp_check_counter = TEMP_CHECK_COUNT;
 	
 	uint16_t config = channel_one_config;
+  last_config = config;
 	
 	uint16_t config_reg = 0;
 	
@@ -159,17 +162,19 @@ void ThermocoupleReader::initConfig(){
  * @return last temperature reading for channel
  * 
  */
-int16_t ThermocoupleReader::GetChannelTemperature(uint8_t channel){
+TemperatureSensor::SensorState ThermocoupleReader::GetChannelTemperature(uint8_t channel, int16_t &read_temperature){
 	
-	if (channel == CHANNEL_ONE){
-		return channel_one_temp;
-	}else{
+	if (error_code == TemperatureSensor::SS_OK) {
+		if (channel == CHANNEL_ONE){
+			read_temperature = channel_one_temp;
+		}else{
 
-		return channel_two_temp;
+			read_temperature = channel_two_temp;
+		}
 	}
 
+	return error_code;
 }
-
 
 /*
  * Get a new read from the ADC.  This function is called by the motherboard slice at regular intervals
@@ -200,6 +205,7 @@ bool ThermocoupleReader::update() {
 			break;
 	}
 	
+  uint16_t config_out = config;
 	uint16_t config_reg = 0;
 	uint16_t raw = 0;
 	
@@ -213,8 +219,8 @@ bool ThermocoupleReader::update() {
 	for (int i = 0; i < 16; i++) {
 		
 		// shift out config register data
-		do_pin.setValue((config & 0b01) != 0);
-		config >>= 1;
+		do_pin.setValue((config_out & 0b01) != 0);
+		config_out >>= 1;
 		
 		sck_pin.setValue(true);
 		raw = raw << 1;
@@ -238,45 +244,51 @@ bool ThermocoupleReader::update() {
 	
 	sck_pin.setValue(false);
 
-	int16_t temp;
-	/// store read to the temperature variable
-	switch(read_state){
-		case COLD_TEMP:
-			cold_temp = TemperatureTable::TempReadtoCelsius((int16_t)(raw >> 2), TemperatureTable::table_cold_junction, MAX_TEMP);
-			break;
-		case CHANNEL_ONE:
-			if (raw == UNPLUGGED_TEMPERATURE){
-				channel_one_temp = UNPLUGGED_TEMPERATURE;
-			}else{
-				temp = TemperatureTable::TempReadtoCelsius((int16_t)raw, TemperatureTable::table_thermocouple, MAX_TEMP);
-				if (temp != MAX_TEMP){
-					channel_one_temp = temp + cold_temp;
-				/// MAX_TEMP is a flagged temperature we look for in ThermocoupleDual.cc, the handler for the heater class 
-				}else{
-					channel_two_temp = MAX_TEMP;
-				}
-			}
-			break;
-		case CHANNEL_TWO:
-			if (raw == UNPLUGGED_TEMPERATURE){
-				channel_two_temp = UNPLUGGED_TEMPERATURE;
-			}else{
-				temp = TemperatureTable::TempReadtoCelsius((int16_t)raw, TemperatureTable::table_thermocouple, MAX_TEMP);
-				if (temp != MAX_TEMP){
-					channel_two_temp = temp + cold_temp;
-				/// MAX_TEMP is a flagged temperature we look for in ThermocoupleDual.cc, the handler for the heater class 
-				}else{
-					channel_two_temp = MAX_TEMP;
-				}
-			}
-			break;
-
-	}
+  int16_t temp;
+  /// store read to the temperature variable
+  switch(read_state){
+    case COLD_TEMP:
+      cold_temp = TemperatureTable::TempReadtoCelsius((int16_t)(raw >> 2), TemperatureTable::table_cold_junction, MAX_TEMP);
+      break;
+    case CHANNEL_ONE:
+      //Vif ((config_reg & 0x3FF0) != (config & 0x3FF0)){
+      //  error_code = TemperatureSensor::SS_ADC_COMMUNICATION_ERROR;
+      if (raw == UNPLUGGED_TEMPERATURE) {
+        error_code = TemperatureSensor::SS_ERROR_UNPLUGGED;
+      } else {
+        temp = TemperatureTable::TempReadtoCelsius((int16_t)raw, TemperatureTable::table_thermocouple, MAX_TEMP);
+        if (temp != MAX_TEMP){
+          channel_one_temp = temp + cold_temp;
+          error_code = TemperatureSensor::SS_OK;
+        }else{
+          // temperature read out of range
+          error_code = TemperatureSensor::SS_BAD_READ;
+        }
+      }
+      break;
+    case CHANNEL_TWO:
+      //if ((config_reg & 0x3FF0) != (config & 0x3FF0)){
+      //  error_code = TemperatureSensor::SS_ADC_COMMUNICATION_ERROR;
+      if (raw == UNPLUGGED_TEMPERATURE) {
+        error_code = TemperatureSensor::SS_ERROR_UNPLUGGED;
+      } else {
+        temp = TemperatureTable::TempReadtoCelsius((int16_t)raw, TemperatureTable::table_thermocouple, MAX_TEMP);
+        if (temp != MAX_TEMP){
+          channel_two_temp = temp + cold_temp;
+          error_code = TemperatureSensor::SS_OK;
+        }else{
+        //temperature read out of range
+        error_code = TemperatureSensor::SS_BAD_READ;
+        }
+      }
+      break;
+  }
 	
 	/// track last update temperature, so that this value can be queried.
 	last_temp_updated = read_state;
 	/// the temperature read next cycle is determined by the config bytes we just sent
 	read_state = config_state;
+  last_config = config;
 	
 	/// update the config register
 	/// we switch back and forth between channel one and channel two

@@ -37,99 +37,99 @@
 // max adc: 1023
 
 #ifdef MODEL_REPLICATOR
-const TempTable default_therm_table PROGMEM = {
-  {1, 841},
-  {54, 255},
-  {107, 209},
-  {160, 184},
-  {213, 166},
-  {266, 153},
-  {319, 142},
-  {372, 132},
-  {425, 124},
-  {478, 116},
-  {531, 108},
-  {584, 101},
-  {637, 93},
-  {690, 86},
-  {743, 78},
-  {796, 70},
-  {849, 61},
-  {902, 50},
-  {955, 34},
-  {1008, 3}
+const static Entry default_therm_table[] PROGMEM = {
+	{1,	841},
+	{54,	255},
+	{107,	209},
+	{160,	184},
+	{213,	166},
+	{266,	153},
+	{319,	142},
+	{372,	132},
+	{425,	124},
+	{478,	116},
+	{531,	108},
+	{584,	101},
+	{637,	93},
+	{690,	86},
+	{743,	78},
+	{796,	70},
+	{849,	61},
+	{902,	50},
+	{955,	34},
+	{1008,	3}
 };
 #else // MODEL_REPLICATOR2
-const TempTable default_therm_table PROGMEM = {
-  {1, 916},
-   {54, 265},
-   {107, 216},
-   {160, 189},
-   {213, 171},
-   {266, 157},
-   {319, 132}, // Temps above 135 will be invalid
-   {372, 124},
-   {425, 116},
-   {478, 109},
-   {531, 102},
-   {584, 96},
-   {637, 89},
-   {690, 82},
-   {743, 75},
-   {796, 68},
-   {849, 58},
-   {902, 48},
-   {955, 34},
-   {1008, 2}
+const static Entry default_therm_table[] PROGMEM = {
+	{1,	916},
+	{54,	265},
+	{107,	216},
+	{160,	189},
+	{213,	171},
+	{266,	157},
+	{319,	132}, // Temps above 135 will be invalid
+	{372,	124},
+	{425,	116},
+	{478,	109},
+	{531,	102},
+	{584,	96},
+	{637,	89},
+	{690,	82},
+	{743,	75},
+	{796,	68},
+	{849,	58},
+	{902,	48},
+	{955,	34},
+	{1008,	2}
 };
 #endif
 
 const static Entry thermocouple_lookup[] PROGMEM = {
-{-304, -64},
-{-232, -48},
-{-157, -32},
-{-79, -16},
-{0, 0},
-{81, 16},
-{164, 32},
-{248, 48},
-{320, 64},
-{418, 80},
-{503, 96},
-{587, 112},
-{671, 128},
-{754, 144},
-{837, 160},
-{919, 176},
-{1000, 192},
-{1082, 208},
-{1164, 224},
-{1247, 240},
-{1330, 256},
-{1414, 272},
-{1499, 288},
-{1583, 304},
-{1754, 336},
-{1840, 352},
-{1926, 368},
-{2012, 384},
-{2152, 400},
+	{-304,	-64},
+	{-232,	-48},
+	{-157,	-32},
+	{-79,	-16},
+	{0,	0},
+	{81,	16},
+	{164,	32},
+	{248,	48},
+	{320,	64},
+	{418,	80},
+	{503,	96},
+	{587,	112},
+	{671,	128},
+	{754,	144},
+	{837,	160},
+	{919,	176},
+	{1000,	192},
+	{1082,	208},
+	{1164,	224},
+	{1247,	240},
+	{1330,	256},
+	{1414,	272},
+	{1499,	288},
+	{1583,	304},
+	{1754,	336},
+	{1840,	352},
+	{1926,	368},
+	{2012,	384},
+	{2152,	400},
 };
 
 
 /// cold temperature lookup table provided by ADS1118 data sheet
 const static Entry cold_temp_lookup[] PROGMEM = {
-	{ 	0x3920, -55 },
-	{  	0x3CE0, -25},
-	{	0x3FF8, -0.25},
-	{ 	0, 		0},
-	{ 	0x0008, 0.25},
-	{   0x0320, 25},
-	{ 	0x0640, 50 },
-	{  	0x0960, 75},
-	{  	0x0A00, 80},
-	{ 	0x0C80, 100},
-	{ 	0x1000, 128}
+	{-1760,	-55},
+	{-800,	-25},
+	{-8,	-0.25},
+	{0,	0},
+	{8,	0.25},
+	{800,	25},
+	{1600,	50},
+	{2400,	75},
+	{2560,	80},
+	{3200,	100},
+	{4096,	128},
 }; 
 
 namespace TemperatureTable{
@@ -167,38 +167,42 @@ inline Entry getEntry(int8_t entryIdx, int8_t table_id) {
 /// @param[in] max_allowed_value default temperature if reading is outside of lookup table
 /// @return Temperature reading, in degrees Celcius
 int16_t TempReadtoCelsius(int16_t reading, int8_t table_idx, int16_t max_allowed_value) {
-  int8_t bottom = 0;
-  int8_t top = NUMTEMPS-1;
-  int8_t mid = (bottom+top)/2;
-  int8_t t;
-  Entry e;
-  while (mid > bottom) {
-	  t = mid;
-	  e = getEntry(mid,table_idx);
-	  if (reading < e.adc) {
-		  top = mid;
-		  mid = (bottom+top)/2;
-	  } else {
-		  bottom = mid;
-		  mid = (bottom+top)/2;
-	  }
-  }
-  Entry eb = getEntry(bottom,table_idx);
-  Entry et = getEntry(top,table_idx);
-  if (bottom == 0 && reading < eb.adc) {
-	  // out of scale; safety mode
-	  return max_allowed_value;
-  }
-  if (top == NUMTEMPS-1 && reading > et.adc) {
-	  // out of scale; safety mode
-	  return max_allowed_value;
-  }
+	int8_t bottom = 0;
+	int8_t current_numtemps;
+  current_numtemps = NUMTEMPS_ALL[table_idx];
 
-  int16_t celsius  = eb.value +
+	int8_t top = current_numtemps - 1;
+	int8_t mid = (bottom+top)/2;
+	int8_t t;
+	Entry e;
+	while (mid > bottom) {
+		t = mid;
+		e = getEntry(mid,table_idx);
+		if (reading < e.adc) {
+			top = mid;
+			mid = (bottom+top)/2;
+		} else {
+			bottom = mid;
+			mid = (bottom+top)/2;
+		}
+	}
+	Entry eb = getEntry(bottom,table_idx);
+	Entry et = getEntry(top,table_idx);
+	if (bottom == 0 && reading < eb.adc) {
+		// out of scale; safety mode
+		return max_allowed_value;
+	}
+	if (top == current_numtemps-1 && reading > et.adc) {
+		// out of scale; safety mode
+		return max_allowed_value;
+	}
+
+	int16_t celsius  = eb.value +
 		  ((reading - eb.adc) * (et.value - eb.value)) / (et.adc - eb.adc);
-  if (celsius > max_allowed_value)
-	  celsius = max_allowed_value;
-  return celsius;
+	if (celsius > max_allowed_value) {
+		celsius = max_allowed_value;
+	}
+	return celsius;
 }
 
 }

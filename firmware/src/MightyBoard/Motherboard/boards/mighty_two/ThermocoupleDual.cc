@@ -32,20 +32,13 @@ void DualThermocouple::init() {
 }
 
 
-DualThermocouple::SensorState DualThermocouple::update() {
+TemperatureSensor::SensorState DualThermocouple::update() {
 
 	bool bad_temperature = false; // Indicate a disconnected state
 	
-	int16_t temperature_read = Motherboard::getBoard().getThermocoupleReader().GetChannelTemperature(channel);
-	
-	// check for temperature read errors
-	if (temperature_read == ThermocoupleReader::UNPLUGGED_TEMPERATURE) {
-	  return SS_ERROR_UNPLUGGED;
-	}
-	else if (temperature_read == ThermocoupleReader::MAX_TEMP) {
-		return SS_BAD_READ;
-	}
+	int16_t temperature_read;
+	SensorState error_code = Motherboard::getBoard().getThermocoupleReader().GetChannelTemperature(channel, temperature_read);
 	
 	current_temp = temperature_read;
-	return SS_OK;
+	return error_code;
 }

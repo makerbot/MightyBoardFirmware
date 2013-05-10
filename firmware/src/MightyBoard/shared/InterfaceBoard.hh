@@ -44,7 +44,10 @@ public:
       BUILD_SCREEN = 3,
       SPLASH_SCREEN = 4,
       WELCOME_SCREEN = 5,
-      CANCEL_SCREEN = 6
+      CANCEL_SCREEN = 6,
+      ACTIVE_BUILD_SCREEN = 7,
+      SNAKE_SCREEN = 8,
+      CHANGE_FILAMENT_SCREEN = 9
 		};
 
 private:
@@ -55,8 +58,9 @@ private:
         MessageScreen messageScreen;		///< Screen to display messages
         SplashScreen splashScreen;       ///< version infor screen
         WelcomeScreen welcomeScreen;     ///< welcome screen
- 
-//        SnakeMode snake;				        ///< Snake game
+        SnakeMode snakeScreen;
+        ActiveBuildMenu activeScreen;
+        FilamentMenu filamentScreen;
         
         BuildFinished buildFinished;	  ///< screen displayed at end of build
 

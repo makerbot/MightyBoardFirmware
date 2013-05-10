@@ -322,11 +322,10 @@ uint8_t sd_raw_init()
     unselect_card();
     
     
-
     /* switch to higher SPI frequency */
     SPCR |= (1 << SPR0);
     SPCR &= ~(1 << SPR1); /* Clock Frequency: f_OSC / 16 */
-    SPSR &= ~(1 << SPI2X); /* Do not Double Clock Frequency */
+    SPSR &= ~(1 << SPI2X); /* Do not Double Clock Frequency */ 
 
 #if !SD_RAW_SAVE_RAM
     /* the first block is likely to be accessed first, so precache it here */

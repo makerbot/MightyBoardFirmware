@@ -69,6 +69,10 @@
 #include <stdlib.h>
 #include <math.h>
 #include <string.h>
+#include "EepromMap.hh"
+#include "Eeprom.hh"
+#include <avr/eeprom.h>
+#include "Interface.hh"
 
 #ifndef SIMULATOR
 	#include  <avr/interrupt.h>
@@ -117,6 +121,9 @@ uint8_t		planner_master_steps_index;
 int32_t		planner_steps[STEPPER_COUNT];
 FPTYPE		vmax_junction;
 uint32_t	axis_accel_step_cutoff[STEPPER_COUNT];
+
+bool		stopHeightEnabled;
+uint8_t		stopHeightValue;
 
 // minimum time in seconds that a movement needs to take if the buffer is emptied.
 // Increase this number if you see blobs while printing high speed & high detail.
@@ -1071,7 +1078,6 @@ void plan_init(FPTYPE extruderAdvanceK, FPTYPE extruderAdvanceK2, bool zhold) {
 // icroseconds specify how many microseconds the move should take to perform. To aid acceleration
 // calculation the caller must also provide the physical length of the line in millimeters.
 // The stepper module, gaurantees this never gets called with 0 steps
-
 void plan_buffer_line(FPTYPE feed_rate, const uint32_t &dda_rate, const uint8_t &extruder, bool use_accel, uint8_t active_toolhead)
 {
 	//If we have an empty buffer, then disable slowdown until the buffer has become at least 1/2 full
@@ -1400,7 +1406,7 @@ void plan_buffer_line(FPTYPE feed_rate, const uint32_t &dda_rate, const uint8_t 
 		FPTYPE delta_v;
 		for (uint8_t i = 0; i < STEPPER_COUNT; i++) {
 			delta_v = FPABS(current_speed[i] - prev_speed[i]);
-      if (current_speed[i] != 0 && delta_v > max_speed_change[i]){
+			if (current_speed[i] != 0 && delta_v > max_speed_change[i]){
 
 				// We wish to moderate max_entry_speed such that delta_v
 				// remains <= max_speed_change.  Moreover, any moderation we
@@ -1409,16 +1415,16 @@ void plan_buffer_line(FPTYPE feed_rate, const uint32_t &dda_rate, const uint8_t 
 				// As such, we need to determine a scaling factor, s.
 
 				FPTYPE s;
-        if ( current_speed[i] > prev_speed[i] ){
-          s = FPDIV(prev_speed[i] + max_speed_change[i], current_speed[i]);
-        }
-        else{
-          s = FPDIV(prev_speed[i] - max_speed_change[i], current_speed[i]);
-        }
-        if (s <= 0 ){
-          scaling = 0;
-          break;
-        }
+				if ( current_speed[i] > prev_speed[i] ){
+					s = FPDIV(prev_speed[i] + max_speed_change[i], current_speed[i]);
+				}
+				else{
+					s = FPDIV(prev_speed[i] - max_speed_change[i], current_speed[i]);
+				}
+				if (s <= 0 ){
+					scaling = 0;
+					break;
+				}
 				else if ( s < scaling ) scaling = s;
 			}
 		}
@@ -1524,9 +1530,43 @@ void plan_buffer_line(FPTYPE feed_rate, const uint32_t &dda_rate, const uint8_t 
 		sblock = NULL;
 	#endif
 
+	// Detect when we are at the correct height
+	// If at the correct height, detect when axis height is being changed
+	// Stop prints and call filament change menu
+	// Check for change in Z axis
+	if( (block->steps[Z_AXIS] != 0) ) {
+		// Changing Z_AXIS
+		// Check if filament change stop is enabled and if we've reached the filament change height
+		if( (stopHeightEnabled == true) && ( (stopHeightValue * 400) <= planner_target[Z_AXIS]) ) {
+
+			// Just a test to check if this gets triggered
+			//_delay_ms(5000);
+			stopHeightEnabled = false;
+      // queue activebuild menu (in case we are on the monitor screen
+      interface::queueScreen(InterfaceBoard::ACTIVE_BUILD_SCREEN);
+      // record the start screen here
+      Motherboard::getBoard().getInterfaceBoard().RecordOnboardStartIdx();
+      interface::queueScreen(InterfaceBoard::CHANGE_FILAMENT_SCREEN);
+      host::activePauseBuild(true, command::SLEEP_TYPE_FILAMENT);
+		}
+	}
 	return;
 }
 
+
+// Fetch value used to pause print so the filament can be changed midprint at a specific height
+void plan_read_height_stop_position(bool height_stop_enable) {
+
+	stopHeightEnabled = height_stop_enable;
+	stopHeightValue = eeprom::getEeprom8(eeprom_offsets::STOP_HEIGHT_VALUE, 0);
+
+}
+
+// Return stopHeightEnabled variable
+bool plan_get_height_stop_enable() {
+
+	return(stopHeightEnabled);
+}
 
 
 void plan_set_position(const int32_t &x, const int32_t &y, const int32_t &z, const int32_t &a, const int32_t &b)

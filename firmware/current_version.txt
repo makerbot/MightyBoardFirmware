@@ -1,3 +1,18 @@
+7.3.3.1.0
+ * Added timeout to change filament mode as the motors are staying at full torque
+ * Corrected issue that prevented the printer from checking for heaters not working
+7.3.2.1.0
+ * Fixed temperature conversion table inconsistencies
+ * Added error numbers to all heater failures
+ * Added new errors for heater failures that check for proper configuration byte to be read back from both channels
+ * Some heater failures now cause the printer to stop printing
+ * Added slower SD card fix for Rev H boards
+7.3.1.1.0
+ * XY motor torque is no longer turned down when in Change Filament mode allowing the print to resume from the same spot easier on Rep 2x
+ * Added Z Pause Height feature, pausing the print at a specified height in mm
+ * Fixed missing letters in text displayed on LCD
+ * Added print time, toggle between percent complete and print time
+ * Corrected some inconsistencies with temperature reading tables
 7.2.1.1.0
  * removed post level print
 7.1.3.1.0

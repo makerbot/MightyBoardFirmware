@@ -106,9 +106,6 @@ void SetDefaultsThermal(uint16_t eeprom_base)
 	eeprom_write_dword( (uint32_t*)(eeprom_base + therm_eeprom_offsets::THERM_R0), THERM_R0_DEFAULT_VALUE);
 	eeprom_write_dword( (uint32_t*)(eeprom_base + therm_eeprom_offsets::THERM_T0), THERM_T0_DEFAULT_VALUE);
 	eeprom_write_dword( (uint32_t*)(eeprom_base + therm_eeprom_offsets::THERM_BETA), THERM_BETA_DEFAULT_VALUE);
-	/// write the default thermal table.
-	eeprom_write_block( (const uint8_t*)default_therm_table,
-			(uint8_t*)(eeprom_base + therm_eeprom_offsets::THERM_DATA), sizeof(uint16_t)*2*NUMTEMPS);
 
 }
 
@@ -261,6 +258,8 @@ ATOMIC_BLOCK(ATOMIC_RESTORESTATE){
     
   eeprom_write_byte((uint8_t*)eeprom_offsets::HEATER_TIMEOUT_ON_CANCEL, 0);
   setDefaultAxisHomePositions();
+
+  eeprom_write_byte((uint8_t*)eeprom_offsets::STOP_HEIGHT_VALUE, 0);
   
   /// store the default axis lengths for the machine
   eeprom_write_block((uint8_t*)&(replicator_axis_lengths::axis_lengths[0]), (uint8_t*)(eeprom_offsets::AXIS_LENGTHS_MM), 20);
@@ -378,6 +377,7 @@ void setDefaultSettings(){
     eeprom_write_byte((uint8_t*)(eeprom_offsets::ACCELERATION_SETTINGS + acceleration_eeprom_offsets::ACCELERATION_ACTIVE), 0x01);
     setToolHeadCount(1);
     eeprom_write_byte((uint8_t*)eeprom_offsets::HEATER_TIMEOUT_ON_CANCEL, 0);
+    eeprom_write_byte((uint8_t*)eeprom_offsets::STOP_HEIGHT_VALUE, 0);
     // HBP settings
   #ifdef MODEL_REPLICATOR
     eeprom_write_byte((uint8_t*)eeprom_offsets::HBP_PRESENT, 1);
