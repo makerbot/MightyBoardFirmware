@@ -32,14 +32,12 @@ FilamentScreen filamentScreen;
 SDMenu sdmenu;
 ReadyMenu ready;
 LevelOKMenu levelOK;
-ActiveBuildMenu active_build_menu;
 JogMode jogger;
 BotStats bot_stats;
 SettingsMenu set;
 StopHeightMenu height;
 PreheatSettingsMenu preheatSettings;
 ResetSettingsMenu reset_settings;
-FilamentMenu filamentMenu;
 NozzleCalibrationScreen alignment;
 HeaterPreheat preheat;
 UtilitiesMenu utils;
@@ -1911,7 +1909,7 @@ void MonitorMode::notifyButtonPressed(ButtonArray::ButtonName button) {
             switch(host::getHostState()) {
             case host::HOST_STATE_BUILDING:
             case host::HOST_STATE_BUILDING_FROM_SD:
-                interface::pushScreen(&active_build_menu);
+                interface::queueScreen(InterfaceBoard::ACTIVE_BUILD_SCREEN);
                 break;
             case host::HOST_STATE_BUILDING_ONBOARD:
                 interface::pushScreen(&cancel_build_menu);
@@ -2300,13 +2298,13 @@ void ActiveBuildMenu::resetState(){
   itemIndex = 0;
   firstItemIndex = 0;
   is_paused = false;
-  is_sleeping = command::isActivePaused();
   FanOn = EX_FAN.getValue();
 }
 
 
 void ActiveBuildMenu::drawItem(uint8_t index, LiquidCrystalSerial& lcd, uint8_t line_number){
   
+  is_sleeping = command::isActivePaused();
   switch (index) {
         case 0:
             if(is_paused){
@@ -2454,7 +2452,7 @@ void ActiveBuildMenu::handleSelect(uint8_t index){
           is_paused = false;
           // record the start screen here
           Motherboard::getBoard().getInterfaceBoard().RecordOnboardStartIdx();
-          interface::pushScreen(&filamentMenu);
+          interface::queueScreen(InterfaceBoard::CHANGE_FILAMENT_SCREEN);
           host::activePauseBuild(true, command::SLEEP_TYPE_FILAMENT);
           is_sleeping = true;
       }
@@ -2879,7 +2877,7 @@ void UtilitiesMenu::handleSelect(uint8_t index) {
       break;
     case 1:
       // load filament script
-            interface::pushScreen(&filamentMenu);
+            interface::queueScreen(InterfaceBoard::CHANGE_FILAMENT_SCREEN);
       break;
     case 2:
       // level_plate script
@@ -3001,6 +2999,7 @@ StopHeightMenu::StopHeightMenu() {
 
 void StopHeightMenu::resetState(){
   stopHeightValue = eeprom::getEeprom8(eeprom_offsets::STOP_HEIGHT_VALUE, 0);
+  stop_height_max_mm = (int32_t)eeprom::getEeprom32(eeprom_offsets::AXIS_LENGTHS_MM + 2 * sizeof(uint32_t), replicator_axis_lengths::axis_lengths[2]);
   itemIndex = 1;
   firstItemIndex = 1;
 }
@@ -3050,16 +3049,13 @@ void StopHeightMenu::handleCounterUpdate(uint8_t index, bool up){
             stopHeightValue--;
         }
         // keep within appropriate boundaries
-        if(stopHeightValue > 150) {
-            stopHeightValue = 1;
+        if(stopHeightValue > stop_height_max_mm) {
+            stopHeightValue = stop_height_max_mm;
         }
-        else if(stopHeightValue < 1) {
-            stopHeightValue = 150;
+        else if(stopHeightValue < 0) {
+            stopHeightValue = 0;
         }
 
-        ATOMIC_BLOCK(ATOMIC_RESTORESTATE){
-          eeprom_write_byte((uint8_t*)eeprom_offsets::STOP_HEIGHT_VALUE, stopHeightValue);
-        }
         break;
     }
     

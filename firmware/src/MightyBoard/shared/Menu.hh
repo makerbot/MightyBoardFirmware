@@ -651,8 +651,8 @@ private:
 	// Enable for stopping at a specified height to change filament
 	uint8_t  stopHeightEnabled;
 	// Value in millimeters for stopping at a specified height to change filament
-	uint8_t   stopHeightValue;
-    
+  int16_t   stopHeightValue;
+  int32_t   stop_height_max_mm;  
 };
 
 class FilamentMenu: public Menu {

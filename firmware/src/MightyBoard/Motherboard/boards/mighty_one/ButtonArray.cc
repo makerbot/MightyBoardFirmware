@@ -5,7 +5,7 @@
 
 static uint8_t previousJ;
 //bool  center_holding = false;
-//bool right_holding = false;
+bool right_holding = false;
 
 void ButtonArray::init() {
     previousJ = 0;
@@ -59,6 +59,7 @@ void ButtonArray::scanButtons() {
 			centerHold = Timeout();
 			return;
 		}
+*/
 		/// right hold
 		if(!(newJ & (1 << RIGHT))){
 			if(!right_holding){
@@ -77,7 +78,7 @@ void ButtonArray::scanButtons() {
 			rightHold = Timeout();
 			return;
 		}
-	*/	
+		
 		for(uint8_t i = 0; i < 5; i++) {
 			if (!(newJ&(1<<i))) {
 				if (!buttonPressWaiting) {

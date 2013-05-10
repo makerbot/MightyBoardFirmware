@@ -72,6 +72,7 @@
 #include "EepromMap.hh"
 #include "Eeprom.hh"
 #include <avr/eeprom.h>
+#include "Interface.hh"
 
 #ifndef SIMULATOR
 	#include  <avr/interrupt.h>
@@ -1541,7 +1542,12 @@ void plan_buffer_line(FPTYPE feed_rate, const uint32_t &dda_rate, const uint8_t 
 			// Just a test to check if this gets triggered
 			//_delay_ms(5000);
 			stopHeightEnabled = false;
-          		host::activePauseBuild(true, command::SLEEP_TYPE_FILAMENT);
+      // queue activebuild menu (in case we are on the monitor screen
+      interface::queueScreen(InterfaceBoard::ACTIVE_BUILD_SCREEN);
+      // record the start screen here
+      Motherboard::getBoard().getInterfaceBoard().RecordOnboardStartIdx();
+      interface::queueScreen(InterfaceBoard::CHANGE_FILAMENT_SCREEN);
+      host::activePauseBuild(true, command::SLEEP_TYPE_FILAMENT);
 		}
 	}
 	return;
