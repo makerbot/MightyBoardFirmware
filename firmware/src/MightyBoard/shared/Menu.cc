@@ -3079,6 +3079,7 @@ void StopHeightMenu::handleSelect(uint8_t index) {
       break;
     case 3:
       interface::popScreen();
+      interface::popScreen();
       break;
     }
 }
