@@ -664,7 +664,8 @@ void runCommandSlice() {
 					// Pop the change filament screen
 					interface::popScreen();
 					// Display the warning indicating we time out
-					Motherboard::getBoard().getInterfaceBoard().errorMessage(TIMED_OUT_OF_CHANGE_FILAMENT);
+					bool reset_request = false;
+					Motherboard::getBoard().errorResponse(TIMED_OUT_OF_CHANGE_FILAMENT, reset_request);
 					// Lower current to the stepper motors except for the Z motor effectively lowering hold torque
 					uint8_t pot_value = 20;
 					for(uint8_t i = 0; i < 2; ++i)

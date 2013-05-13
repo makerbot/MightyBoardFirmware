@@ -1538,7 +1538,8 @@ void plan_buffer_line(FPTYPE feed_rate, const uint32_t &dda_rate, const uint8_t 
 		// Check if filament change stop is enabled and if we've reached the filament change height
 		if( (stopHeightEnabled == true) && ( (stopHeightValue * 400) <= planner_target[Z_AXIS]) ) {
 
-			// Behaviour is enabled and we've reached the condition, go into sleep state
+			// Stop enabled, condition reached, turning off enable and sleeping for a filament change
+			stopHeightEnabled = false;
 			host::activePauseBuild(true, command::SLEEP_TYPE_FILAMENT);
 		}
 	}

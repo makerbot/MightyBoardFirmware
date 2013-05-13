@@ -1,3 +1,5 @@
+7.3.5.1.0
+ * Fixed bug preventing user from resuming their print after a timeout in the change filament mode.
 7.3.4.1.0
  * Changed behaviour of Z Pause Height behaviour, it now goes into active build menu when triggered
 7.3.3.1.0
