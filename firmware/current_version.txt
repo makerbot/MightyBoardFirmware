@@ -1,3 +1,5 @@
+7.3.4.1.0
+ * Changed behaviour of Z Pause Height behaviour, it now goes into active build menu when triggered
 7.3.3.1.0
  * Added timeout to change filament mode as the motors are staying at full torque
  * Corrected issue that prevented the printer from checking for heaters not working

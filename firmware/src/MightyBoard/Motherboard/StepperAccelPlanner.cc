@@ -72,7 +72,6 @@
 #include "EepromMap.hh"
 #include "Eeprom.hh"
 #include <avr/eeprom.h>
-#include "Interface.hh"
 
 #ifndef SIMULATOR
 	#include  <avr/interrupt.h>
@@ -1539,15 +1538,8 @@ void plan_buffer_line(FPTYPE feed_rate, const uint32_t &dda_rate, const uint8_t 
 		// Check if filament change stop is enabled and if we've reached the filament change height
 		if( (stopHeightEnabled == true) && ( (stopHeightValue * 400) <= planner_target[Z_AXIS]) ) {
 
-			// Just a test to check if this gets triggered
-			//_delay_ms(5000);
-			stopHeightEnabled = false;
-      // queue activebuild menu (in case we are on the monitor screen
-      interface::queueScreen(InterfaceBoard::ACTIVE_BUILD_SCREEN);
-      // record the start screen here
-      Motherboard::getBoard().getInterfaceBoard().RecordOnboardStartIdx();
-      interface::queueScreen(InterfaceBoard::CHANGE_FILAMENT_SCREEN);
-      host::activePauseBuild(true, command::SLEEP_TYPE_FILAMENT);
+			// Behaviour is enabled and we've reached the condition, go into sleep state
+			host::activePauseBuild(true, command::SLEEP_TYPE_FILAMENT);
 		}
 	}
 	return;
