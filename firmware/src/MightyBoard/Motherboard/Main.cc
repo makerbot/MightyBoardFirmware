@@ -36,10 +36,14 @@
 #endif
 
 #define DEBUG_SRAM_MONITOR
+
+#define NUMBER_OF_ERROR_MESSAGES 26
+
 #if defined(STACK_PAINT) && defined(DEBUG_SRAM_MONITOR)
 	bool stackAlertLockout = false;
 	uint16_t stackAlertCounter = 0;
 #endif
+
 
 #ifdef STACK_PAINT
 
@@ -137,6 +141,7 @@ void reset(bool hard_reset) {
 
 int main() {
 
+
 	Motherboard& board = Motherboard::getBoard();
 #ifdef REVG
 	INTERFACE_POWER.setDirection(true);
@@ -145,6 +150,40 @@ int main() {
 	board.init();
 	reset(true);
 	sei();
+
+	unsigned char* message_pointer [NUMBER_OF_ERROR_MESSAGES] = { FAIL_MSG,
+						HEATER_ERROR_MSG,
+						READY_SS_MSG,
+						PUSH_HARDER_MSG,
+						KEEP_GOING_MSG,
+						FINISH_MSG,
+						TIMEOUT_MSG,
+						STATICFAIL_MSG,
+						CARDSIZE_MSG,
+						HEATER_FAIL_SOFTWARE_CUTOFF_MSG,
+						HEATER_FAIL_NOT_HEATING_MSG,
+						HEATER_FAIL_DROPPING_TEMP_MSG,
+						HEATER_FAIL_NOT_PLUGGED_IN_MSG,
+						HEATER_FAIL_READ_TEMP_OUT_OF_RANGE_MSG,
+						HEATER_FAIL_READ_CH1_MSG,
+						HEATER_FAIL_READ_CH2_MSG,
+						TIMED_OUT_OF_CHANGE_FILAMENT,
+						ERROR_STREAM_VERSION,
+						ERROR_BOT_TYPE_REP1,
+						ERROR_BOT_TYPE_REP2,
+						ERROR_SRAM,
+						ERROR_PLATFORM_HEATING_TIMEOUT,
+						ERROR_HEATING_TIMEOUT,
+						ERROR_TEMP_RESET_EXTERNALLY,
+						ERROR_INVALID_PLATFORM,
+						ERROR_INVALID_TOOL };
+
+	InterfaceBoard& interfaceBoard = board.getInterfaceBoard();
+	interfaceBoard.init();
+
+
+	uint8_t msg_ptr_index = 0;
+
 	    
 	while (1) {
 		// Host interaction thread.
@@ -167,8 +206,17 @@ int main() {
 		// check for new tones
 		Piezo::runPiezoSlice();
 
+		// Display screen to check for proper display of characters and lines
+		if (interfaceBoard.buttonPushed()) {
+			if (msg_ptr_index < NUMBER_OF_ERROR_MESSAGES - 1) {
+				board.errorResponse(message_pointer[msg_ptr_index], false);
+				msg_ptr_index++;
+			}
+		}
+
 		// reset the watch dog timer
 		wdt_reset();
+
 
 	}
 	return 0;
