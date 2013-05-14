@@ -489,10 +489,10 @@ static PROGMEM unsigned char CHANGE_FILAMENT_PREP_MSG[] =		"Changing Filament:  
 									"I'm going to my wait" \
 									"position.           ";
 
-static PROGMEM unsigned char TIMED_OUT_OF_CHANGE_FILAMENT[] =		"I timed out while   " \
-									"waiting for filament" \
-									"change. Going to    " \
-									"sleep.              ";
+static PROGMEM unsigned char TIMED_OUT_OF_CHANGE_FILAMENT[] =		"My heaters timed out" \
+									"I am now in Sleep   " \
+									"(Cold Pause).       " \
+									"                    ";
 
 static PROGMEM unsigned char SLEEP_WAIT_MSG[] =				"Preparing for sleep:" \
 									"I'm completing any  " \
