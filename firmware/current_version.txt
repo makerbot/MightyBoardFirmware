@@ -1,4 +1,4 @@
-7.3.3.2.0
+7.3.203.1.0
  * Changed startup procedure to print out error messages on the LCD so the alignment can be checked.
 7.3.3.1.0
  * Added timeout to change filament mode as the motors are staying at full torque
