@@ -2305,6 +2305,7 @@ void ActiveBuildMenu::resetState(){
 void ActiveBuildMenu::drawItem(uint8_t index, LiquidCrystalSerial& lcd, uint8_t line_number){
   
   is_sleeping = command::isActivePaused();
+  is_paused = command::isPaused();
   switch (index) {
         case 0:
             if(is_paused){
@@ -2493,7 +2494,7 @@ void ActiveBuildMenu::handleSelect(uint8_t index){
       interface::pushScreen(&build_stats_screen);
       break;
     case FanIdx+3:
-      host::pauseBuild(false);
+      //host::pauseBuild(false);
       interface::popScreen();
       break;
        

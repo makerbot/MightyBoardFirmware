@@ -1,3 +1,5 @@
+7.3.8.1.0
+ * Fixed JIRA bug MW-946. When the printer is in the paused state and the user presses "Back to Monitor", the print resumes.
 7.3.7.1.0
  * Fixed JIRA bug MW-952. Following a mid-print filament change, the "Resume Build" item is still available on the menu.
 7.3.6.1.0
