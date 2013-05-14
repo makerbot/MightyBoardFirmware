@@ -72,6 +72,7 @@
 #include "EepromMap.hh"
 #include "Eeprom.hh"
 #include <avr/eeprom.h>
+#include "Interface.hh"
 
 #ifndef SIMULATOR
 	#include  <avr/interrupt.h>
@@ -1540,6 +1541,10 @@ void plan_buffer_line(FPTYPE feed_rate, const uint32_t &dda_rate, const uint8_t 
 
 			// Stop enabled, condition reached, turning off enable and sleeping for a filament change
 			stopHeightEnabled = false;
+      // queue activebuild menu (in case we are on the monitor screen
+      interface::queueScreen(InterfaceBoard::ACTIVE_BUILD_SCREEN);
+      // record the start screen here
+      Motherboard::getBoard().getInterfaceBoard().RecordOnboardStartIdx();
 			host::activePauseBuild(true, command::SLEEP_TYPE_FILAMENT);
 		}
 	}
