@@ -519,21 +519,21 @@ static PROGMEM unsigned char ERROR_BOT_TYPE_REP2[] =			"I am a Replicator 2." \
 									"This build is for   " \
 									"another bot. See:   " \
 									"makerbot.com/help   ";
-static PROGMEM unsigned char ERROR_SRAM[] =				"MY SRAM USAGE IS   " \
-									"OVER THE 8K LIMIT! ";
+static PROGMEM unsigned char ERROR_SRAM[] =				"MY SRAM USAGE IS    " \
+									"OVER THE 8K LIMIT!  ";
 static PROGMEM unsigned char ERROR_SD_CARD_REMOVED[] =			"SD Card Removed    ";
-static PROGMEM unsigned char ERROR_PLATFORM_HEATING_TIMEOUT[] =		"I timed out while  " \
-									"attempting to heat " \
-									"my platform.       ";
-static PROGMEM unsigned char ERROR_HEATING_TIMEOUT[] =			"I timed out while  " \
-									"attempting to heat " \
-									"my extruder.       ";
+static PROGMEM unsigned char ERROR_PLATFORM_HEATING_TIMEOUT[] =		"I timed out while   " \
+									"attempting to heat  " \
+									"my platform.        ";
+static PROGMEM unsigned char ERROR_HEATING_TIMEOUT[] =			"I timed out while   " \
+									"attempting to heat  " \
+									"my extruder.        ";
 static PROGMEM unsigned char ERROR_SD_CARD_BUILDING[] =			"I'm already building";
 static PROGMEM unsigned char ERROR_SD_CARD_GENERIC[] =			" SD card read error";
-static PROGMEM unsigned char ERROR_TEMP_RESET_EXTERNALLY[] =		"My temperature was " \
-									"changed externally." \
-									"Reselect filament  " \
-									"menu to try again. ";
+static PROGMEM unsigned char ERROR_TEMP_RESET_EXTERNALLY[] =		"My temperature was  " \
+									"changed externally. " \
+									"Reselect filament   " \
+									"menu to try again.  ";
 
 static PROGMEM unsigned char ERROR_INVALID_PLATFORM[] =			"INVALID COMMAND:    " \
 									"I received a command" \
