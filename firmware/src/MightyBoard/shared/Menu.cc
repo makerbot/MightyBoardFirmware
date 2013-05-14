@@ -2468,6 +2468,8 @@ void ActiveBuildMenu::handleSelect(uint8_t index){
             Motherboard::getBoard().getInterfaceBoard().RecordOnboardStartIdx();
             host::activePauseBuild(true, command::SLEEP_TYPE_COLD);
         }else{
+            interface::popScreen();
+            Motherboard::getBoard().getInterfaceBoard().RecordOnboardStartIdx();
             host::activePauseBuild(false, command::SLEEP_TYPE_COLD);
             preheatActive = false;
         }
