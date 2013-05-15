@@ -679,6 +679,7 @@ sdcard::SdErrorCode startBuildFromSD() {
 	steppers::abort();
 	steppers::reset();
 	Motherboard::getBoard().reset(false);
+  Motherboard::getBoard().getInterfaceBoard().RecordOnboardStartIdx();
 	currentState = HOST_STATE_BUILDING_FROM_SD;
 	return e;
 }
