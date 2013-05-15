@@ -34,7 +34,7 @@ void InterfaceBoard::init() {
   pushScreen(&mainScreen);
   screen_locked = false;
   onboard_build = false;
-  onboard_start_idx = 1;
+  onboard_start_idx = 0;
   user_wait_override = false;
 }
 
@@ -131,6 +131,9 @@ void InterfaceBoard::doUpdate() {
 		switch(host::getHostState()) {
 		case host::HOST_STATE_BUILDING_ONBOARD:
 				onboard_build = true;
+        if(onboard_start_idx == 0){
+          onboard_start_idx = 1;
+        }
 		case host::HOST_STATE_BUILDING:
 		case host::HOST_STATE_BUILDING_FROM_SD:
 			if (!building ){
@@ -161,21 +164,13 @@ void InterfaceBoard::doUpdate() {
         /// don't remove the build screens if there is a message screen waiting or the build Finished screen is on top 
 				if(!((screenStack[screenIndex] == &messageScreen) && messageScreen.screenWaiting()) && (screenStack[screenIndex] != &buildFinished)){	
 					
-					// when using onboard scrips, we want to return to whichever screen we launched the script from
-					if(onboard_build){	
-						while(screenIndex > onboard_start_idx){
-							popScreenQuick();
-						}
-						screenStack[screenIndex]->update(lcd, true);
-						onboard_build = false;
-					}
-					// else, after a build, we'll want to go back to the main menu
-					else{
-						while(screenIndex > 0){
-							popScreenQuick();
-						}
-						screenStack[screenIndex]->update(lcd, true);
-					}
+					// we want to return to whichever screen we launched the script from
+          while(screenIndex > onboard_start_idx){
+            popScreenQuick();
+          }
+          screenStack[screenIndex]->update(lcd, true);
+          onboard_build = false;
+          onboard_start_idx = 0;
 					building = false;
 				}
 			}	
