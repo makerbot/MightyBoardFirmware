@@ -1,3 +1,5 @@
+7.3.9.1.0
+ * Fixed alignment issues in Menu_locales.hh
 7.3.8.1.0
  * Fixed JIRA bug MW-946. When the printer is in the paused state and the user presses "Back to Monitor", the print resumes.
 7.3.7.1.0
