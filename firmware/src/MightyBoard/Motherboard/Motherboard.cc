@@ -237,6 +237,25 @@ void Motherboard::reset(bool hard_reset) {
 		heatFailMode = HEATER_FAIL_NONE;
 	} 	
   
+
+
+	state_reset();
+
+
+	// pop the splash screen unless we are showing the welcome script
+	if(hasInterfaceBoard){
+		if(eeprom::getEeprom8(eeprom_offsets::FIRST_BOOT_FLAG, 0) != 0) {
+			interface::popScreen();
+		} 
+	}
+
+}
+
+
+/// State reset, used to reset variables needed for printing
+void Motherboard::state_reset() {
+
+
 	board_status = STATUS_NONE;
 	// turn preheat status on during reset to reflect potential remaining heat states.
 	// the flag it will be cleared immediately in the motherboard slice if the temperatures are set to zero.
@@ -266,12 +285,9 @@ void Motherboard::reset(bool hard_reset) {
 	progress_start_char = 0;
 	progress_end_char = 0;
 
-	// pop the splash screen unless we are showing the welcome script
-	if(hasInterfaceBoard){
-		if(eeprom::getEeprom8(eeprom_offsets::FIRST_BOOT_FLAG, 0) != 0) {
-			interface::popScreen();
-		} 
-	}
+
+
+
 
 }
 

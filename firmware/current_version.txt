@@ -1,3 +1,5 @@
+7.3.10.1.0
+ * Added feature to return the screen to the SD Card menu after an SD card build.
 7.3.9.1.0
  * Fixed alignment issues in Menu_locales.hh
 7.3.8.1.0

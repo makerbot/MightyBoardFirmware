@@ -668,6 +668,7 @@ sdcard::SdErrorCode startBuildFromSD() {
 	sdcard::SdErrorCode e;
 	
 	
+	Motherboard::getBoard().getInterfaceBoard().RecordSDStartIdx();
 	// Attempt to start build
 	e = sdcard::startPlayback(buildName);
 	if (e != sdcard::SD_SUCCESS) {
@@ -678,7 +679,9 @@ sdcard::SdErrorCode startBuildFromSD() {
 	command::reset();
 	steppers::abort();
 	steppers::reset();
-	Motherboard::getBoard().reset(false);
+	//Motherboard::getBoard().reset(false);
+	Motherboard::getBoard().state_reset();
+
 	currentState = HOST_STATE_BUILDING_FROM_SD;
 	return e;
 }

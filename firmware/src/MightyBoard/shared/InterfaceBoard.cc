@@ -35,6 +35,7 @@ void InterfaceBoard::init() {
   screen_locked = false;
   onboard_build = false;
   onboard_start_idx = 1;
+  sd_start_idx = 0;
   user_wait_override = false;
 }
 
@@ -117,6 +118,11 @@ void InterfaceBoard::RecordOnboardStartIdx(){
 	onboard_start_idx = screenIndex;
 }
 
+/// record screen stack index when SD card build is started so we can return there on finish
+void InterfaceBoard::RecordSDStartIdx(){
+	sd_start_idx = screenIndex;
+}
+
 void InterfaceBoard::popToOnboardStart(){
   while(screenIndex > onboard_start_idx){
     popScreenQuick();
@@ -171,9 +177,10 @@ void InterfaceBoard::doUpdate() {
 					}
 					// else, after a build, we'll want to go back to the main menu
 					else{
-						while(screenIndex > 0){
+						while(screenIndex > sd_start_idx){
 							popScreenQuick();
 						}
+						sd_start_idx = 0;
 						screenStack[screenIndex]->update(lcd, true);
 					}
 					building = false;

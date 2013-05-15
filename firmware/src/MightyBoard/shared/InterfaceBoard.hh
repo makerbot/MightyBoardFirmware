@@ -80,6 +80,7 @@ private:
         bool screen_locked;             /// set to true in case of catastrophic failure (ie heater cuttoff triggered)
         
         uint8_t onboard_start_idx;		/// screen stack index when onboard script is started
+        uint8_t sd_start_idx;			/// screen stack index when printing from SD card
 public:
         /// Construct an interface board.
         /// \param[in] button array to read from
@@ -151,6 +152,9 @@ public:
         
         /// record screen stack index when onboard script is started so we can return there on finish
         void RecordOnboardStartIdx();
+        
+        /// record screen stack index when SD build is started so we can return there on finish
+        void RecordSDStartIdx();
         
         /// pop screen without refreshing the new head screen
         void popScreenQuick();
