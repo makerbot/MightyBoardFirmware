@@ -137,6 +137,9 @@ void InterfaceBoard::doUpdate() {
 		switch(host::getHostState()) {
 		case host::HOST_STATE_BUILDING_ONBOARD:
 				onboard_build = true;
+        if(onboard_start_idx == 0){
+          onboard_start_idx = 1;
+        }
 		case host::HOST_STATE_BUILDING:
 		case host::HOST_STATE_BUILDING_FROM_SD:
 			if (!building ){

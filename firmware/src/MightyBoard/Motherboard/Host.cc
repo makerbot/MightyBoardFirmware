@@ -679,7 +679,6 @@ sdcard::SdErrorCode startBuildFromSD() {
 	command::reset();
 	steppers::abort();
 	steppers::reset();
-	//Motherboard::getBoard().reset(false);
 	Motherboard::getBoard().state_reset();
 
 	currentState = HOST_STATE_BUILDING_FROM_SD;
