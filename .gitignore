@@ -2,6 +2,7 @@
 
 .sconsign.dblite
 build
+build_all.log
 documentation
 *.o
 *.map
