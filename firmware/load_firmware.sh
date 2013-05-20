@@ -1,7 +1,5 @@
 #!/bin/bash
 
-
-
     echo "Press ENTER to upload 8U2 Bootloader"
     read
     # Upload bootloader via isp
