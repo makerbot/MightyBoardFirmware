@@ -14,9 +14,3 @@
     read
     #Upload firmware
     scons platform=mb40 port=/dev/ttyACM0 upload
-
-
-#!/bin/bash
-
-
-
