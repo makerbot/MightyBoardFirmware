@@ -70,8 +70,8 @@ function upload {
 
 echo ""
 
-echo "Building lastest version :"
-echo "--------------------------"
+echo "Building latest version :"
+echo "-------------------------"
 
 echo -e "What board should we build for ?"
 echo -e " A) Replicator and Replicator Dual Family"
@@ -104,11 +104,18 @@ echo "Building firmware with locale : $LOCALE" >> ${LOG_FILE}
 
 build_firmware ${SCONS}
 
+
+HEX_FILE=`find ./build -type f -name "*.hex" -print`
+
+if [ "$HEX_FILE" = "" ]; then 
+    echo_fail
+    exit 1
+fi
+
 echo ""
 echo "Uploading :"
 echo "-----------"
 
-HEX_FILE=`find ./build -type f -name "*.hex" -print`
 echo -e "The firmware has successfully been compiled in '"${GREEN}"$HEX_FILE"${RESET}"'."
 echo -e "Do you wish to upload now via USB ? ["${GREEN}"no"${RESET}"] : "
 read confirm
