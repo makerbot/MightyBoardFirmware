@@ -175,8 +175,8 @@ static PROGMEM unsigned char HEATER_ERROR_MSG[] =   "Mes extrudeurs ne   " \
 
 static PROGMEM unsigned char HEATING_BAR_MSG[] =    "    Chauffage de    " \
                                                     "l'extrudeur en cours" \
-                                                    "       Merci        " \
-                                                    "  de patienter ...  ";
+                                                    "    Patientez SVP   " \
+                                                    "                    ";
 static PROGMEM unsigned char HEATING_PROG_MSG[] =   "    Progression :   " \
                                                     "                    " \
                                                     "                    " \
@@ -540,5 +540,5 @@ static PROGMEM unsigned char ACTIVE_FAN_MSG[]    =      "Ventilateur         ";
 
 /// the home axes script homes the XYZ axes and recalls home positions
 /// TODO Get the gcode for this array since there is a string that needs to be translated inside.
-#define HOME_AXES_SCRIPT static uint8_t HomeAxes[] PROGMEM = { 149,  2,  0,  0,  0,  80,  108,  101,  97,  115,  101,  32,  119,  97,  105,  116,  46,  46,  46,  0,  132,  3,  105,  1,  0,  0,  20,  0,  131,  4,  136,  0,  0,  0,  20,  0,  140,  0,  0,  0,  0,  0,  0,  0,  0,  48,  248,  255,  255,  0,  0,  0,  0,  0,  0,  0,  0,  142,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  87,  41,  4,  0,  24,  131,  4,  220,  5,  0,  0,  20,  0,  144,  31,  137,  31 };
-
+#define HOME_AXES_SCRIPT static uint8_t HomeAxes[] PROGMEM = { 149,  2,  0,  0,  0,  65,  116,  116,  101,  110,  100,  101,  122,  46,  46,  46,  0,  132,  3,  105,  1,  0,  0,  20,  0,  131,  4,  136,  0,  0,  0,  20,  0,  140,  0,  0,  0,  0,  0,  0,  0,  0,  48,  248,  255,  255,  0,  0,  0,  0,  0,  0,  0,  0,  142,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  87,  41,  4,  0,  24,  131,  4,  220,  5,  0,  0,  20,  0,  140,  229,  55,  0,  0,  148,  27,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  137,  31 };
+#define HOME_AXES_SCRIPT_LEN 111

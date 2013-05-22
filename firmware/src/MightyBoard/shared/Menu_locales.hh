@@ -564,6 +564,7 @@ static PROGMEM unsigned char ACTIVE_FAN_MSG[]		 =		"Filament Fan       ";
 
 /// the home axes script homes the XYZ axes and recalls home positions
 #define HOME_AXES_SCRIPT static uint8_t HomeAxes[] PROGMEM = { 149,  2,  0,  0,  0,  80,  108,  101,  97,  115,  101,  32,  119,  97,  105,  116,  46,  46,  46,  0,  132,  3,  105,  1,  0,  0,  20,  0,  131,  4,  136,  0,  0,  0,  20,  0,  140,  0,  0,  0,  0,  0,  0,  0,  0,  48,  248,  255,  255,  0,  0,  0,  0,  0,  0,  0,  0,  142,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  87,  41,  4,  0,  24,  131,  4,  220,  5,  0,  0,  20,  0,  144,  31,  137,  31 };
+#define HOME_AXES_SCRIPT_LEN 95
 
 #endif //end of default ELSE for US English */
 

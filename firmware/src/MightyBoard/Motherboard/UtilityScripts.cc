@@ -26,7 +26,7 @@
 /// the gcode and s3g files for these scripts are located in firmware/s3g_scripts
 /// the script loadDataFile.py converts s3g files to byte arrays to store in PROGMEM
 /// the script lengths are given by the output of the loadDataFile.py script
- static uint16_t Lengths[4]  PROGMEM = { 95, /// Home Axes
+ static uint16_t Lengths[4]  PROGMEM = { HOME_AXES_SCRIPT_LEN, /// Home Axes
                                          LEVEL_PLATE_LEN_SINGLE,
                                          LEVEL_PLATE_LEN_DUAL,
                                          4351}; /// nozzle (toolhead) calibrate
