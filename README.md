@@ -14,6 +14,10 @@ You must first install `SCons` if you don't have it :
 
 > NB : if you haven't got `brew` installed, see http://mxcl.github.io/homebrew/ .
 
+You might need to update avr-gcc if your X-Code version is out-of-date :
+
+    brew install avr-gcc
+
 To create the documentation, you will also need `doxygen` (and `graphviz` for nice vizualisations) :
 
     brew install doxygen
