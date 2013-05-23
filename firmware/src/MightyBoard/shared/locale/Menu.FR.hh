@@ -329,7 +329,7 @@ static PROGMEM unsigned char LEFT_SPACES_MSG[] =      "Tete de gauche      ";   
 static PROGMEM unsigned char PLATFORM_SPACES_MSG[] =  "Plateforme          ";   // XXX old name: platform[]
 static PROGMEM unsigned char RESET1_MSG[] =           "Reinitialiser aux   ";   // XXX old name: set1[]
 static PROGMEM unsigned char RESET2_MSG[] =           "parametres d'usine ?";
-static PROGMEM unsigned char CANCEL_MSG[] =           "Annuler impression ?";
+static PROGMEM unsigned char CANCEL_MSG[] =           "Annuler impression?";
 static PROGMEM unsigned char CANCEL_PROCESS_MSG[] =   "Quitter processus ? ";
 
 static PROGMEM unsigned char PAUSE_MSG[] =        "Mettre en pause     ";
@@ -357,7 +357,7 @@ static PROGMEM unsigned char MONITOR_MSG[] =          "Ecran de controle  ";
 static PROGMEM unsigned char JOG_MSG[] =              "Mode Manuel        ";
 static PROGMEM unsigned char CALIBRATION_MSG[] =      "Calibrer les axes  ";
 static PROGMEM unsigned char HOME_AXES_MSG[] =        "Axes a l'origine   ";
-static PROGMEM unsigned char FILAMENT_OPTIONS_MSG[] = "Changer le filament";
+static PROGMEM unsigned char FILAMENT_OPTIONS_MSG[] = "Changer filament   ";
 static PROGMEM unsigned char STARTUP_MSG[] =          "Script de demarrage";
 static PROGMEM unsigned char VERSION_MSG[] =          "Numero de version  ";
 static PROGMEM unsigned char DSTEPS_MSG[] =           "Debloquer Moteurs  ";
@@ -446,18 +446,18 @@ static PROGMEM unsigned char TIME_SPECIFYING_LETTERS[] =    "h  m";
 static PROGMEM unsigned char CLEAR_TIME_SPECIFYING_LETTERS[] =    "      ";
 static PROGMEM unsigned char CLEAR_TIME_SPECIFYING_LETTERS_1DIGIT_H[] = "     ";
 
-static PROGMEM unsigned char BACK_TO_MONITOR_MSG[] =            "Retour              ";
-static PROGMEM unsigned char STATS_MSG[] =                      "Statistiques        ";
-static PROGMEM unsigned char CHANGE_FILAMENT_HEIGHT_MSG[]  =    "Pause Axe Z         ";
-static PROGMEM unsigned char CHANGE_FILAMENT_HEIGHT_HEADING[] = "     Pause Axe Z    ";
-static PROGMEM unsigned char CANCEL_BUILD_MSG[]     =           "Annuler fabric.     "; 
-static PROGMEM unsigned char CHANGE_FILAMENT_MSG[]  =           "Changer le filament "; 
+static PROGMEM unsigned char BACK_TO_MONITOR_MSG[] =            "Retour             ";
+static PROGMEM unsigned char STATS_MSG[] =                      "Statistiques       ";
+static PROGMEM unsigned char CHANGE_FILAMENT_HEIGHT_MSG[]  =    "Pause Axe Z        ";
+static PROGMEM unsigned char CHANGE_FILAMENT_HEIGHT_HEADING[] = "    Pause Axe Z    ";
+static PROGMEM unsigned char CANCEL_BUILD_MSG[]     =           "Annuler fabric.    "; 
+static PROGMEM unsigned char CHANGE_FILAMENT_MSG[]  =           "Changer filament   "; 
 
 static PROGMEM unsigned char CANCEL_PLATE_MSG[] =               "Annulation en cours " \
                                                                 "Veuillez patienter. ";
 
-static PROGMEM unsigned char SLEEP_MSG[]         =              "Veille(Pause froide)";
-static PROGMEM unsigned char RESTART_MSG[]       =              "Reprendre fabric.   ";
+static PROGMEM unsigned char SLEEP_MSG[]         =              "Veille longue      ";
+static PROGMEM unsigned char RESTART_MSG[]       =              "Reprendre fabric.  ";
 
 static PROGMEM unsigned char CHANGE_FILAMENT_WAIT_MSG[] =   "Changement filament " \
                                                             "Patienter svp, je   " \
