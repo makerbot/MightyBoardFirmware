@@ -256,9 +256,9 @@ bool ThermocoupleReader::update() {
       if (raw == UNPLUGGED_TEMPERATURE) {
         error_code = TemperatureSensor::SS_ERROR_UNPLUGGED;
       } else {
-        temp = TemperatureTable::TempReadtoCelsius((int16_t)raw, TemperatureTable::table_thermocouple, MAX_TEMP);
-        if (temp != MAX_TEMP){
-          channel_one_temp = temp + cold_temp;
+        temp = TemperatureTable::TempReadtoCelsius((int16_t)raw, TemperatureTable::table_thermocouple, MAX_TEMP) + cold_temp;
+        if (temp <= MAX_TEMP){
+          channel_one_temp = temp;
           error_code = TemperatureSensor::SS_OK;
         }else{
           // temperature read out of range
@@ -272,9 +272,9 @@ bool ThermocoupleReader::update() {
       if (raw == UNPLUGGED_TEMPERATURE) {
         error_code = TemperatureSensor::SS_ERROR_UNPLUGGED;
       } else {
-        temp = TemperatureTable::TempReadtoCelsius((int16_t)raw, TemperatureTable::table_thermocouple, MAX_TEMP);
-        if (temp != MAX_TEMP){
-          channel_two_temp = temp + cold_temp;
+        temp = TemperatureTable::TempReadtoCelsius((int16_t)raw, TemperatureTable::table_thermocouple, MAX_TEMP) + cold_temp;
+        if (temp <= MAX_TEMP){
+          channel_two_temp = temp;
           error_code = TemperatureSensor::SS_OK;
         }else{
         //temperature read out of range

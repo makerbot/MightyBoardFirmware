@@ -1,3 +1,7 @@
+7.3.11.1.0
+ * fixed bug in heating up bar, updated z pause height behavior
+7.3.210.1.0
+ * testing version to check for memory overruns
 7.3.10.1.0
  * Added feature to return the screen to the SD Card menu after an SD card build.
 7.3.9.1.0
