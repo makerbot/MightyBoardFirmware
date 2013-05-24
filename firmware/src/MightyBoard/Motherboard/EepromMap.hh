@@ -298,7 +298,7 @@ const static uint16_t AXIS_MAX_FEEDRATES_MIN     = 0x01F4;
 const static uint16_t BOTSTEP_TYPE      = 0x0208;
 /// temperature offset calibration: 1 byte x 3 heaters = 3 bytes
 //$BEGIN_ENTRY
-//$type:BBB $constraints:a $unit:scaling factor
+//$type:BBB $constraints:a $unit:scaling factor $ignore=true
 const static uint16_t HEATER_CALIBRATION = 0x020A;
 // flag that reconfigured eeprom fields have been updated
 //$BEGIN_ENTRY
