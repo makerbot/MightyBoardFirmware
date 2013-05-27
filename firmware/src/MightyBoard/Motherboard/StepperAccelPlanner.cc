@@ -1545,6 +1545,7 @@ void plan_buffer_line(FPTYPE feed_rate, const uint32_t &dda_rate, const uint8_t 
       interface::queueScreen(InterfaceBoard::ACTIVE_BUILD_SCREEN);
       // record the start screen here
       Motherboard::getBoard().getInterfaceBoard().RecordOnboardStartIdx();
+      interface::queueScreen(InterfaceBoard::CHANGE_FILAMENT_SCREEN);
 			host::activePauseBuild(true, command::SLEEP_TYPE_FILAMENT);
 		}
 	}
