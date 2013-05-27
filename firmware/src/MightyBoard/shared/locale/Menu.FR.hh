@@ -280,12 +280,12 @@ static PROGMEM unsigned char TIMEOUT_MSG[]    =       "J'ai coupe le moteur" \
                                                       "Appuyez sur 'M' pour" \
                                                       "quitter.            ";
 
-static PROGMEM unsigned char READY1_MSG[] =           "Tout est bon? Pret a";
-static PROGMEM unsigned char READY2_MSG[] =           "imprimer un objet ? ";
-static PROGMEM unsigned char NOZZLE_MSG_MSG[] =       "La buse est-elle a  ";        // XXX old name: ready1[]
-static PROGMEM unsigned char HEIGHT_CHK_MSG[] =       "la bonne hauteur ?  ";     // XXX old name: ready2[]
-static PROGMEM unsigned char HEIGHT_GOOD_MSG[]=       "Oui, hauteur OK !   ";   // XXX old name: yes[]
-static PROGMEM unsigned char TRY_AGAIN_MSG[]  =       "Non, recommencons.  ";       // XXX old name: no[]
+static PROGMEM unsigned char READY1_MSG[] =           "Tout est bon ? Pret";
+static PROGMEM unsigned char READY2_MSG[] =           "a imprimer ?       ";
+static PROGMEM unsigned char NOZZLE_MSG_MSG[] =       "La buse est-elle a ";        // XXX old name: ready1[]
+static PROGMEM unsigned char HEIGHT_CHK_MSG[] =       "la bonne hauteur ? ";     // XXX old name: ready2[]
+static PROGMEM unsigned char HEIGHT_GOOD_MSG[]=       "Oui, hauteur OK !  ";   // XXX old name: yes[]
+static PROGMEM unsigned char TRY_AGAIN_MSG[]  =       "Non, recommencons. ";       // XXX old name: no[]
 
 static PROGMEM unsigned char QONE_MSG[] =             "Du plastique sort-il";
 static PROGMEM unsigned char QTWO_MSG[] =             "De l'extrudeur ?    ";
@@ -400,7 +400,7 @@ static PROGMEM unsigned char RIGHT_MSG[]   =      "Droite";
 static PROGMEM unsigned char LEFT_MSG[]    =      "Gauche";
 static PROGMEM unsigned char ERROR_MSG[]   =      "Erreur !";
 static PROGMEM unsigned char NA_MSG[]      =      "  N/A    ";
-static PROGMEM unsigned char WAITING_MSG[] =      "En attente";
+static PROGMEM unsigned char WAITING_MSG[] =      "En cours";
 static PROGMEM unsigned char WAIT_FOR_HOMING_MSG[] = "Remise a l'origine..";
 
 static PROGMEM unsigned char HEATER_INACTIVITY_MSG[] = "Arret de la chauffe " \
