@@ -225,7 +225,7 @@
 #define EX_FAN                  Pin(PortG,5)
 
 // sample intervals for heaters
-#define SAMPLE_INTERVAL_MICROS_THERMISTOR (50L * 1000L)
+#define SAMPLE_INTERVAL_MICROS_THERMISTOR (500L * 1000L)
 #define SAMPLE_INTERVAL_MICROS_THERMOCOUPLE (250L * 1000L)
 
 // bot shuts down printers after a defined timeout 

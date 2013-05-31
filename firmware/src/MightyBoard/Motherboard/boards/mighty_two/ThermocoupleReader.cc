@@ -164,14 +164,11 @@ void ThermocoupleReader::initConfig(){
  */
 TemperatureSensor::SensorState ThermocoupleReader::GetChannelTemperature(uint8_t channel, int16_t &read_temperature){
 	
-	if (error_code == TemperatureSensor::SS_OK) {
-		if (channel == CHANNEL_ONE){
-			read_temperature = channel_one_temp;
-		}else{
-
-			read_temperature = channel_two_temp;
-		}
-	}
+  if (channel == CHANNEL_ONE){
+    read_temperature = channel_one_temp;
+  }else{
+    read_temperature = channel_two_temp;
+  }
 
 	return error_code;
 }
