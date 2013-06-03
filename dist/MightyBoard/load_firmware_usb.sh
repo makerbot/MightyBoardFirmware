@@ -2,14 +2,15 @@
 
 # to run from the command line:   ./load_firmware_usb.sh firmware_filename port
 
-# default firmware_filename is mighty_two_v5.5.hex
+# default firmware_filename is mighty_two_v7.2.1.hex
 # default port is /dev/ttyACM0
+# NB : On Mac OS X you can use /dev/tty.usbmodem* as a port
 
 #cd $( dirname $( readlink -f "${BASH_SOURCE[0]}" ))
 
 if test -z "$1"
 then
-  FILENAME=mighty_two_v5.5.hex
+  FILENAME=mighty_two_v7.2.1.hex
 else
   FILENAME=$1
 fi
@@ -38,8 +39,3 @@ FAILUSB="USB Program PASS"
 
 	echo $FAILUSB
 done
-
-#!/bin/bash
-
-
-

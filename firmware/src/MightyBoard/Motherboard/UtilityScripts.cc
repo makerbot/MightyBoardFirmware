@@ -26,14 +26,15 @@
 /// the gcode and s3g files for these scripts are located in firmware/s3g_scripts
 /// the script loadDataFile.py converts s3g files to byte arrays to store in PROGMEM
 /// the script lengths are given by the output of the loadDataFile.py script
- static uint16_t Lengths[4]  PROGMEM = { 95, /// Home Axes
-                                         LEVEL_PLATE_LEN,
+ static uint16_t Lengths[4]  PROGMEM = { HOME_AXES_SCRIPT_LEN, /// Home Axes
+                                         LEVEL_PLATE_LEN_SINGLE,
+                                         LEVEL_PLATE_LEN_DUAL,
                                          4351}; /// nozzle (toolhead) calibrate
                             
 HOME_AXES_SCRIPT
-NOZZLE_CALIBRATE
-LEVEL_PLATE_DUAL
 LEVEL_PLATE_SINGLE
+LEVEL_PLATE_DUAL
+NOZZLE_CALIBRATE
 
  namespace utility {
 	 
@@ -93,22 +94,24 @@ LEVEL_PLATE_SINGLE
 			break;
 		case LEVEL_PLATE_STARTUP:
 			if(eeprom::isSingleTool()){
-				buildFile = LevelPlateSingle;
+        buildFile = LevelPlateSingle;
+        build = LEVEL_PLATE_STARTUP;
 			} else{
-				buildFile = LevelPlateDual; 
+        buildFile = LevelPlateDual; 
+        build = LEVEL_PLATE_STARTUP + 1;
 			}
-			build = LEVEL_PLATE_STARTUP;
 			break;
 		case TOOLHEAD_CALIBRATE:
       show_monitor = true;
-			buildFile = NozzleCalibrate;
+      buildFile = NozzleCalibrate;
+      build = TOOLHEAD_CALIBRATE + 1;
 			break;
 		default:
       is_playing = false;
 			return false;
 	}
 	
-     // get build length
+    // get build length
 	 build_length = pgm_read_word(Lengths + build);
 	 
 	 return is_playing;
