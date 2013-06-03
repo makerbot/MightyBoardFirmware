@@ -1,4 +1,4 @@
-(**** This is a build-platform calibration script for a Dual-Head MakerBot Replicator2 ****)
+(**** This is a build-platform calibration script for a Single-Head MakerBot Replicator2 ****)
 (**** Do not run this code on any other kind of machine! ****)
 G21
 G90
