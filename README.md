@@ -35,9 +35,14 @@ You must first install `SCons` if you don't have it :
 
 > NB : if you haven't got `brew` installed, see http://mxcl.github.io/homebrew/ .
 
-You might need to update avr-gcc if your X-Code version is out-of-date :
+Make sure that you have installed the command line tools from Xcode. You might need to update your developer folder :
 
-    brew install avr-gcc
+    sudo xcode-select -switch /Applications/Xcode.app/Contents/Developer/
+
+If everything is fine, you should be able to run `xcrun -find gcc` and have the following output :
+
+    $ xcrun -find gcc
+    /Applications/Xcode.app/Contents/Developer/usr/bin/gcc
 
 To create the documentation, you will also need `doxygen` (and `graphviz` for nice vizualisations) :
 
@@ -46,18 +51,18 @@ To create the documentation, you will also need `doxygen` (and `graphviz` for ni
 
 Then, run :
 
-    ./firmware/src/build_and_upload.sh
+    ./firmware/build_and_upload.sh
 
 You will be prompted for the Replicator type (`mighty_one` or `mighty_two`, default: `mighty_two`) and the locale to use (available : `fr` and `en`, default : `en`). The script will build the firmware from the sources in the given locale and upload to the connected Replicator.
 
-> NB : A build output log is generated in `./firmware/src/build_and_upload.log`
+> NB : A build output log is generated in `./firmware/build_and_upload.log`
 
 Cleaning up
 ===
 
 You can clean up a previously built version with :
 
-    ./firmware/src/cleanup.sh [-f]
+    ./firmware/cleanup.sh [-f]
 
 The `-f` option cleans up without prompting for confirmation.
 
