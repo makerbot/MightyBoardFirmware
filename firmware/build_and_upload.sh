@@ -48,15 +48,35 @@ function build_firmware {
 
 function upload {
 
-    echo ""
-    echo -e ${RED}"   / \   "${RESET}" Make sure your Replicator is connected via USB"
-    echo -e ${RED}"  / ! \  "${RESET}" and press "${RED}"Enter"${RESET}" to upload the built firmware"
-    echo -e ${RED}" /_____\ "${RESET}" onto the machine .."
-    read
 
-    echo -n " - Uploading ... "
+    if [ "$BOARD" = "mighty_one" ]; then
 
-    avrdude -F -p m1280 -P /dev/tty.usbmodem* -c stk500v1 -b 57600 -U flash:w:${HEX_FILE}
+        echo ""
+        echo -e ${RED}"   / \   "${RESET}" Make sure your Replicator 1 or Dual is connected via USB and OFF,"
+        echo -e ${RED}"  / ! \  "${RESET}" and press "${RED}"Enter"${RESET}". Then turn your printer ON to"
+        echo -e ${RED}" /_____\ "${RESET}" upload the built firmware onto the machine .."
+        read
+
+        echo -n " - Launching uploading loop ... "
+
+        while true; do 
+            # -V disables automatic verify check when uploading data
+            avrdude -F -V -p m1280 -P /dev/tty.usbmodem* -c stk500v1 -b 57600 -U flash:w:${HEX_FILE} && break; 
+        done
+
+    else
+
+        echo ""
+        echo -e ${RED}"   / \   "${RESET}" Make sure your Replicator 2 or 2X is connected via USB and ON,"
+        echo -e ${RED}"  / ! \  "${RESET}" and press "${RED}"Enter"${RESET}" to upload the built firmware"
+        echo -e ${RED}" /_____\ "${RESET}" onto the machine .."
+        read
+
+        echo -n " - Uploading ... "
+
+        avrdude -F -p m1280 -P /dev/tty.usbmodem* -c stk500v1 -b 57600 -U flash:w:${HEX_FILE}
+
+    fi
 
     if [ "$?" -ne "0" ]; then
         echo_fail
@@ -76,8 +96,8 @@ echo "-------------------------"
 echo -e "What board should we build for ?"
 echo -e " A) Replicator and Replicator Dual Family"
 echo -e " B) Replicator 2 and 2X Family "${GREEN}"[default]"${RESET}
-read locale
-case $locale in
+read board
+case $board in
     [aA] ) 
         BOARD="mighty_one"
         ;;

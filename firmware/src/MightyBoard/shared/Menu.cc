@@ -1861,37 +1861,36 @@ void MonitorMode::update(LiquidCrystalSerial& lcd, bool forceRedraw) {
         host::getPrintTime(build_hours, build_minutes);
         lcd.setCursor(16,0);
         lcd.writeFromPgmspace(TIME_SPECIFYING_LETTERS);
-        lcd.setCursor(15,0);
+
         if (two_digit_hours) {
+          lcd.setCursor(14,0);
           lcd.writeInt(build_hours,2);
         } else {
+          lcd.setCursor(15,0);
           lcd.writeInt(build_hours,1);
         }
         
         lcd.setCursor(17,0);
         lcd.writeInt(build_minutes,2);
+
       } else {
 
-        if (two_digit_hours) {
-          lcd.setCursor(13,0);
-          lcd.writeFromPgmspace(CLEAR_TIME_SPECIFYING_LETTERS);
-        } else {
-          lcd.setCursor(14,0);
-          lcd.writeFromPgmspace(CLEAR_TIME_SPECIFYING_LETTERS_1DIGIT_H);
-        }
+        lcd.setCursor(14,0);
+        lcd.writeFromPgmspace(CLEAR_TIME_SPECIFYING_LETTERS);
+
         lcd.setCursor(16,0);
         lcd.writeFromPgmspace(BUILD_PERCENT_MSG);
-        if(buildPercentage < 100)
-        {
+
+        if(buildPercentage < 100) {
           lcd.setCursor(17,0);
           lcd.writeInt(buildPercentage,2);
-        }
-        else if(buildPercentage == 100)
-        {
+        } else if (buildPercentage == 100) {
           lcd.setCursor(16,0);
           lcd.writeFromPgmspace(DONE_MSG);
         }
+        
       }
+
       display_time = !display_time;
     }
     break;

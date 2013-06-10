@@ -109,7 +109,7 @@ static PROGMEM unsigned char END_MSG  [] =          "Super ! Parametres  " \
 static PROGMEM unsigned char SELECT_MSG[] =         "    Selectionnez    " \
                                                     "les meilleurs lignes";
 
-static PROGMEM unsigned char DONE_MSG[]   = "Fini !";
+static PROGMEM unsigned char DONE_MSG[]   = "Fini";
 static PROGMEM unsigned char NO_MSG[]     = "Non   ";
 static PROGMEM unsigned char YES_MSG[]    = "Oui   ";
 
@@ -323,10 +323,10 @@ static PROGMEM unsigned char PLATFORM_TEMP_MSG[]  = "Platforme   ---/---C";
 static PROGMEM unsigned char EXTRUDER_TEMP_MSG[]  = "Extrudeur   ---/---C";
 
 
-static PROGMEM unsigned char PREHEAT_SET_MSG[] =      "Param. Prechauffe   ";
+static PROGMEM unsigned char PREHEAT_SET_MSG[] =      "Param. Prechauffe";
 static PROGMEM unsigned char RIGHT_SPACES_MSG[] =     "Tete de droite      ";   // XXX old name: right[]
 static PROGMEM unsigned char LEFT_SPACES_MSG[] =      "Tete de gauche      ";   // XXX old name: left[]
-static PROGMEM unsigned char PLATFORM_SPACES_MSG[] =  "Plateforme          ";   // XXX old name: platform[]
+static PROGMEM unsigned char PLATFORM_SPACES_MSG[] =  "Plateforme      ";   // XXX old name: platform[]
 static PROGMEM unsigned char RESET1_MSG[] =           "Reinitialiser aux   ";   // XXX old name: set1[]
 static PROGMEM unsigned char RESET2_MSG[] =           "parametres d'usine ?";
 static PROGMEM unsigned char CANCEL_MSG[] =           "Annuler impression?";
@@ -400,7 +400,7 @@ static PROGMEM unsigned char RIGHT_MSG[]   =      "Droite";
 static PROGMEM unsigned char LEFT_MSG[]    =      "Gauche";
 static PROGMEM unsigned char ERROR_MSG[]   =      "Erreur !";
 static PROGMEM unsigned char NA_MSG[]      =      "  N/A    ";
-static PROGMEM unsigned char WAITING_MSG[] =      "En cours";
+static PROGMEM unsigned char WAITING_MSG[] =      "Attente";
 static PROGMEM unsigned char WAIT_FOR_HOMING_MSG[] = "Remise a l'origine..";
 
 static PROGMEM unsigned char HEATER_INACTIVITY_MSG[] = "Arret de la chauffe " \
@@ -441,9 +441,9 @@ static PROGMEM unsigned char BUILD_TIME_MSG[]       =   "Temps fabric.:  h  m";
 static PROGMEM unsigned char LINE_NUMBER_MSG[]      =   "Ligne numero :      ";
 static PROGMEM unsigned char BUILD_FINISHED_MSG []  =   "Fabrication terminee" \
                                                         "                    " \
-                                                        "Temps total:    h  m";
-static PROGMEM unsigned char TIME_SPECIFYING_LETTERS[] =    "h  m";
-static PROGMEM unsigned char CLEAR_TIME_SPECIFYING_LETTERS[] =    "      ";
+                                                        "Temps total     h  m";
+static PROGMEM unsigned char TIME_SPECIFYING_LETTERS[] =                "h  m";
+static PROGMEM unsigned char CLEAR_TIME_SPECIFYING_LETTERS[] =          "      ";
 static PROGMEM unsigned char CLEAR_TIME_SPECIFYING_LETTERS_1DIGIT_H[] = "     ";
 
 static PROGMEM unsigned char BACK_TO_MONITOR_MSG[] =            "Retour             ";
