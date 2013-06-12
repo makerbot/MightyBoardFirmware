@@ -23,6 +23,7 @@
 #define THERMOCOUPLE_READER_HH_
 
 #include "Pin.hh"
+#include "TemperatureSensor.hh"
 
 /// Configuration Register Maps for the ADS1118 ADC
 
@@ -75,26 +76,29 @@ public:
 	};
 
 private:
-        Pin cs_pin;  ///< Chip select pin (output)
-        Pin sck_pin; ///< Clock pin (output)
-        Pin do_pin;  ///< Data out pin (output)
-        Pin di_pin;  ///< Data in pin (output)
+  Pin cs_pin;  ///< Chip select pin (output)
+  Pin sck_pin; ///< Clock pin (output)
+  Pin do_pin;  ///< Data out pin (output)
+  Pin di_pin;  ///< Data in pin (output)
+
+	TemperatureSensor::SensorState error_code; 
         
-        /// 
-        uint8_t config_state;
-        uint8_t read_state;
-        uint8_t temp_check_counter;
+  /// 
+  uint8_t config_state;
+  uint8_t read_state;
+  uint8_t temp_check_counter;
+
+  int16_t cold_temp;
+  uint16_t channel_one_temp;
+  uint16_t channel_two_temp;  
+
+  uint16_t channel_one_config; 	// config register settings to read thermocouple data
+  uint16_t channel_two_config; 	// config register settings to read thermocouple data
+  uint16_t cold_temp_config; 		// config register settings to read cold junction temperature
+
+  uint16_t last_temp_updated;
+  uint16_t last_config;
         
-        int16_t cold_temp;
-        uint16_t channel_one_temp;
-        uint16_t channel_two_temp;  
-        
-        uint16_t channel_one_config; 	// config register settings to read thermocouple data
-        uint16_t channel_two_config; 	// config register settings to read thermocouple data
-        uint16_t cold_temp_config; 		// config register settings to read cold junction temperature
-        
-        uint16_t last_temp_updated;
-      
         
 public:
         /// Create a new thermocouple instance, and attach it to the given pins.
@@ -111,7 +115,7 @@ public:
 	
 	uint8_t getLastUpdated(){ return last_temp_updated;}
 	
-	int16_t GetChannelTemperature(uint8_t channel);
+	TemperatureSensor::SensorState GetChannelTemperature(uint8_t channel, int16_t &read_temperature);
 	
 	int16_t get_cold_temperature() {return cold_temp;}
 	
@@ -120,6 +124,6 @@ public:
 	const static int16_t UNPLUGGED_TEMPERATURE = 0x7fff;
 	
 	/// safety value if ADC read is out of range
-    const static int16_t MAX_TEMP = 400;
+	const static int16_t MAX_TEMP = 400;
 };
 #endif // THERMOCOUPLE_READER_HH_

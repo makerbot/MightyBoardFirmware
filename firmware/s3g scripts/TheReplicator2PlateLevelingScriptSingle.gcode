@@ -1,4 +1,4 @@
-(**** This is a build-platform calibration script for a Dual-Head MakerBot Replicator2 ****)
+(**** This is a build-platform calibration script for a Single-Head MakerBot Replicator2 ****)
 (**** Do not run this code on any other kind of machine! ****)
 G21
 G90
@@ -20,6 +20,7 @@ M71 (of paper will slide between the nozzle  and build plate with some friction.
 
 M70 ( Please wait)
 
+G1 Z5 F3000
 G1 X0 Y70 F3000
 G1 Z0 F1000
 M71 (Adjust the rear knobuntil paper just    slides between the  nozzle and plate    )

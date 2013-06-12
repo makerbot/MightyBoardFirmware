@@ -236,6 +236,7 @@
 
 // bot shuts down printers after a defined timeout 
 #define USER_INPUT_TIMEOUT		1800000000 // 30 minutes
+#define USER_FILAMENT_INPUT_TIMEOUT	900000000  // 15 minutes
 
 
 //If defined, the planner is constrained to a pipeline size of 1,

@@ -2,8 +2,11 @@
 
 .sconsign.dblite
 build
+build_all.log
+build_and_upload.log
 documentation
 *.o
 *.map
 *.swp
 *.DS_Store
+*.lst

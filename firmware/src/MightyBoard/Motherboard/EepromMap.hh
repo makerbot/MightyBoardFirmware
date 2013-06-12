@@ -298,7 +298,7 @@ const static uint16_t AXIS_MAX_FEEDRATES_MIN     = 0x01F4;
 const static uint16_t BOTSTEP_TYPE      = 0x0208;
 /// temperature offset calibration: 1 byte x 3 heaters = 3 bytes
 //$BEGIN_ENTRY
-//$type:BBB $constraints:a $unit:scaling factor
+//$type:BBB $constraints:a $unit:scaling factor $ignore=true
 const static uint16_t HEATER_CALIBRATION = 0x020A;
 // flag that reconfigured eeprom fields have been updated
 //$BEGIN_ENTRY
@@ -324,9 +324,11 @@ const static uint16_t HEATER_TIMEOUT_ON_CANCEL = 0x0244;
 //$BEGIN_ENTRY
 //$type:HHHHH $constraints:a $unit:mm/sec
 const static uint16_t AXIS_MAX_FEEDRATES     = 0x0246;
-
+//$BEGIN_ENTRY
+//$type:B $contraints:m,0,30 $units:minutes
+const static uint16_t STOP_HEIGHT_VALUE = 0x0250;
 /// start of free space
-const static uint16_t FREE_EEPROM_STARTS        = 0x0250;
+const static uint16_t FREE_EEPROM_STARTS        = 0x0252;
 
 } 
 

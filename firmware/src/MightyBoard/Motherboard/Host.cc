@@ -93,8 +93,8 @@ bool hard_reset = false;
 bool cancelBuild = false;
 
 void runHostSlice() {
-  InPacket& in = UART::getHostUART().in;
-  OutPacket& out = UART::getHostUART().out;
+	InPacket& in = UART::getHostUART().in;
+	OutPacket& out = UART::getHostUART().out;
 	if (out.isSending()) {
 		// still sending; wait until send is complete before reading new host packets.
 		return;
@@ -102,20 +102,20 @@ void runHostSlice() {
 
   // soft reset the machine unless waiting to notify repG that a cancel has occured
 	if (do_host_reset && (!cancelBuild || cancel_timeout.hasElapsed()) && (!z_stage_timeout.isActive() || z_stage_timeout.hasElapsed() || st_empty())){
-  	if((buildState == BUILD_RUNNING) || (buildState == BUILD_PAUSED) || (buildState == BUILD_SLEEP)){
-			buildState = BUILD_CANCELED;
-      stopBuild();
+		if((buildState == BUILD_RUNNING) || (buildState == BUILD_PAUSED) || (buildState == BUILD_SLEEP)){
+				buildState = BUILD_CANCELED;
+			stopBuild();
 		}
 		do_host_reset = false;
-    cancelBuild = false;
-    cancel_timeout = Timeout();
-    z_stage_timeout = Timeout();
+		cancelBuild = false;
+		cancel_timeout = Timeout();
+		z_stage_timeout = Timeout();
 
 		// reset local board
 		reset(hard_reset);
 		
-    // hard_reset can be called, but is not called by any
-    // a hard reset calls the start up sound and resets heater errors
+		// hard_reset can be called, but is not called by any
+		// a hard reset calls the start up sound and resets heater errors
 		hard_reset = false;
 		packet_in_timeout = Timeout();
 
@@ -126,7 +126,7 @@ void runHostSlice() {
 
 		return;
 	}
-    // new packet coming in
+	// new packet coming in
 	if (in.isStarted() && !in.isFinished()) {
 		if (!packet_in_timeout.isActive()) {
 			// initiate timeout
@@ -192,7 +192,7 @@ void runHostSlice() {
 			out.append8(RC_CMD_UNSUPPORTED);
 		}
 		in.reset();
-    UART::getHostUART().beginSend();
+		UART::getHostUART().beginSend();
 	}
     /// mark new state as ready if done building from SD
 	if(currentState==HOST_STATE_BUILDING_FROM_SD)
@@ -265,15 +265,15 @@ void heatShutdown(){
 // puts fw version into a reply packet, and send it back
 void handleVersion(const InPacket& from_host, OutPacket& to_host) {
 
-    // Case to give an error on Replicator G versions older than 0025. See footnote 1
-    if(from_host.read16(1)  <=  25   ) {
-        to_host.append8(RC_OK);
-        to_host.append16(0x0000);
-    }
-    else  {
-        to_host.append8(RC_OK);
-        to_host.append16(firmware_version);
-    }
+	// Case to give an error on Replicator G versions older than 0025. See footnote 1
+	if(from_host.read16(1)  <=  25   ) {
+		to_host.append8(RC_OK);
+		to_host.append16(0x0000);
+	}
+	else  {
+		to_host.append8(RC_OK);
+		to_host.append16(firmware_version);
+	}
 
 }
 
@@ -287,8 +287,8 @@ void handleGetAdvancedVersion(const InPacket& from_host, OutPacket& to_host) {
 	to_host.append8(RC_OK);
 	to_host.append16(firmware_version);
 	to_host.append16(internal_version);
-  // software variant
-  to_host.append8(MBI_OFFICIAL);
+	// software variant
+	to_host.append8(MBI_OFFICIAL);
 	to_host.append8(0);
 	to_host.append16(0);
 
@@ -298,8 +298,8 @@ void handleGetAdvancedVersion(const InPacket& from_host, OutPacket& to_host) {
 void handleGetBuildName(const InPacket& from_host, OutPacket& to_host) {
 	to_host.append8(RC_OK);
 	for (uint8_t idx = 0; idx < MAX_FILE_LEN; idx++) {
-	  to_host.append8(buildName[idx]);
-	  if (buildName[idx] == '\0') { break; }
+		to_host.append8(buildName[idx]);
+		if (buildName[idx] == '\0') { break; }
 	}
 }
 
@@ -421,36 +421,36 @@ void handleIsFinished(const InPacket& from_host, OutPacket& to_host) {
 // read value from eeprom
 void handleReadEeprom(const InPacket& from_host, OutPacket& to_host) {
     
-    uint16_t offset = from_host.read16(1);
-    uint8_t length = from_host.read8(3);
-    uint8_t data[length];
-    ATOMIC_BLOCK(ATOMIC_RESTORESTATE){
-    eeprom_read_block(data, (const void*) offset, length);
+	uint16_t offset = from_host.read16(1);
+	uint8_t length = from_host.read8(3);
+	uint8_t data[length];
+	ATOMIC_BLOCK(ATOMIC_RESTORESTATE){
+		eeprom_read_block(data, (const void*) offset, length);
 	}
-    to_host.append8(RC_OK);
-    for (int i = 0; i < length; i++) {
-        to_host.append8(data[i]);
-    }
+	to_host.append8(RC_OK);
+	for (int i = 0; i < length; i++) {
+		to_host.append8(data[i]);
+	}
 }
 
 /**
  * writes a chunk of data from a input packet to eeprom
  */
 void handleWriteEeprom(const InPacket& from_host, OutPacket& to_host) {
-    uint16_t offset = from_host.read16(1);
-    uint8_t length = from_host.read8(3);
-    uint8_t data[length];
-    ATOMIC_BLOCK(ATOMIC_RESTORESTATE){
-    eeprom_read_block(data, (const void*) offset, length);
+	uint16_t offset = from_host.read16(1);
+	uint8_t length = from_host.read8(3);
+	uint8_t data[length];
+	ATOMIC_BLOCK(ATOMIC_RESTORESTATE){
+		eeprom_read_block(data, (const void*) offset, length);
 	}
-    for (int i = 0; i < length; i++) {
-        data[i] = from_host.read8(i + 4);
-    }
-    ATOMIC_BLOCK(ATOMIC_RESTORESTATE){
+	for (int i = 0; i < length; i++) {
+		data[i] = from_host.read8(i + 4);
+	}
+	ATOMIC_BLOCK(ATOMIC_RESTORESTATE){
 		eeprom_write_block(data, (void*) offset, length);
 	}
-    to_host.append8(RC_OK);
-    to_host.append8(length);
+	to_host.append8(RC_OK);
+	to_host.append8(length);
 }
 
 enum { // bit assignments
@@ -493,8 +493,8 @@ void handleBuildStartNotification(CircularBuffer& buf) {
 				buildName[idx++] = buf.pop();		
 			} while ((buildName[idx-1] != '\0') && (idx < MAX_FILE_LEN));
 			break;
-    default:
-      break;
+		default:
+			break;
 	}
 	startPrintTime();
 	command::clearLineNumber();
@@ -510,31 +510,31 @@ void handleBuildStopNotification(uint8_t stopFlags) {
 	buildState = BUILD_FINISHED_NORMALLY;
 	currentState = HOST_STATE_READY;
   
-  // ensure filament axes are disabled on stop build
-  steppers::enableAxis(3, false);
-  steppers::enableAxis(4, false);
-  // turn off the cooling fan
-  EX_FAN.setValue(false);
+	// ensure filament axes are disabled on stop build
+	steppers::enableAxis(3, false);
+	steppers::enableAxis(4, false);
+	// turn off the cooling fan
+	EX_FAN.setValue(false);
 }
 
 /// get current print stats if printing, or last print stats if not printing
 void handleGetBuildStats(OutPacket& to_host) {
-        to_host.append8(RC_OK);
+	to_host.append8(RC_OK);
  
-		uint8_t hours;
-		uint8_t minutes;
+	uint8_t hours;
+	uint8_t minutes;
 		
-		getPrintTime(hours, minutes);
+	getPrintTime(hours, minutes);
 		
-        to_host.append8(buildState);
-        to_host.append8(hours);
-        to_host.append8(minutes);
-        if((buildState == BUILD_RUNNING) || (buildState == BUILD_PAUSED) || (buildState == BUILD_SLEEP)){
-			to_host.append32(command::getLineNumber());
-		} else {
-			to_host.append32(last_print_line);
-		}
-        to_host.append32(0);// open spot for filament detect info
+	to_host.append8(buildState);
+	to_host.append8(hours);
+	to_host.append8(minutes);
+	if((buildState == BUILD_RUNNING) || (buildState == BUILD_PAUSED) || (buildState == BUILD_SLEEP)){
+		to_host.append32(command::getLineNumber());
+	} else {
+		to_host.append32(last_print_line);
+	}
+	to_host.append32(0);// open spot for filament detect info
 }
 /// get current print stats if printing, or last print stats if not printing
 /// for documentation of these status bytes, see docs/MotherboardStatusBytes.md
@@ -568,12 +568,12 @@ bool processQueryPacket(const InPacket& from_host, OutPacket& to_host) {
 				if (currentState == HOST_STATE_BUILDING
 						|| currentState == HOST_STATE_BUILDING_FROM_SD
 						|| currentState == HOST_STATE_BUILDING_ONBOARD) {
-          buildState = BUILD_CANCELED;
-          host::stopBuild();
+					buildState = BUILD_CANCELED;
+					host::stopBuild();
 					Motherboard::getBoard().indicateError(ERR_RESET_DURING_BUILD);
 				}else{
-          do_host_reset = true; // indicate reset after response has been sent
-        }
+					do_host_reset = true; // indicate reset after response has been sent
+				}
 				to_host.append8(RC_OK);
 				return true;
 			case HOST_CMD_GET_BUFFER_SIZE:
@@ -668,6 +668,7 @@ sdcard::SdErrorCode startBuildFromSD() {
 	sdcard::SdErrorCode e;
 	
 	
+	Motherboard::getBoard().getInterfaceBoard().RecordSDStartIdx();
 	// Attempt to start build
 	e = sdcard::startPlayback(buildName);
 	if (e != sdcard::SD_SUCCESS) {
@@ -678,21 +679,22 @@ sdcard::SdErrorCode startBuildFromSD() {
 	command::reset();
 	steppers::abort();
 	steppers::reset();
-	Motherboard::getBoard().reset(false);
+	Motherboard::getBoard().state_reset();
+
 	currentState = HOST_STATE_BUILDING_FROM_SD;
 	return e;
 }
     // start build from utility script
 void startOnboardBuild(uint8_t  build){
 	
-    if(utility::startPlayback(build)){
-	currentState = HOST_STATE_BUILDING_ONBOARD;
-    Motherboard::getBoard().getInterfaceBoard().RecordOnboardStartIdx();
-    Motherboard::getBoard().setBoardStatus(Motherboard::STATUS_ONBOARD_SCRIPT, true);
-    command::reset();
-    steppers::abort();
-    steppers::reset();
-  }
+	if(utility::startPlayback(build)){
+		currentState = HOST_STATE_BUILDING_ONBOARD;
+		Motherboard::getBoard().getInterfaceBoard().RecordOnboardStartIdx();
+		Motherboard::getBoard().setBoardStatus(Motherboard::STATUS_ONBOARD_SCRIPT, true);
+		command::reset();
+		steppers::abort();
+		steppers::reset();
+	}
 }
 
 // Stop the current build, if any
@@ -701,10 +703,10 @@ void stopBuild() {
 	if((currentState == host::HOST_STATE_BUILDING) ||
 		(currentState == host::HOST_STATE_BUILDING_FROM_SD)){
     	
-    steppers::abort();
-    // disable filament axes
-    steppers::enableAxis(3, false);
-    steppers::enableAxis(4, false);
+		steppers::abort();
+		// disable filament axes
+		steppers::enableAxis(3, false);
+		steppers::enableAxis(4, false);
 
 		Motherboard::getBoard().setBoardStatus(Motherboard::STATUS_CANCELLING, true);
 		// record print statistics
@@ -717,18 +719,18 @@ void stopBuild() {
 		getPrintTime(hours, minutes);
 		/// lower the z stage if a build is canceled
 		/// ensure that we have homed all axes before attempting this
-    uint8_t z_home = steppers::isZHomed();   
-    if(z_home > 0){
-      Point target = steppers::getPlannerPosition();
-      if(z_home == 1) {target[2] = 145L*stepperAxisStepsPerMM(Z_AXIS);}
-      else {target[2] = 150L*stepperAxisStepsPerMM(Z_AXIS);}
-      command::pause(false);
-      steppers::setTarget(target, 150);
+		uint8_t z_home = steppers::isZHomed();   
+		if(z_home > 0){
+			Point target = steppers::getPlannerPosition();
+			if(z_home == 1) {target[2] = 145L*stepperAxisStepsPerMM(Z_AXIS);}
+			else {target[2] = 150L*stepperAxisStepsPerMM(Z_AXIS);}
+			command::pause(false);
+			steppers::setTarget(target, 150);
 			InterfaceBoard& ib = Motherboard::getBoard().getInterfaceBoard();
-      ib.errorMessage(CANCEL_PLATE_MSG);
-      ib.lock();
-      z_stage_timeout.start(10000000);  //10 seconds
-    }
+			ib.errorMessage(CANCEL_PLATE_MSG);
+			ib.lock();
+			z_stage_timeout.start(10000000);  //10 seconds
+		}
 	}
 
   // if building from repG, try to send a cancel msg to repG before reseting 
@@ -817,7 +819,7 @@ bool processExtruderQueryPacket(const InPacket& from_host, OutPacket& to_host) {
 	Motherboard& board = Motherboard::getBoard();
 	if (from_host.getLength() >= 1) {
 			
-        uint8_t	id = from_host.read8(1);
+		uint8_t	id = from_host.read8(1);
 		uint8_t command = from_host.read8(2);
 		// All commands are query commands.	
 		switch (command) {

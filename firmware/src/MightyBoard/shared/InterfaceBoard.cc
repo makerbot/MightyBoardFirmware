@@ -35,6 +35,7 @@ void InterfaceBoard::init() {
   screen_locked = false;
   onboard_build = false;
   onboard_start_idx = 1;
+  sd_start_idx = 0;
   user_wait_override = false;
 }
 
@@ -98,6 +99,14 @@ void InterfaceBoard::queueScreen(ScreenType screen){
     case WELCOME_SCREEN:
       pushScreen(&welcomeScreen);
       break;
+    case ACTIVE_BUILD_SCREEN:
+      if (screenStack[screenIndex] != &activeScreen){
+        pushScreen(&activeScreen);
+      }
+      break;
+    case CHANGE_FILAMENT_SCREEN:
+      pushScreen(&filamentScreen);
+      break;
 		default:
 			break;
 		}
@@ -107,6 +116,11 @@ void InterfaceBoard::queueScreen(ScreenType screen){
 /// record screen stack index when onboard script is started so we can return there on finish
 void InterfaceBoard::RecordOnboardStartIdx(){
 	onboard_start_idx = screenIndex;
+}
+
+/// record screen stack index when SD card build is started so we can return there on finish
+void InterfaceBoard::RecordSDStartIdx(){
+	sd_start_idx = screenIndex;
 }
 
 void InterfaceBoard::popToOnboardStart(){
@@ -123,6 +137,9 @@ void InterfaceBoard::doUpdate() {
 		switch(host::getHostState()) {
 		case host::HOST_STATE_BUILDING_ONBOARD:
 				onboard_build = true;
+        if(onboard_start_idx == 0){
+          onboard_start_idx = 1;
+        }
 		case host::HOST_STATE_BUILDING:
 		case host::HOST_STATE_BUILDING_FROM_SD:
 			if (!building ){
@@ -163,9 +180,10 @@ void InterfaceBoard::doUpdate() {
 					}
 					// else, after a build, we'll want to go back to the main menu
 					else{
-						while(screenIndex > 0){
+						while(screenIndex > sd_start_idx){
 							popScreenQuick();
 						}
+						sd_start_idx = 0;
 						screenStack[screenIndex]->update(lcd, true);
 					}
 					building = false;
@@ -185,8 +203,8 @@ void InterfaceBoard::doUpdate() {
             if((((1<<button) & waitingMask) != 0) &&
                 !user_wait_override){
                  waitingMask = 0;
-           // } else if (button == ButtonArray::EGG){
-             //   pushScreen(&snake);
+            } else if (button == ButtonArray::EGG){
+                pushScreen(&snakeScreen);
             } else {
                 screenStack[screenIndex]->notifyButtonPressed(button);
             }

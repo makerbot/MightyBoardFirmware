@@ -18,43 +18,43 @@ const static uint8_t MAX_INDICES = 20;
 
 /// states for Welcome Menu
 enum WeclomeStates{
-    WELCOME_START,
-    WELCOME_BUTTONS1,
-    WELCOME_BUTTONS2,
-    WELCOME_EXPLAIN,
-    WELCOME_LEVEL,
-    WELCOME_LEVEL_ACTION,
-    WELCOME_LEVEL_OK,
-    WELCOME_LOAD_PLASTIC,
-    WELCOME_LOAD_ACTION,
-    WELCOME_READY,
-    WELCOME_LOAD_SD,
-    WELCOME_PRINT_FROM_SD,
-    WELCOME_DONE
+	WELCOME_START,
+	WELCOME_BUTTONS1,
+	WELCOME_BUTTONS2,
+	WELCOME_EXPLAIN,
+	WELCOME_LEVEL,
+	WELCOME_LEVEL_ACTION,
+	WELCOME_LEVEL_OK,
+	WELCOME_LOAD_PLASTIC,
+	WELCOME_LOAD_ACTION,
+	WELCOME_READY,
+	WELCOME_LOAD_SD,
+	WELCOME_PRINT_FROM_SD,
+	WELCOME_DONE
 };
 
 /// states for Welcome Menu
 enum FilamentStates{
-    FILAMENT_HEATING,
-    FILAMENT_EXPLAIN2,
-    FILAMENT_EXPLAIN3,
-    FILAMENT_EXPLAIN4,
-    FILAMENT_HEAT_BAR,
-    FILAMENT_WAIT,
-    FILAMENT_START,
-    FILAMENT_TUG,
-    FILAMENT_STOP,
-    FILAMENT_OK,
-    FILAMENT_DONE,
-    FILAMENT_EXIT,
-    FILAMENT_TIMEOUT
+	FILAMENT_HEATING,
+	FILAMENT_EXPLAIN2,
+	FILAMENT_EXPLAIN3,
+	FILAMENT_EXPLAIN4,
+	FILAMENT_HEAT_BAR,
+	FILAMENT_WAIT,
+	FILAMENT_START,
+	FILAMENT_TUG,
+	FILAMENT_STOP,
+	FILAMENT_OK,
+	FILAMENT_DONE,
+	FILAMENT_EXIT,
+	FILAMENT_TIMEOUT
 };
 
 enum FilamentScript{
 	FILAMENT_RIGHT_FOR,
 	FILAMENT_LEFT_FOR,
-    FILAMENT_RIGHT_REV,
-    FILAMENT_LEFT_REV,	
+	FILAMENT_RIGHT_REV,
+	FILAMENT_LEFT_REV,	
 	FILAMENT_STARTUP_SINGLE,
 	FILAMENT_STARTUP_DUAL,
 	};
@@ -99,9 +99,9 @@ public:
         /// Note that the current implementation only supports one button
         /// press at a time, and will discard any other events.
         /// \param button Button that was pressed
-  virtual void notifyButtonPressed(ButtonArray::ButtonName button) = 0;
+	virtual void notifyButtonPressed(ButtonArray::ButtonName button) = 0;
 
-  virtual void pop_actions() {return;} 
+	virtual void pop_actions() {return;} 
 };
 
 
@@ -118,26 +118,26 @@ public:
 
 	virtual void resetState();
 
-  void notifyButtonPressed(ButtonArray::ButtonName button);
+	void notifyButtonPressed(ButtonArray::ButtonName button);
 
 protected:
 
-  bool needsRedraw;               ///< set to true if a menu item changes out of sequence
-  bool lineUpdate;				///< flags the menu to update the current line
-  bool cursorUpdate;				///< flag to update the menu cursor
-  volatile uint8_t itemIndex;     ///< The currently selected item
-  uint8_t lastDrawIndex;          ///< The index used to make the last draw
-  volatile uint8_t zeroIndex;     ///< The index corresponding to the zeroth display line
-  uint8_t lastZeroIndex;          ///< The last zeroIndex displayed
-  uint8_t itemCount;              ///< Total number of items
-  uint8_t firstItemIndex;         ///< The first selectable item. Set this
+	bool needsRedraw;               ///< set to true if a menu item changes out of sequence
+	bool lineUpdate;				///< flags the menu to update the current line
+	bool cursorUpdate;				///< flag to update the menu cursor
+	volatile uint8_t itemIndex;     ///< The currently selected item
+	uint8_t lastDrawIndex;          ///< The index used to make the last draw
+	volatile uint8_t zeroIndex;     ///< The index corresponding to the zeroth display line
+	uint8_t lastZeroIndex;          ///< The last zeroIndex displayed
+	uint8_t itemCount;              ///< Total number of items
+	uint8_t firstItemIndex;         ///< The first selectable item. Set this
                                   ///< to greater than 0 if the first
                                   ///< item(s) are a title)
-  bool selectMode;       			///< true if in counter change state
-  uint8_t selectIndex;        	///< The currently selected item, in a counter change state
-  bool sliding_menu;				///< the menu either slides, or scrolls down in groups of SCREEN_HEIGHT
+	bool selectMode;       			///< true if in counter change state
+	uint8_t selectIndex;        	///< The currently selected item, in a counter change state
+	bool sliding_menu;				///< the menu either slides, or scrolls down in groups of SCREEN_HEIGHT
                                       
-  uint8_t counter_item[MAX_INDICES];	///< array defining which idices are counters
+	uint8_t counter_item[MAX_INDICES];	///< array defining which idices are counters
 
         /// Draw an item at the current cursor position.
         /// \param[in] index Index of the item to draw
@@ -172,7 +172,7 @@ public:
 
 	void reset();
 
-  void notifyButtonPressed(ButtonArray::ButtonName button);
+	void notifyButtonPressed(ButtonArray::ButtonName button);
 };
 
 class FilamentOKMenu: public Menu {
@@ -241,7 +241,7 @@ public:
 	
 	void reset();
 
-  void notifyButtonPressed(ButtonArray::ButtonName button);
+	void notifyButtonPressed(ButtonArray::ButtonName button);
 };
 
 class BuildFinished: public Screen {
@@ -257,7 +257,7 @@ public:
 	
 	void reset();
 
-    void notifyButtonPressed(ButtonArray::ButtonName button);
+	void notifyButtonPressed(ButtonArray::ButtonName button);
 };
 
 class BotStats: public Screen {
@@ -272,7 +272,7 @@ public:
 	
 	void reset();
 
-    void notifyButtonPressed(ButtonArray::ButtonName button);
+	void notifyButtonPressed(ButtonArray::ButtonName button);
 };
 
 
@@ -306,10 +306,10 @@ public:
 	
 	void reset();
 
-  void notifyButtonPressed(ButtonArray::ButtonName button);
+	void notifyButtonPressed(ButtonArray::ButtonName button);
   
-  bool screenWaiting(void);
-  void WaitForUser(bool wait);
+	bool screenWaiting(void);
+	void WaitForUser(bool wait);
 };
 
 
@@ -329,7 +329,7 @@ private:
 	bool distanceChanged, modeChanged;
 	jogmode_t  JogModeScreen;
 
-    void jog(ButtonArray::ButtonName direction);
+	void jog(ButtonArray::ButtonName direction);
 
 public:
 	micros_t getUpdateRate() {return 50L * 1000L;}
@@ -338,7 +338,7 @@ public:
 
 	void reset();
 
-  void notifyButtonPressed(ButtonArray::ButtonName button);
+	void notifyButtonPressed(ButtonArray::ButtonName button);
      
 };
 
@@ -393,7 +393,7 @@ public:
 	
 	micros_t getUpdateRate() {return 50L * 1000L;}
 
-  static const uint8_t SD_CARD_MAX_FILE_LENGTH = 31; 
+	static const uint8_t SD_CARD_MAX_FILE_LENGTH = 31; 
 
 protected:
 	bool cardNotFound;
@@ -403,7 +403,7 @@ protected:
 	
 	uint8_t countFiles();
 
-  bool getFilename(uint8_t index,
+	bool getFilename(uint8_t index,
                        char buffer[],
                        uint8_t buffer_size);
 
@@ -418,32 +418,32 @@ class FilamentScreen: public Screen {
     
 private:
     
-    uint8_t filamentState;
-    uint8_t axisID, toolID;
-    bool forward;
-    bool dual;
-    bool startup;
-    Timeout filamentTimer;
-    bool toggleBlink;
-    int toggleCounter;
-    bool helpText;   
-    bool needsRedraw;
-    uint16_t filament_heat_temp[2];
+	uint8_t filamentState;
+	uint8_t axisID, toolID;
+	bool forward;
+	bool dual;
+	bool startup;
+	Timeout filamentTimer;
+	bool toggleBlink;
+	int toggleCounter;
+	bool helpText;   
+	bool needsRedraw;
+	uint16_t filament_heat_temp[2];
     
-    void startMotor();
-    void stopMotor();
+	void startMotor();
+	void stopMotor();
     
 public:
 	micros_t getUpdateRate() {return 500L * 1000L;}
     
-    void setScript(FilamentScript script);
+	void setScript(FilamentScript script);
     
     
 	void update(LiquidCrystalSerial& lcd, bool forceRedraw);
     
 	void reset();
     
-    void notifyButtonPressed(ButtonArray::ButtonName button);
+	void notifyButtonPressed(ButtonArray::ButtonName button);
 };
 
 class SelectAlignmentMenu : public Menu{
@@ -452,24 +452,24 @@ public:
 	SelectAlignmentMenu();
     
 protected:
-    int8_t xCounter;
-    int8_t yCounter;
+	int8_t xCounter;
+	int8_t yCounter;
     
-    void resetState();
+	void resetState();
     
 	void drawItem(uint8_t index, LiquidCrystalSerial& lcd, uint8_t line_number);
     
 	void handleSelect(uint8_t index);
     
-    void handleCounterUpdate(uint8_t index, bool up);
+	void handleCounterUpdate(uint8_t index, bool up);
 };
 
 class NozzleCalibrationScreen: public Screen {
 	
 private:
     
-    uint8_t alignmentState;
-    bool needsRedraw;               ///< set to true if a menu item changes out of sequence
+	uint8_t alignmentState;
+	bool needsRedraw;               ///< set to true if a menu item changes out of sequence
 	
 public:
 	micros_t getUpdateRate() {return 50L * 1000L;}
@@ -478,7 +478,7 @@ public:
     
 	void reset();
     
-    void notifyButtonPressed(ButtonArray::ButtonName button);
+	void notifyButtonPressed(ButtonArray::ButtonName button);
 };
 
 class ActiveBuildMenu: public Menu {
@@ -510,10 +510,10 @@ protected:
 class WelcomeScreen: public Screen {
     
 private:
-    int8_t welcomeState;
-    int level_offset;
+	int8_t welcomeState;
+	int level_offset;
     
-    bool needsRedraw;
+	bool needsRedraw;
 public:
 	micros_t getUpdateRate() {return 50L * 1000L;}
     
@@ -522,7 +522,7 @@ public:
     
 	void reset();
     
-    void notifyButtonPressed(ButtonArray::ButtonName button);
+	void notifyButtonPressed(ButtonArray::ButtonName button);
 };
 
 class PreheatSettingsMenu: public Menu {
@@ -532,18 +532,18 @@ public:
 	micros_t getUpdateRate() {return 50L * 1000L;}
     
 protected:
-    int16_t counterRight;
-    int16_t counterLeft;
-    int16_t counterPlatform;
-    bool singleTool;
+	int16_t counterRight;
+	int16_t counterLeft;
+	int16_t counterPlatform;
+	bool singleTool;
     
-    void resetState();
+	void resetState();
     
 	void drawItem(uint8_t index, LiquidCrystalSerial& lcd, uint8_t line_number);
     
 	void handleSelect(uint8_t index);
     
-    void handleCounterUpdate(uint8_t index, bool up);
+	void handleCounterUpdate(uint8_t index, bool up);
 };
 
 class ResetSettingsMenu: public Menu {
@@ -563,9 +563,9 @@ private:
 	uint8_t updatePhase;
 	uint8_t buildPercentage;
 	bool singleTool; 
-  bool heating;
-  bool hasHBP;
-  uint8_t num_update_phases;
+	bool heating;
+	bool hasHBP;
+	uint8_t num_update_phases;
     
 public:
 	micros_t getUpdateRate() {return 500L * 1000L;}
@@ -575,9 +575,9 @@ public:
 
 	void reset();
 
-  void notifyButtonPressed(ButtonArray::ButtonName button);
+	void notifyButtonPressed(ButtonArray::ButtonName button);
     
-  void setBuildPercentage(uint8_t percent);
+	void setBuildPercentage(uint8_t percent);
 };
 
 class HeaterPreheat: public Menu {
@@ -594,10 +594,10 @@ private:
 
 	int8_t _rightActive, _leftActive, _platformActive;
     
-    void storeHeatByte();
-    void resetState();
+	void storeHeatByte();
+	void resetState();
      
-    bool singleTool;
+	bool singleTool;
 
 };
 
@@ -609,7 +609,7 @@ public:
     
     
 protected:
-    void resetState();
+	void resetState();
     
 	void drawItem(uint8_t index, LiquidCrystalSerial& lcd, uint8_t line_number);
     
@@ -619,21 +619,46 @@ protected:
     
 private:
     
-    uint8_t  singleExtruder;
-    uint8_t  soundOn;
-    int8_t   LEDColor;
-    int8_t   heaterTimeout;
-    uint8_t  heatingLEDOn;
-    uint8_t  helpOn;
-    uint8_t  accelerationOn;
-    uint8_t  HBPPresent;
+	uint8_t  singleExtruder;
+	uint8_t  soundOn;
+	int8_t   LEDColor;
+	int8_t   heaterTimeout;
+	uint8_t  heatingLEDOn;
+	uint8_t  helpOn;
+	uint8_t  accelerationOn;
+	uint8_t  HBPPresent;
     
+};
+
+class StopHeightMenu: public Menu {
+public:
+	StopHeightMenu();
+	
+	micros_t getUpdateRate() {return 100L * 1000L;}
+    
+    
+protected:
+	void resetState();
+    
+	void drawItem(uint8_t index, LiquidCrystalSerial& lcd, uint8_t line_number);
+    
+	void handleSelect(uint8_t index);
+	
+	void handleCounterUpdate(uint8_t index, bool up);
+    
+private:
+    
+	// Enable for stopping at a specified height to change filament
+	uint8_t  stopHeightEnabled;
+	// Value in millimeters for stopping at a specified height to change filament
+  int16_t   stopHeightValue;
+  int32_t   stop_height_max_mm;  
 };
 
 class FilamentMenu: public Menu {
 public:
 	FilamentMenu();
-  void pop_actions();
+	void pop_actions();
     
     
 protected:
@@ -645,7 +670,7 @@ protected:
     
 private:
 
-    bool singleTool;
+	bool singleTool;
     
 };
 
@@ -665,9 +690,9 @@ protected:
 
 private:
     
-    bool singleTool; 
-    bool stepperEnable;
-    bool blinkLED;
+	bool singleTool; 
+	bool stepperEnable;
+	bool blinkLED;
 
 };
 
@@ -687,7 +712,7 @@ protected:
 
 private:
 
-    bool singleTool;
+	bool singleTool;
 };
 
 

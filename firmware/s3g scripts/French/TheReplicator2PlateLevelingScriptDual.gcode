@@ -5,7 +5,6 @@ G90
 
 ; Display a message to explain leveling
 
-
 M70 ( Attendez...)
 
 G162 X Y F2500 (home XY axes maximum)

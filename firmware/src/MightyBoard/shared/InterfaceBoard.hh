@@ -44,7 +44,10 @@ public:
       BUILD_SCREEN = 3,
       SPLASH_SCREEN = 4,
       WELCOME_SCREEN = 5,
-      CANCEL_SCREEN = 6
+      CANCEL_SCREEN = 6,
+      ACTIVE_BUILD_SCREEN = 7,
+      SNAKE_SCREEN = 8,
+      CHANGE_FILAMENT_SCREEN = 9
 		};
 
 private:
@@ -55,8 +58,9 @@ private:
         MessageScreen messageScreen;		///< Screen to display messages
         SplashScreen splashScreen;       ///< version infor screen
         WelcomeScreen welcomeScreen;     ///< welcome screen
- 
-//        SnakeMode snake;				        ///< Snake game
+        SnakeMode snakeScreen;
+        ActiveBuildMenu activeScreen;
+        FilamentMenu filamentScreen;
         
         BuildFinished buildFinished;	  ///< screen displayed at end of build
 
@@ -76,6 +80,7 @@ private:
         bool screen_locked;             /// set to true in case of catastrophic failure (ie heater cuttoff triggered)
         
         uint8_t onboard_start_idx;		/// screen stack index when onboard script is started
+        uint8_t sd_start_idx;			/// screen stack index when printing from SD card
 public:
         /// Construct an interface board.
         /// \param[in] button array to read from
@@ -147,6 +152,9 @@ public:
         
         /// record screen stack index when onboard script is started so we can return there on finish
         void RecordOnboardStartIdx();
+        
+        /// record screen stack index when SD build is started so we can return there on finish
+        void RecordSDStartIdx();
         
         /// pop screen without refreshing the new head screen
         void popScreenQuick();

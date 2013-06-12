@@ -44,6 +44,9 @@ const int16_t HEATER_CUTOFF_TEMPERATURE = 300;
 /// temperatures below setting by this amount will flag as "not heating up"
 const int16_t HEAT_FAIL_THRESHOLD = 30;
 
+// don't trigger heating up checking for target temperatures less than this
+const int16_t HEAT_FAIL_CHECK_THRESHOLD = 30;
+
 /// if the starting temperature is less than this amount, we will check heating progress
 /// to get to this temperature, the heater has already been checked.
 const int16_t HEAT_CHECKED_THRESHOLD = 50;
@@ -154,37 +157,37 @@ void Heater::disable(bool on){
  */
 #define MAX_VALID_TEMP 280
 
-void Heater::set_target_temperature(int16_t temp)
+void Heater::set_target_temperature(int16_t target_temp)
 {
 	// clip our set temperature if we are over temp.
-	if(temp > MAX_VALID_TEMP) {
-		temp = MAX_VALID_TEMP;
+	if(target_temp > MAX_VALID_TEMP) {
+		target_temp = MAX_VALID_TEMP;
 	}
-	if(temp < 0){
-		temp = 0;
+	if(target_temp < 0){
+		target_temp = 0;
 	}
 	
-	if(temp > 0){
+	if(target_temp > 0){
 		Motherboard::getBoard().setBoardStatus(Motherboard::STATUS_HEAT_INACTIVE_SHUTDOWN, false);
 	}
 	
 	newTargetReached = false;
 	
 	if(has_failed() || is_disabled){
-    pid.setTarget(temp);
+		pid.setTarget(target_temp);
 		return;
 	}
 	
 	if(heat_timing_check){
-		startTemp = current_temperature;	
+		startTemp = current_temperature;
 		progressChecked = false;
 		value_fail_count = 0;
 	
 		// start a progress timer to verify we are getting temp change over time.
-		if(current_temperature > HEAT_FAIL_THRESHOLD){
+		if(target_temp > HEAT_FAIL_CHECK_THRESHOLD){
 			// if the current temp is greater than a (low) threshold, don't check the heating up time, because
 			// we've already done that to get to this temperature
-			if((temp > startTemp + HEAT_PROGRESS_THRESHOLD) && (startTemp < HEAT_CHECKED_THRESHOLD))
+			if((target_temp > current_temperature + HEAT_PROGRESS_THRESHOLD) && (current_temperature < HEAT_CHECKED_THRESHOLD))
 			{	heatProgressTimer.start(HEAT_PROGRESS_TIME);}
 			else
 			{	heatProgressTimer = Timeout(); }
@@ -196,7 +199,7 @@ void Heater::set_target_temperature(int16_t temp)
 			heatProgressTimer = Timeout();
 		}
 	}
-	pid.setTarget(temp);
+	pid.setTarget(target_temp);
 }
 
 // We now define target hysteresis, used as PID over/under range.
@@ -272,7 +275,6 @@ void Heater::manage_temperature() {
 			// We're waiting for the ADC, so don't update the temperature yet.
 			current_temperature = 2;
 			return;
-			break;
 		case TemperatureSensor::SS_OK:
 			// Result was ok, so reset the fail counter, and continue.
 			fail_count = 0;
@@ -282,11 +284,10 @@ void Heater::manage_temperature() {
 			fail_count++;
 			
 			if (fail_count > SENSOR_MAX_BAD_READINGS) {
-				fail_mode = HEATER_FAIL_BAD_READS;
+				fail_mode = HEATER_FAIL_TEMP_OUT_OF_RANGE;
 				fail();
 			}
 			return;
-			break;
 		case TemperatureSensor::SS_ERROR_UNPLUGGED:
 		default:
 			// If we get too many bad readings in a row, shut down the heater.
@@ -296,9 +297,7 @@ void Heater::manage_temperature() {
 				fail_mode = HEATER_FAIL_NOT_PLUGGED_IN;
 				fail();
 			}
-			current_temperature = BAD_TEMPERATURE;
 			return;
-			break;
 		}
 
 		current_temperature = sensor.getTemperature() + calibration_offset;

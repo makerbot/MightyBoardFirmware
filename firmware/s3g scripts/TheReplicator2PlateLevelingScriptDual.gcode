@@ -20,6 +20,7 @@ M71 (of paper will slide between the nozzle  and build plate with some friction.
 
 M70 ( Please wait)
 
+G1 Z5 F3000
 G1 X16.5 Y70 F3000
 G1 Z0 F1000
 M71 (Adjust the rear knobuntil paper just    slides between the  nozzle and plate    )

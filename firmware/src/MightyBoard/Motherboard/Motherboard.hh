@@ -140,13 +140,16 @@ public:
 	/// to any attached toolheads.
 	void reset(bool hard_reset);
 
-  /// initialize things that only need to be set up once, on boot
-  void init();
+	/// State reset, used to reset variables needed for printing
+	void state_reset();
+
+	/// initialize things that only need to be set up once, on boot
+	void init();
 
 	void runMotherboardSlice();
 
 	/// Count the number of steppers available on this board.
-  const int getStepperCount() const { return STEPPER_COUNT; }
+	const int getStepperCount() const { return STEPPER_COUNT; }
 	
 	/// Get the number of microseconds that have passed since
 	/// the board was initialized.  This value will wrap after
