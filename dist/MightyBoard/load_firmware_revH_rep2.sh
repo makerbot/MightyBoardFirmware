@@ -20,39 +20,6 @@ else
   PORT=$2
 fi
 
-if test -z "$3"
-then
-  echo "This script requires a third argument of bot type ('REP2' or 'REP2X')"
-  echo "ABORTING"
-  exit
-else
-  BOT_TYPE=$3
-fi
-
-echo "$FILENAME" | grep -q 'mighty_two'
-if [ $? -eq 0 ]
-then
-  if [ "$BOT_TYPE" == "REP2" ]
-  then
-    BOOT8U2=Makerbot-usbserial-revH-rep2.hex
-  else
-    if [ "$BOT_TYPE" == "REP2X" ]
-    then
-      BOOT8U2=Makerbot-usbserial-revH-rep2X.hex
-    else
-      echo "bot type specified is not 'REP2' or 'REP2X'"
-      echo "ABORTING"
-      exit
-    fi
-  fi
-else
-  echo "This script requires a mighty_two firmware file"
-  echo "ABORTING"
-  exit
-fi
-
-echo $BOOT8U2
-
 while true; do
 
 FAIL8U2="8U2 Bootloader PASS"
@@ -66,7 +33,7 @@ FAILUSB="USB Program PASS"
     # firmare the 8u2 firmware fails to function properly
     avrdude -p at90usb82 -F -P usb -c avrispmkii -U lfuse:w:0xFF:m -U hfuse:w:0xD9:m -U efuse:w:0xF4:m -U lock:w:0x0F:m
     # Upload bootloader via isp
-    avrdude -p at90usb82 -F -P usb -c avrispmkii -U flash:w:$BOOT8U2
+    avrdude -p at90usb82 -F -P usb -c avrispmkii -U flash:w:Makerbot-usbserial-revH-rep2.hex
 
     if [ $? -ne 0 ]
     then
