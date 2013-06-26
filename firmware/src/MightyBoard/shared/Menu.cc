@@ -1628,7 +1628,6 @@ void MonitorMode::setBuildPercentage(uint8_t percent){
 }
 
 bool display_time = 0;
-bool two_digit_hours = 0;
 
 void MonitorMode::update(LiquidCrystalSerial& lcd, bool forceRedraw) {
   uint8_t build_hours;
@@ -1679,13 +1678,9 @@ void MonitorMode::update(LiquidCrystalSerial& lcd, bool forceRedraw) {
                 }
                     
                     
-                if (two_digit_hours) {
-                  lcd.setCursor(13,0);
-                  lcd.writeFromPgmspace(CLEAR_TIME_SPECIFYING_LETTERS);
-                } else {
-                  lcd.setCursor(14,0);
-                  lcd.writeFromPgmspace(CLEAR_TIME_SPECIFYING_LETTERS_1DIGIT_H);
-                }
+                lcd.setCursor(13,0);
+                lcd.writeFromPgmspace(CLEAR_TIME_SPECIFYING_LETTERS);
+
                 lcd.setCursor(16,0);
                 lcd.writeFromPgmspace(BUILD_PERCENT_MSG);
                 
@@ -1746,13 +1741,8 @@ void MonitorMode::update(LiquidCrystalSerial& lcd, bool forceRedraw) {
                           lcd.write(*name++);
                     }
                     
-                    if (two_digit_hours) {
-                      lcd.setCursor(13,0);
-                      lcd.writeFromPgmspace(CLEAR_TIME_SPECIFYING_LETTERS);
-                    } else {
-                      lcd.setCursor(14,0);
-                      lcd.writeFromPgmspace(CLEAR_TIME_SPECIFYING_LETTERS_1DIGIT_H);
-                    }
+                    lcd.setCursor(13,0);
+                    lcd.writeFromPgmspace(CLEAR_TIME_SPECIFYING_LETTERS);
                     lcd.setCursor(16,0);
                     lcd.writeFromPgmspace(BUILD_PERCENT_MSG);
                     break;
@@ -1862,13 +1852,8 @@ void MonitorMode::update(LiquidCrystalSerial& lcd, bool forceRedraw) {
         lcd.setCursor(16,0);
         lcd.writeFromPgmspace(TIME_SPECIFYING_LETTERS);
 
-        if (two_digit_hours) {
-          lcd.setCursor(14,0);
-          lcd.writeInt(build_hours,2);
-        } else {
-          lcd.setCursor(15,0);
-          lcd.writeInt(build_hours,1);
-        }
+        lcd.setCursor(14,0);
+        lcd.writeInt(build_hours,2);
         
         lcd.setCursor(17,0);
         lcd.writeInt(build_minutes,2);
