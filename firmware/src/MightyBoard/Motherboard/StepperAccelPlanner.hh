@@ -252,6 +252,8 @@ void plan_buffer_line(FPTYPE feed_rate, const uint32_t &dda_rate, const uint8_t 
 void plan_read_height_stop_position(bool height_stop_enable);
 // Return enable variable
 bool plan_get_height_stop_enable();
+// Set height stop variable
+void plan_set_height_stop_enable(bool enable);
 
 // Set position. Used for G92 instructions.
 void plan_set_position(const int32_t &x, const int32_t &y, const int32_t &z, const int32_t &a, const int32_t &b);
