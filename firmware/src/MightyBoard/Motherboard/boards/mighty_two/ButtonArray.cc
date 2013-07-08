@@ -18,8 +18,8 @@ void ButtonArray::init() {
         ButtonDelay = SlowDelay;
 
         // Set all of the known buttons to inputs 
-        DDRJ = DDRJ | (0xFF -  ARROW_BUTTON_MAP); 
-        PORTJ = PORTJ | (0xFF -  ARROW_BUTTON_MAP); 
+        DDRJ  &= ~( ARROW_BUTTON_MAP );
+        PORTJ &= ~( ARROW_BUTTON_MAP );
         
         INTERFACE_CENTER.setDirection(false);
 }
