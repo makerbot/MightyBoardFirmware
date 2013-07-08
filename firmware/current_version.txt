@@ -1,3 +1,7 @@
+7.4.1.1.0
+ * Fix for build time rollover bug, 
+ * Added fix for the button array setup
+ * Disable z pause when a build is canceled
 7.3.13.1.0
  * fix box display bug in heat up
 7.3.12.1.0
