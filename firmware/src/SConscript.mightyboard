@@ -70,7 +70,7 @@ elif (platform == 'mighty_two'):
   board = ARGUMENTS.get('rev', 'revg')
   #The specific variable is used for revH builds and later for specifiying what type
   #of Rep2 family bot the build is for explictly
-  if (specific in ['REP2', 'REP2X']):
+  if (specific.upper() in ['REP2', 'REP2X']):
     os.environ['SPECIFIC'] = specific
 
 if cutoff == '0':
@@ -155,7 +155,7 @@ if(os.environ.has_key('MODEL')):
 
 #Valid SPECIFIC flags are SPECIFIC_REP2 and SPECIFIC_REP2X
 if(os.environ.has_key('SPECIFIC')):
-  flags.append('-DSPECIFIC_' + os.environ['SPECIFIC'])
+  flags.append('-DSPECIFIC_' + os.environ['SPECIFIC'].upper())
 
 if (os.environ.has_key('AVR_TOOLS_PATH')):
 	avr_tools_path = os.environ['AVR_TOOLS_PATH']
