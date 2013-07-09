@@ -72,11 +72,17 @@ void SplashScreen::update(LiquidCrystalSerial& lcd, bool forceRedraw) {
 
   if (forceRedraw) {
     lcd.setCursor(0,0);
-    if(eeprom::isSingleTool()){
-      lcd.writeFromPgmspace(SPLASH1_SINGLE_MSG);
-    } else {
-      lcd.writeFromPgmspace(SPLASH1_DUAL_MSG);
-    }      
+	#ifdef SPECIFIC_REP2
+	  lcd.writeFromPgmspace(SPLASH1_SINGLE_MSG);
+	#elif SPECIFIC_REP2X
+	  lcd.writeFromPgmspace(SPLASH1_DUAL_MSG);
+	#else
+      if(eeprom::isSingleTool()){
+        lcd.writeFromPgmspace(SPLASH1_SINGLE_MSG);
+      } else {
+        lcd.writeFromPgmspace(SPLASH1_DUAL_MSG);
+      }
+    #endif
 
     lcd.setCursor(0,1);
     lcd.writeFromPgmspace(SPLASH2_MSG);
