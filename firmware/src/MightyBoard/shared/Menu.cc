@@ -327,11 +327,17 @@ void WelcomeScreen::update(LiquidCrystalSerial& lcd, bool forceRedraw) {
 		lcd.setCursor(0,0);
     switch (welcomeState){
         case WELCOME_START:
-            if (eeprom::isSingleTool()){
-              lcd.writeFromPgmspace(START_MSG);
-            } else {
-              lcd.writeFromPgmspace(START_DUAL_MSG);
-            }
+            #ifdef SPECIFIC_REP2
+                lcd.writeFromPgmspace(START_MSG);
+            #elif SPECIFIC_REP2X
+                lcd.writeFromPgmspace(START_DUAL_MSG);
+            #else
+                if (eeprom::isSingleTool()){
+                    lcd.writeFromPgmspace(START_MSG);
+                } else {
+                    lcd.writeFromPgmspace(START_DUAL_MSG);
+                }
+            #endif
             Motherboard::getBoard().interfaceBlink(25,15);
              break;
         case WELCOME_BUTTONS1:
