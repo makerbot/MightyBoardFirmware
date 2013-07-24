@@ -32,7 +32,7 @@ function build_firmware {
 
     scons_file=$1
 
-    echo -n " - Building firmware ($LOCALE) for $BOARD... "
+    echo -n " - Building firmware ($LOCALE) for $BOARD ($SPECIFIC) ... "
 
     echo -e "\n\n" >> ${LOG_FILE}
     echo "Building firmware ($LOCALE) for $BOARD ($SPECIFIC)" >> ${LOG_FILE}
@@ -98,7 +98,7 @@ ${CLEANUP_PATH} -f
 
 echo -e "What board / model should we build for ?"
 echo -e " A) Replicator or Replicator Dual"
-echo -e " B) Replicator 2 (single tool)"${GREEN}"[default]"${RESET}
+echo -e " B) Replicator 2 (single tool) "${GREEN}"[default]"${RESET}
 echo -e " C) Replicator 2X (dual tool)"
 read board
 case $board in
