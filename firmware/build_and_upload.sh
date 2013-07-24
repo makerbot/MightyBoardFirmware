@@ -14,6 +14,7 @@ BASEDIR=$(dirname $0)
 
 # Paths
 SCONS=${BASEDIR}"/SConstruct"
+CLEANUP_PATH=${BASEDIR}"/cleanup.sh"
 LOG_FILE=${BASEDIR}"/build_and_upload.log"
 
 # Default locale and board
@@ -34,9 +35,9 @@ function build_firmware {
     echo -n " - Building firmware ($LOCALE) for $BOARD... "
 
     echo -e "\n\n" >> ${LOG_FILE}
-    echo "Building firmware ($LOCALE) for $BOARD" >> ${LOG_FILE}
+    echo "Building firmware ($LOCALE) for $BOARD ($SPECIFIC)" >> ${LOG_FILE}
 
-    scons -f ${scons_file} platform=${BOARD} locale=${LOCALE} >> ${LOG_FILE} 2>&1 
+    scons -f ${scons_file} platform=${BOARD} specific=${SPECIFIC} locale=${LOCALE} >> ${LOG_FILE} 2>&1 
 
     if [ "$?" -ne "0" ]; then
         echo_fail
@@ -93,16 +94,25 @@ echo ""
 echo "Building latest version :"
 echo "-------------------------"
 
-echo -e "What board should we build for ?"
-echo -e " A) Replicator and Replicator Dual Family"
-echo -e " B) Replicator 2 and 2X Family "${GREEN}"[default]"${RESET}
+${CLEANUP_PATH} -f
+
+echo -e "What board / model should we build for ?"
+echo -e " A) Replicator or Replicator Dual"
+echo -e " B) Replicator 2 (single tool)"${GREEN}"[default]"${RESET}
+echo -e " C) Replicator 2X (dual tool)"
 read board
 case $board in
     [aA] ) 
         BOARD="mighty_one"
+        SPECIFIC=""
         ;;
     [bB] ) 
         BOARD="mighty_two"
+        SPECIFIC="REP2"
+        ;;
+    [cC] ) 
+        BOARD="mighty_two"
+        SPECIFIC="REP2X"
         ;;
     * ) 
         ;;
@@ -120,10 +130,9 @@ case $locale in
         ;;
 esac
 
-echo "Building firmware with locale : $LOCALE" >> ${LOG_FILE}
+echo "Building firmware for $BOARD ($SPECIFIC) with locale : $LOCALE" >> ${LOG_FILE}
 
 build_firmware ${SCONS}
-
 
 HEX_FILE=`find ./build -type f -name "*.hex" -print`
 
