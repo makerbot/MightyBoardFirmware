@@ -28,7 +28,9 @@ FAILUSB="USB Program PASS"
 
     echo "Press Enter upload 8U2 firmware"
     read
-
+    #We upload the firmware twice since the boards are weird... don't ask questions
+    # Upload bootloader via isp
+    avrdude -p at90usb82 -F -P usb -c avrispmkii -U flash:w:Makerbot-usbserial-revH-rep2.hex
     # Upload fuses and lock bit first since if they are uploaded at the same time as the
     # firmare the 8u2 firmware fails to function properly
     avrdude -p at90usb82 -F -P usb -c avrispmkii -U lfuse:w:0xFF:m -U hfuse:w:0xD9:m -U efuse:w:0xF4:m -U lock:w:0x0F:m
