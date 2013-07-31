@@ -1567,6 +1567,13 @@ bool plan_get_height_stop_enable() {
 	return(stopHeightEnabled);
 }
 
+// Set stopHeightEnabled variable, which controls if the z pause
+// occurs during a print
+void plan_set_height_stop_enable(bool enable) {
+
+	stopHeightEnabled = enable;
+}
+
 
 void plan_set_position(const int32_t &x, const int32_t &y, const int32_t &z, const int32_t &a, const int32_t &b)
 {

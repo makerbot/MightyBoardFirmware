@@ -41,6 +41,8 @@ import re
 from os.path import dirname
 # Platform parameter
 platform = ARGUMENTS.get('platform','mighty_two')
+# Rep2 or Rep2X specific build (RevH and on)
+specific = ARGUMENTS.get('specific', 'OLD')
 # Use safety cutoff or not
 cutoff = ARGUMENTS.get('cutoff','0')
 # fived only applicable for rrmbv12
@@ -66,6 +68,10 @@ elif (platform == 'mighty_two'):
   os.environ['MODEL'] = 'REPLICATOR2'
   # default rev for mighty_two is revG
   board = ARGUMENTS.get('rev', 'revg')
+  #The specific variable is used for revH builds and later for specifiying what type
+  #of Rep2 family bot the build is for explictly
+  if (specific.upper() in ['REP2', 'REP2X']):
+    os.environ['SPECIFIC'] = specific
 
 if cutoff == '0':
     print "WARNING: Safety cutoff will be disabled."
@@ -91,7 +97,11 @@ vstr = ARGUMENTS.get('version',vstr)
 
 version = parse_version(vstr)
 
-target_name = platform+"_v"+str(int(version[0]))+"."+str(int(version[1]))+"."+str(int(version[2]))
+if specific != '':
+	specific_type = '_'+specific.lower()
+else:
+	specific_type = specific
+target_name = platform+specific_type+"_v"+str(int(version[0]))+"."+str(int(version[1]))+"."+str(int(version[2]))
 
 if (platform == 'mighty_one') or (platform == 'mighty_two'):
 	default_baud = '57600'
@@ -142,6 +152,10 @@ if (os.environ.has_key('LOCALE')):
 
 if(os.environ.has_key('MODEL')):
   flags.append('-DMODEL_' + os.environ['MODEL'])
+
+#Valid SPECIFIC flags are SPECIFIC_REP2 and SPECIFIC_REP2X
+if(os.environ.has_key('SPECIFIC')):
+  flags.append('-DSPECIFIC_' + os.environ['SPECIFIC'].upper())
 
 if (os.environ.has_key('AVR_TOOLS_PATH')):
 	avr_tools_path = os.environ['AVR_TOOLS_PATH']

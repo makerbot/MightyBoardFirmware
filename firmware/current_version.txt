@@ -1,3 +1,9 @@
+7.4.0.1.0
+ * release 7.4 final
+7.4.1.1.0
+ * Fix for build time rollover bug, 
+ * Added fix for the button array setup
+ * Disable z pause when a build is canceled
 7.3.0.1.0
  * release 7.3 final
 7.3.13.1.0

@@ -1,7 +1,13 @@
 platform = ARGUMENTS.get('platform', 'mighty_two')
+if (platform == 'mighty_one'):
+	ARGUMENTS['specific'] = ''
+#specific argument was added to support specific builds for Rep2 and Rep2X rather than
+#having one build for both (that type of build is now the old build)
+specific = ARGUMENTS.get('specific', 'OLD')
+if specific != '':
+	specific = '_'+specific.lower()
 
 if (platform == 'mighty_one') or (platform == 'mighty_two'):
-	SConscript(['src/SConscript.mightyboard'], variant_dir='build/'+platform)
-
+	SConscript(['src/SConscript.mightyboard'], variant_dir='build/'+platform+specific)
 
 

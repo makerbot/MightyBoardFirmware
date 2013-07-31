@@ -72,11 +72,17 @@ void SplashScreen::update(LiquidCrystalSerial& lcd, bool forceRedraw) {
 
   if (forceRedraw) {
     lcd.setCursor(0,0);
-    if(eeprom::isSingleTool()){
-      lcd.writeFromPgmspace(SPLASH1_SINGLE_MSG);
-    } else {
-      lcd.writeFromPgmspace(SPLASH1_DUAL_MSG);
-    }      
+	#ifdef SPECIFIC_REP2
+	  lcd.writeFromPgmspace(SPLASH1_SINGLE_MSG);
+	#elif SPECIFIC_REP2X
+	  lcd.writeFromPgmspace(SPLASH1_DUAL_MSG);
+	#else
+      if(eeprom::isSingleTool()){
+        lcd.writeFromPgmspace(SPLASH1_SINGLE_MSG);
+      } else {
+        lcd.writeFromPgmspace(SPLASH1_DUAL_MSG);
+      }
+    #endif
 
     lcd.setCursor(0,1);
     lcd.writeFromPgmspace(SPLASH2_MSG);
@@ -321,11 +327,17 @@ void WelcomeScreen::update(LiquidCrystalSerial& lcd, bool forceRedraw) {
 		lcd.setCursor(0,0);
     switch (welcomeState){
         case WELCOME_START:
-            if (eeprom::isSingleTool()){
-              lcd.writeFromPgmspace(START_MSG);
-            } else {
-              lcd.writeFromPgmspace(START_DUAL_MSG);
-            }
+            #ifdef SPECIFIC_REP2
+                lcd.writeFromPgmspace(START_MSG);
+            #elif SPECIFIC_REP2X
+                lcd.writeFromPgmspace(START_DUAL_MSG);
+            #else
+                if (eeprom::isSingleTool()){
+                    lcd.writeFromPgmspace(START_MSG);
+                } else {
+                    lcd.writeFromPgmspace(START_DUAL_MSG);
+                }
+            #endif
             Motherboard::getBoard().interfaceBlink(25,15);
              break;
         case WELCOME_BUTTONS1:
@@ -1628,7 +1640,6 @@ void MonitorMode::setBuildPercentage(uint8_t percent){
 }
 
 bool display_time = 0;
-bool two_digit_hours = 0;
 
 void MonitorMode::update(LiquidCrystalSerial& lcd, bool forceRedraw) {
   uint8_t build_hours;
@@ -1679,13 +1690,9 @@ void MonitorMode::update(LiquidCrystalSerial& lcd, bool forceRedraw) {
                 }
                     
                     
-                if (two_digit_hours) {
-                  lcd.setCursor(13,0);
-                  lcd.writeFromPgmspace(CLEAR_TIME_SPECIFYING_LETTERS);
-                } else {
-                  lcd.setCursor(14,0);
-                  lcd.writeFromPgmspace(CLEAR_TIME_SPECIFYING_LETTERS_1DIGIT_H);
-                }
+                lcd.setCursor(13,0);
+                lcd.writeFromPgmspace(CLEAR_TIME_SPECIFYING_LETTERS);
+
                 lcd.setCursor(16,0);
                 lcd.writeFromPgmspace(BUILD_PERCENT_MSG);
                 
@@ -1746,13 +1753,8 @@ void MonitorMode::update(LiquidCrystalSerial& lcd, bool forceRedraw) {
                           lcd.write(*name++);
                     }
                     
-                    if (two_digit_hours) {
-                      lcd.setCursor(13,0);
-                      lcd.writeFromPgmspace(CLEAR_TIME_SPECIFYING_LETTERS);
-                    } else {
-                      lcd.setCursor(14,0);
-                      lcd.writeFromPgmspace(CLEAR_TIME_SPECIFYING_LETTERS_1DIGIT_H);
-                    }
+                    lcd.setCursor(13,0);
+                    lcd.writeFromPgmspace(CLEAR_TIME_SPECIFYING_LETTERS);
                     lcd.setCursor(16,0);
                     lcd.writeFromPgmspace(BUILD_PERCENT_MSG);
                     break;
@@ -1862,13 +1864,8 @@ void MonitorMode::update(LiquidCrystalSerial& lcd, bool forceRedraw) {
         lcd.setCursor(16,0);
         lcd.writeFromPgmspace(TIME_SPECIFYING_LETTERS);
 
-        if (two_digit_hours) {
-          lcd.setCursor(14,0);
-          lcd.writeInt(build_hours,2);
-        } else {
-          lcd.setCursor(15,0);
-          lcd.writeInt(build_hours,1);
-        }
+        lcd.setCursor(14,0);
+        lcd.writeInt(build_hours,2);
         
         lcd.setCursor(17,0);
         lcd.writeInt(build_minutes,2);

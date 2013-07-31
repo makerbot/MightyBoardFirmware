@@ -38,6 +38,7 @@
 #include "UtilityScripts.hh"
 #include "stdio.h"
 #include "Menu_locales.hh"
+#include "StepperAccelPlanner.hh"
 
 namespace host {
 
@@ -740,6 +741,9 @@ void stopBuild() {
 		cancelBuild = true;
 		cancel_timeout.start(1000000);  //1 seconds
 	}
+
+	//Set stopHeightEnabled to false so the next build does not z pause
+	plan_set_height_stop_enable(false);
 	
 	Motherboard::getBoard().setBoardStatus(Motherboard::STATUS_ONBOARD_SCRIPT, false);
 	do_host_reset = true; // indicate reset after response has been sent
