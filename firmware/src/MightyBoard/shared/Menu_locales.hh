@@ -210,7 +210,7 @@ static PROGMEM unsigned char READY_SS_MSG[]    =			"OK I'm ready!       " \
 									"through...          " \
 									"                    ";
 static PROGMEM unsigned char READY_RIGHT_MSG[] =			"OK I'm ready!       " \
-									"First we'll load the" \
+									"Now we'll load the  " \
 									"right extruder.     " \
 									"Push filament in... ";
 static PROGMEM unsigned char READY_LEFT_MSG[]  =			"Great! Now we'll    " \
