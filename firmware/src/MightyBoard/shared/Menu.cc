@@ -777,6 +777,7 @@ void FilamentScreen::update(LiquidCrystalSerial& lcd, bool forceRedraw) {
         heat_temp = current_temp > filament_heat_temp[toolID] ? current_temp : filament_heat_temp[toolID];
         board.getExtruderBoard(toolID).getExtruderHeater().Pause(false);
         board.getExtruderBoard(toolID).getExtruderHeater().set_target_temperature(heat_temp);
+        /// if running the startup script, go through the explanatory text
         if(startup){
           if(dual)
             lcd.writeFromPgmspace(EXPLAIN_ONE_MSG);
