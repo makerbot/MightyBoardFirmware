@@ -1,9 +1,7 @@
 #!/bin/bash
 
-# to run from the command line:   ./load_firmware_revH.sh firmware_filename port bot_type
-#bot_type should be either REP2 or REP2X
+# to run from the command line:   ./load_firmware_revH_rep2X.sh firmware_filename port
 
-# default firmware_filename is mighty_two_v7.0.0.hex
 # default port is /dev/ttyACM0
 
 if test -z "$1"
@@ -29,6 +27,9 @@ FAILUSB="USB Program PASS"
     echo "Press Enter upload 8U2 firmware"
     read
 
+    #We upload the firmware twice since the boards are weird... don't ask questions
+    # Upload bootloader via isp
+    avrdude -p at90usb82 -F -P usb -c avrispmkii -U flash:w:Makerbot-usbserial-revH-rep2X.hex
     # Upload fuses and lock bit first since if they are uploaded at the same time as the
     # firmare the 8u2 firmware fails to function properly
     avrdude -p at90usb82 -F -P usb -c avrispmkii -U lfuse:w:0xFF:m -U hfuse:w:0xD9:m -U efuse:w:0xF4:m -U lock:w:0x0F:m

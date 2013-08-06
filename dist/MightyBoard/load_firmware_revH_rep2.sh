@@ -1,9 +1,7 @@
 #!/bin/bash
 
-# to run from the command line:   ./load_firmware_revH.sh firmware_filename port bot_type
-#bot_type should be either REP2 or REP2X
+# to run from the command line:   ./load_firmware_revH_rep2.sh firmware_filename port
 
-# default firmware_filename is mighty_two_v7.0.0.hex
 # default port is /dev/ttyACM0
 
 if test -z "$1"
