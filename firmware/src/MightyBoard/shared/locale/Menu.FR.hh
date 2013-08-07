@@ -332,8 +332,8 @@ static PROGMEM unsigned char RESET2_MSG[] =           "parametres d'usine ?";
 static PROGMEM unsigned char CANCEL_MSG[] =           "Annuler impression?";
 static PROGMEM unsigned char CANCEL_PROCESS_MSG[] =   "Quitter processus ? ";
 
-static PROGMEM unsigned char PAUSE_MSG[] =        "Mettre en pause     ";
-static PROGMEM unsigned char UNPAUSE_MSG[] =      "Reprendre           ";
+static PROGMEM unsigned char PAUSE_MSG[] =        "Mettre en pause  ";
+static PROGMEM unsigned char UNPAUSE_MSG[] =      "Reprendre        ";
 
 static PROGMEM unsigned char NOCARD_MSG[] =       "CarteSD introuvable ";
 static PROGMEM unsigned char CARDERROR_MSG[] =    "Err. lecture CarteSD";
@@ -401,7 +401,7 @@ static PROGMEM unsigned char LEFT_MSG[]    =      "Gauche";
 static PROGMEM unsigned char ERROR_MSG[]   =      "Erreur !";
 static PROGMEM unsigned char NA_MSG[]      =      "  N/A    ";
 static PROGMEM unsigned char WAITING_MSG[] =      "Attente";
-static PROGMEM unsigned char WAIT_FOR_HOMING_MSG[] = "Remise a l'origine..";
+static PROGMEM unsigned char WAIT_FOR_HOMING_MSG[] = "Remise a l'origine.";
 
 static PROGMEM unsigned char HEATER_INACTIVITY_MSG[] = "Arret de la chauffe " \
                                                        "pour inactivite.    ";
@@ -520,7 +520,7 @@ static PROGMEM unsigned char ERROR_INVALID_TOOL[] =     "TETE INVALIDE:      " \
                                                         "Commande recue pour " \
                                                         "une deuxieme tete or" \
                                                         "je n'ai qu'une tete.";
-static PROGMEM unsigned char ACTIVE_FAN_MSG[]    =      "Ventilateur         ";
+static PROGMEM unsigned char ACTIVE_FAN_MSG[]    =      "Ventilateur ";
 
 /// The level Plate Scripts walk users through a procedure to level the build plate
 /// the gcode and s3g files for these scripts are located in firmware/s3g_scripts
