@@ -239,7 +239,7 @@ void Motherboard::reset(bool hard_reset) {
   
 
 
-	state_reset();
+	state_reset(hard_reset);
 
 
 	// pop the splash screen unless we are showing the welcome script
@@ -253,7 +253,7 @@ void Motherboard::reset(bool hard_reset) {
 
 
 /// State reset, used to reset variables needed for printing
-void Motherboard::state_reset() {
+void Motherboard::state_reset(bool hard_reset) {
 
 
 	board_status = STATUS_NONE;
@@ -272,7 +272,11 @@ void Motherboard::state_reset() {
 	// disable platform heater if no HBP
 	platform_heater.disable(!eeprom::hasHBP());
 
-	user_input_timeout.start(restart_timeout);
+	resetUserInputTimeout();
+	//Don't start the heat hold timeout on a hard reset(power on)
+	if(!hard_reset){
+		resetHeatHoldTimeout();
+	}
 	
 	RGB_LED::setDefaultColor(); 
 	buttonWait = false;	
@@ -552,7 +556,7 @@ void Motherboard::runMotherboardSlice() {
 	
 	// if no user input for USER_INPUT_TIMEOUT, shutdown heaters and warn user
 	// don't do this if a heat failure has occured ( in this case heaters are already shutdown and separate error messaging used)
-	if(user_input_timeout.hasElapsed() && !heatShutdown && (host::getHostState() != host::HOST_STATE_BUILDING_FROM_SD) && (host::getHostState() != host::HOST_STATE_BUILDING))
+	if((heat_hold_timeout.hasElapsed() || user_input_timeout.hasElapsed()) && !heatShutdown && (host::getHostState() != host::HOST_STATE_BUILDING_FROM_SD) && (host::getHostState() != host::HOST_STATE_BUILDING))
 	{
 		
 		board_status |= STATUS_HEAT_INACTIVE_SHUTDOWN;
@@ -574,8 +578,15 @@ void Motherboard::runMotherboardSlice() {
 		Extruder_Two.getExtruderHeater().set_target_temperature(0);
 		platform_heater.set_target_temperature(0);
 
-		// clear timeout
-		user_input_timeout.clear();
+		// clear timeouts
+		if(user_input_timeout.hasElapsed()){
+			user_input_timeout.clear();
+		}
+		if(heat_hold_timeout.hasElapsed()){
+			//clear and abort so the heat doesn't hold till the next print
+			heat_hold_timeout.clear();
+			heat_hold_timeout.abort();
+		}
 	}
 
 	// respond to heatshutdown.  response only needs to be called once
@@ -668,6 +679,9 @@ void Motherboard::runMotherboardSlice() {
 // reset user timeout to start from zero
 void Motherboard::resetUserInputTimeout(){
 	user_input_timeout.start(USER_INPUT_TIMEOUT);
+}
+void Motherboard::resetHeatHoldTimeout(){
+	heat_hold_timeout.start(restart_timeout);
 }
 
 //Frequency of Timer 2
