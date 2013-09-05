@@ -579,9 +579,9 @@ void Motherboard::runMotherboardSlice() {
 		platform_heater.set_target_temperature(0);
 
 		// clear timeouts
-		if(user_input_timeout.hasElapsed()){
-			user_input_timeout.clear();
-		}
+		//clear this everytime a timeout elapses(heat_hold or user_input)
+		user_input_timeout.clear();
+
 		if(heat_hold_timeout.hasElapsed()){
 			//clear and abort so the heat doesn't hold till the next print
 			heat_hold_timeout.clear();
