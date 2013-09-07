@@ -546,7 +546,7 @@ void Motherboard::runMotherboardSlice() {
 			RGB_LED::setDefaultColor();
 			//clear error messaging
 			buttonWait = false;
-			interfaceBoard.DoneWithMessage();
+			interfaceBoard.DoneWithMessage(host::getHostState() != host::HOST_STATE_BUILDING_FROM_SD);
 			if(reset_request)
 				host::stopBuild();
 			triggered = false;
