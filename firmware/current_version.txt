@@ -1,6 +1,8 @@
 7.5.1.1.0
  * Removal of dual filament loading for Rep2X startup script
  * Fix for Heat Hold not being handled properly
+ * Fix for bot type errors causing builds to "unattach" from the UI
+ * Fix for bot type errors causing builds to not return to the SD Menu
 7.4.1.1.0
  * Fix for build time rollover bug, 
  * Added fix for the button array setup
