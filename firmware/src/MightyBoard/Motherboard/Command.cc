@@ -811,11 +811,11 @@ void runCommandSlice() {
 					// extra bytes
 					#ifdef MODEL_REPLICATOR
 					if(bot_type != 0xD314){
-						Motherboard::getBoard().errorResponse(ERROR_BOT_TYPE_REP1);
+						Motherboard::getBoard().errorResponse(ERROR_BOT_TYPE);
 					} 
 					#elif MODEL_REPLICATOR2
 					if(bot_type != 0xB015){
-						Motherboard::getBoard().errorResponse(ERROR_BOT_TYPE_REP2);
+						Motherboard::getBoard().errorResponse(ERROR_BOT_TYPE);
 					} 
 					#endif
 					// eleven extra bytes

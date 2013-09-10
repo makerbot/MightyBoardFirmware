@@ -488,11 +488,7 @@ static PROGMEM unsigned char ERROR_STREAM_VERSION[] = "Cette version du x3g" \
                                                       "ne m'est pas adaptee" \
                                                       "Pour de l'aide:     " \
                                                       "makerbot.com/help   ";
-static PROGMEM unsigned char ERROR_BOT_TYPE_REP1[] =  "Ce fichier est pour " \
-                                                      "une autre Replicator" \
-                                                      "Besoin d'aide ? :   " \
-                                                      "makerbot.com/help   ";
-static PROGMEM unsigned char ERROR_BOT_TYPE_REP2[] =  "Ce fichier est pour " \
+static PROGMEM unsigned char ERROR_BOT_TYPE[] =  "Ce fichier est pour " \
                                                       "une autre Replicator" \
                                                       "Besoin d'aide ? :   " \
                                                       "makerbot.com/help   ";

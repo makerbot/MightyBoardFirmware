@@ -210,7 +210,7 @@ static PROGMEM unsigned char READY_SS_MSG[]    =			"OK I'm ready!       " \
 									"through...          " \
 									"                    ";
 static PROGMEM unsigned char READY_RIGHT_MSG[] =			"OK I'm ready!       " \
-									"First we'll load the" \
+									"Now we'll load the  " \
 									"right extruder.     " \
 									"Push filament in... ";
 static PROGMEM unsigned char READY_LEFT_MSG[]  =			"Great! Now we'll    " \
@@ -510,12 +510,7 @@ static PROGMEM unsigned char ERROR_STREAM_VERSION[] =			"This is not the x3g " \
 									"version I work best " \
 									"with. For help see: " \
 									"makerbot.com/help   ";
-static PROGMEM unsigned char ERROR_BOT_TYPE_REP1[] =			"I am a Replicator.  " \
-									"This build is for   " \
-									"another bot. See:   " \
-									"makerbot.com/help   ";
-static PROGMEM unsigned char ERROR_BOT_TYPE_REP2[] =			"I am a Replicator 2." \
-									"This build is for   " \
+static PROGMEM unsigned char ERROR_BOT_TYPE[] =			"This build is for   " \
 									"another bot. See:   " \
 									"makerbot.com/help   ";
 static PROGMEM unsigned char ERROR_SRAM[] =				"MY SRAM USAGE IS    " \
