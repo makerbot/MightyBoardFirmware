@@ -106,8 +106,7 @@ static PROGMEM unsigned char END_MSG  [] =          "Super ! Parametres  " \
                                                     "puvoir imprimer de  " \
                                                     "beaux modeles !     ";
 
-static PROGMEM unsigned char SELECT_MSG[] =         "    Selectionnez    " \
-                                                    "les meilleurs lignes";
+static PROGMEM unsigned char SELECT_MSG[] =         "Meilleure ligne     ";
 
 static PROGMEM unsigned char DONE_MSG[]   = "Fini";
 static PROGMEM unsigned char NO_MSG[]     = "Non   ";
