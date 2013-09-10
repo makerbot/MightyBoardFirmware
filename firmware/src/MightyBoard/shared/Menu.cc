@@ -271,7 +271,12 @@ void HeaterPreheat::handleSelect(uint8_t index) {
                 Motherboard::getBoard().getPlatformHeater().set_target_temperature(0);
                 
                 Motherboard::getBoard().setBoardStatus(Motherboard::STATUS_PREHEATING, false);
+				//Clear the heat_hold since heat hold is seen as preheating
+				//and so if a user wishes to preheat his bot selecting "Cool"
+				//and then preheating will not end in a heat_hold_timeout
+				Motherboard::getBoard().abortHeatHoldTimeout();
             }
+			
             interface::popScreen();
             interface::queueScreen(InterfaceBoard::BUILD_SCREEN);
             //needsRedraw = true;
@@ -766,6 +771,8 @@ void FilamentScreen::update(LiquidCrystalSerial& lcd, bool forceRedraw) {
         
     Motherboard &board = Motherboard::getBoard();
     board.setBoardStatus(Motherboard::STATUS_ONBOARD_PROCESS, true);
+	//Abort the HeatHold as it will interfere with loading filament	
+	board.abortHeatHoldTimeout();
     lcd.setCursor(0,0);
     switch (filamentState){
       /// starting state - set hot temperature for desired tool and start heat up timer

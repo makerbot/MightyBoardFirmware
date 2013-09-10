@@ -174,6 +174,7 @@ public:
 	
 	void resetUserInputTimeout();
 	void resetHeatHoldTimeout();
+	void abortHeatHoldTimeout();
 	void startButtonWait();
 	void heaterFail(HeaterFailMode mode);
 	/// push an error screen, and wait until button 
