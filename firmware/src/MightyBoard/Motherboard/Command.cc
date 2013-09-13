@@ -1080,6 +1080,8 @@ void runCommandSlice() {
 					line_number++;
 					host::handleBuildStartNotification(command_buffer);		
 					start_build_flag = true;
+					//Make sure heat hold is not on (for safety)
+					Motherboard::getBoard().abortHeatHoldTimeout();
 				}
 			} else if ( command == HOST_CMD_BUILD_END_NOTIFICATION) {
 				if (command_buffer.getLength() >= 2){

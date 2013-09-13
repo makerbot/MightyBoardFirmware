@@ -277,7 +277,6 @@ void Motherboard::state_reset(bool hard_reset) {
 	if(!hard_reset){
 		resetHeatHoldTimeout();
 	}
-	
 	RGB_LED::setDefaultColor(); 
 	buttonWait = false;	
 	currentTemp = 0;
@@ -554,6 +553,14 @@ void Motherboard::runMotherboardSlice() {
 		
 	}
 	
+	//If the heat_hold_timeout elapses while we are doing onboard processes
+	//(i.e. Load Filament) we should clear the heat_hold_timeout without shutting
+	//down the heaters
+	if(heat_hold_timeout.hasElapsed() && (motherboard.GetBoardStatus() & STATUS_ONBOARD_PROCESS))
+	{
+		abortHeatHoldTimeout();
+	}
+
 	// if no user input for USER_INPUT_TIMEOUT, shutdown heaters and warn user
 	// don't do this if a heat failure has occured ( in this case heaters are already shutdown and separate error messaging used)
 	if((heat_hold_timeout.hasElapsed() || user_input_timeout.hasElapsed()) && !heatShutdown && (host::getHostState() != host::HOST_STATE_BUILDING_FROM_SD) && (host::getHostState() != host::HOST_STATE_BUILDING))
@@ -584,8 +591,7 @@ void Motherboard::runMotherboardSlice() {
 
 		if(heat_hold_timeout.hasElapsed()){
 			//clear and abort so the heat doesn't hold till the next print
-			heat_hold_timeout.clear();
-			heat_hold_timeout.abort();
+			abortHeatHoldTimeout();
 		}
 	}
 
@@ -680,8 +686,17 @@ void Motherboard::runMotherboardSlice() {
 void Motherboard::resetUserInputTimeout(){
 	user_input_timeout.start(USER_INPUT_TIMEOUT);
 }
+
+// reset heat hold timeout to start from zero
 void Motherboard::resetHeatHoldTimeout(){
 	heat_hold_timeout.start(restart_timeout);
+}
+
+// reset heat hold timeout to start from zero and abort it so it does not
+// timout until restarted (restarts after a print cancellation)
+void Motherboard::abortHeatHoldTimeout(){
+	heat_hold_timeout.clear();
+	heat_hold_timeout.abort();
 }
 
 //Frequency of Timer 2

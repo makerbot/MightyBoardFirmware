@@ -1,3 +1,9 @@
+7.5.4.1.0
+ * Update to Rep1(Dual) statup script so that loading the right extruder makes sense
+7.5.3.1.0
+ * Fix for heat hold USB print canceling scenarios
+7.5.2.1.0
+ * Fix for heat hold interfering with preheat, and filament loading after a canceled build
 7.5.1.1.0
  * Removal of dual filament loading for Rep2X startup script
  * Fix for Heat Hold not being handled properly
