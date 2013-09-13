@@ -732,6 +732,7 @@ void stopBuild() {
 			ib.lock();
 			z_stage_timeout.start(10000000);  //10 seconds
 		}
+		Motherboard::getBoard().resetHeatHoldTimeout();
 	}
 
   // if building from repG, try to send a cancel msg to repG before reseting 
