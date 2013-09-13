@@ -172,13 +172,13 @@ static PROGMEM unsigned char EXPLAIN_FOUR_MSG[]=			"pops out in front.  " \
 									"continue.           ";
 #else
 static PROGMEM unsigned char EXPLAIN_ONE_MSG[] =			"Press down on the   " \
-									"grey rings at top of" \
-									"the extruders and   " \
-									"pull the black...   ";
-static PROGMEM unsigned char EXPLAIN_TWO_MSG[] =			"guide tubes out. Now" \
+									"right grey ring on  " \
+									"top of the extruders" \
+									"and pull the black..";
+static PROGMEM unsigned char EXPLAIN_TWO_MSG[] =			"guide tube out. Now " \
 									"feed filament from  " \
 									"the back through the" \
-									"tubes until it...   ";
+									"tube until it...    ";
 static PROGMEM unsigned char EXPLAIN_ONE_S_MSG[]=			"Press down on the   " \
 									"grey ring at top of " \
 									"the extruder and    " \
