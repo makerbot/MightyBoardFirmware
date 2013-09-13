@@ -273,7 +273,10 @@ void Motherboard::state_reset(bool hard_reset) {
 	platform_heater.disable(!eeprom::hasHBP());
 
 	resetUserInputTimeout();
-	
+	//Don't start the heat hold timeout on a hard reset(power on)
+	if(!hard_reset){
+		resetHeatHoldTimeout();
+	}
 	RGB_LED::setDefaultColor(); 
 	buttonWait = false;	
 	currentTemp = 0;
