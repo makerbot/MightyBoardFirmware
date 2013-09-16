@@ -743,6 +743,13 @@ void stopBuild() {
 		cancel_timeout.start(1000000);  //1 seconds
 	}
 
+	//Don't keep heaters paused after a build
+	if(Motherboard::getBoard().getExtruderBoard(0).getExtruderHeater().isPaused() ||
+		Motherboard::getBoard().getExtruderBoard(1).getExtruderHeater().isPaused()){
+		Motherboard::getBoard().getExtruderBoard(0).getExtruderHeater().Pause(false);
+		Motherboard::getBoard().getExtruderBoard(1).getExtruderHeater().Pause(false);
+	}
+
 	//Set stopHeightEnabled to false so the next build does not z pause
 	plan_set_height_stop_enable(false);
 	

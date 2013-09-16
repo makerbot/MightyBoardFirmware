@@ -147,8 +147,8 @@ static PROGMEM unsigned char HEATER_ERROR_MSG[]=			"My extruders are    " \
 									"connections!        ";
 #ifdef MODEL_REPLICATOR2
 static PROGMEM unsigned char EXPLAIN_ONE_MSG[] =			"I'm heating up my   " \
-									"extruder so we can  " \
-									"load the filament.  " \
+									"right extruder so we" \
+									"can load filament.  " \
 									"Be careful, the...  ";
 static PROGMEM unsigned char EXPLAIN_TWO_MSG[] =			"nozzle will get hot!" \
 									"While I'm heating,  " \
