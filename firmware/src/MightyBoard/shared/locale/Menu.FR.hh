@@ -442,8 +442,7 @@ static PROGMEM unsigned char BUILD_FINISHED_MSG []  =   "Fabrication terminee" \
                                                         "                    " \
                                                         "Temps total     h  m";
 static PROGMEM unsigned char TIME_SPECIFYING_LETTERS[] =                "h  m";
-static PROGMEM unsigned char CLEAR_TIME_SPECIFYING_LETTERS[] =          "      ";
-static PROGMEM unsigned char CLEAR_TIME_SPECIFYING_LETTERS_1DIGIT_H[] = "     ";
+static PROGMEM unsigned char CLEAR_TIME_SPECIFYING_LETTERS[] =        "      ";
 
 static PROGMEM unsigned char BACK_TO_MONITOR_MSG[] =            "Retour             ";
 static PROGMEM unsigned char STATS_MSG[] =                      "Statistiques       ";
