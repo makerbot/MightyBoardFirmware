@@ -278,7 +278,8 @@ void Motherboard::state_reset(bool hard_reset) {
 		resetHeatHoldTimeout();
 	}
 	RGB_LED::setDefaultColor(); 
-	buttonWait = false;	
+	buttonWait = false;
+	popScreen = true; //initalize popScreen as true
 	currentTemp = 0;
 	setTemp = 0; 
 	div_temp = 0;
@@ -375,8 +376,11 @@ void Motherboard::startButtonWait(){
 }
 
 // set an error message on the interface and wait for user button press
-void Motherboard::errorResponse(const unsigned char msg[], bool reset){
+// noPopScreen is only set to true for ERROR_BOT_TYPE occurances, this is to work around
+// a screen stack issue
+void Motherboard::errorResponse(const unsigned char msg[], bool reset, bool noPopScreen){
 	interfaceBoard.errorMessage(msg);
+	popScreen = !noPopScreen;
 	startButtonWait();
 	Piezo::playTune(TUNE_ERROR);
 	reset_request = reset;
@@ -545,7 +549,8 @@ void Motherboard::runMotherboardSlice() {
 			RGB_LED::setDefaultColor();
 			//clear error messaging
 			buttonWait = false;
-			interfaceBoard.DoneWithMessage(host::getHostState() != host::HOST_STATE_BUILDING_FROM_SD);
+			interfaceBoard.DoneWithMessage(popScreen);
+			popScreen = true; //true is popScreens initial state
 			if(reset_request)
 				host::stopBuild();
 			triggered = false;

@@ -1,3 +1,5 @@
+7.5.5.1.0
+ * Fix for change filament timeouts ending in non-resumable prints
 7.5.4.1.0
  * Update to Rep1(Dual) statup script so that loading the right extruder makes sense
 7.5.3.1.0
