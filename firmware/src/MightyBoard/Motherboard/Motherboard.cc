@@ -376,11 +376,11 @@ void Motherboard::startButtonWait(){
 }
 
 // set an error message on the interface and wait for user button press
-// noPopScreen is only set to true for ERROR_BOT_TYPE occurances, this is to work around
+// PopScreen is only set to false for ERROR_BOT_TYPE occurances, this is to work around
 // a screen stack issue
-void Motherboard::errorResponse(const unsigned char msg[], bool reset, bool noPopScreen){
+void Motherboard::errorResponse(const unsigned char msg[], bool reset, bool PopScreen){
+	popScreen = PopScreen;
 	interfaceBoard.errorMessage(msg);
-	popScreen = !noPopScreen;
 	startButtonWait();
 	Piezo::playTune(TUNE_ERROR);
 	reset_request = reset;

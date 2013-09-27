@@ -180,9 +180,9 @@ public:
 	void startButtonWait();
 	void heaterFail(HeaterFailMode mode);
 	/// push an error screen, and wait until button
-	// noPopScreen is only set to true for ERROR_BOT_TYPE occurances, this is to work around
+	// PopScreen is only set to false for ERROR_BOT_TYPE occurances, this is to work around
 	// a screen stack issue
-	void errorResponse(const unsigned char msg[], bool reset=false, bool noPopScreen=false);
+	void errorResponse(const unsigned char msg[], bool reset=false, bool PopScreen=true);
 	
 		/// return board_status byte
 	uint8_t GetBoardStatus(){ return board_status;}
