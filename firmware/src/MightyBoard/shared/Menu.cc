@@ -1672,7 +1672,7 @@ void MonitorMode::update(LiquidCrystalSerial& lcd, bool forceRedraw) {
                 }
                     
                     
-                lcd.setCursor(14,0);
+                lcd.setCursor(13,0);
                 lcd.writeFromPgmspace(CLEAR_TIME_SPECIFYING_LETTERS);
 
                 lcd.setCursor(16,0);
@@ -1735,7 +1735,7 @@ void MonitorMode::update(LiquidCrystalSerial& lcd, bool forceRedraw) {
                           lcd.write(*name++);
                     }
                     
-                    lcd.setCursor(14,0);
+                    lcd.setCursor(13,0);
                     lcd.writeFromPgmspace(CLEAR_TIME_SPECIFYING_LETTERS);
                     lcd.setCursor(16,0);
                     lcd.writeFromPgmspace(BUILD_PERCENT_MSG);
