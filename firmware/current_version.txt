@@ -13,7 +13,6 @@
  * Fix for Heat Hold not being handled properly
  * Fix for bot type errors causing builds to "unattach" from the UI
  * Fix for bot type errors causing builds to not return to the SD Menu
->>>>>>> master
 7.4.0.1.0
  * release 7.4 final
 7.4.1.1.0
