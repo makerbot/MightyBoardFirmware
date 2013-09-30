@@ -147,8 +147,8 @@ static PROGMEM unsigned char HEATER_ERROR_MSG[]=			"My extruders are    " \
 									"connections!        ";
 #ifdef MODEL_REPLICATOR2
 static PROGMEM unsigned char EXPLAIN_ONE_MSG[] =			"I'm heating up my   " \
-									"extruder so we can  " \
-									"load the filament.  " \
+									"right extruder so we" \
+									"can load filament.  " \
 									"Be careful, the...  ";
 static PROGMEM unsigned char EXPLAIN_TWO_MSG[] =			"nozzle will get hot!" \
 									"While I'm heating,  " \
@@ -172,13 +172,13 @@ static PROGMEM unsigned char EXPLAIN_FOUR_MSG[]=			"pops out in front.  " \
 									"continue.           ";
 #else
 static PROGMEM unsigned char EXPLAIN_ONE_MSG[] =			"Press down on the   " \
-									"grey rings at top of" \
-									"the extruders and   " \
-									"pull the black...   ";
-static PROGMEM unsigned char EXPLAIN_TWO_MSG[] =			"guide tubes out. Now" \
+									"right grey ring on  " \
+									"top of the extruders" \
+									"and pull the black..";
+static PROGMEM unsigned char EXPLAIN_TWO_MSG[] =			"guide tube out. Now " \
 									"feed filament from  " \
 									"the back through the" \
-									"tubes until it...   ";
+									"tube until it...    ";
 static PROGMEM unsigned char EXPLAIN_ONE_S_MSG[]=			"Press down on the   " \
 									"grey ring at top of " \
 									"the extruder and    " \
@@ -210,7 +210,7 @@ static PROGMEM unsigned char READY_SS_MSG[]    =			"OK I'm ready!       " \
 									"through...          " \
 									"                    ";
 static PROGMEM unsigned char READY_RIGHT_MSG[] =			"OK I'm ready!       " \
-									"First we'll load the" \
+									"Now we'll load the  " \
 									"right extruder.     " \
 									"Push filament in... ";
 static PROGMEM unsigned char READY_LEFT_MSG[]  =			"Great! Now we'll    " \
@@ -510,12 +510,7 @@ static PROGMEM unsigned char ERROR_STREAM_VERSION[] =			"This is not the x3g " \
 									"version I work best " \
 									"with. For help see: " \
 									"makerbot.com/help   ";
-static PROGMEM unsigned char ERROR_BOT_TYPE_REP1[] =			"I am a Replicator.  " \
-									"This build is for   " \
-									"another bot. See:   " \
-									"makerbot.com/help   ";
-static PROGMEM unsigned char ERROR_BOT_TYPE_REP2[] =			"I am a Replicator 2." \
-									"This build is for   " \
+static PROGMEM unsigned char ERROR_BOT_TYPE[] =			"This build is for   " \
 									"another bot. See:   " \
 									"makerbot.com/help   ";
 static PROGMEM unsigned char ERROR_SRAM[] =				"MY SRAM USAGE IS    " \

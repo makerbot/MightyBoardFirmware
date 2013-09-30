@@ -680,7 +680,7 @@ sdcard::SdErrorCode startBuildFromSD() {
 	command::reset();
 	steppers::abort();
 	steppers::reset();
-	Motherboard::getBoard().state_reset();
+	Motherboard::getBoard().state_reset(false);
 
 	currentState = HOST_STATE_BUILDING_FROM_SD;
 	return e;
@@ -732,6 +732,7 @@ void stopBuild() {
 			ib.lock();
 			z_stage_timeout.start(10000000);  //10 seconds
 		}
+		Motherboard::getBoard().resetHeatHoldTimeout();
 	}
 
   // if building from repG, try to send a cancel msg to repG before reseting 
@@ -740,6 +741,13 @@ void stopBuild() {
 		currentState = HOST_STATE_CANCEL_BUILD;
 		cancelBuild = true;
 		cancel_timeout.start(1000000);  //1 seconds
+	}
+
+	//Don't keep heaters paused after a build
+	if(Motherboard::getBoard().getExtruderBoard(0).getExtruderHeater().isPaused() ||
+		Motherboard::getBoard().getExtruderBoard(1).getExtruderHeater().isPaused()){
+		Motherboard::getBoard().getExtruderBoard(0).getExtruderHeater().Pause(false);
+		Motherboard::getBoard().getExtruderBoard(1).getExtruderHeater().Pause(false);
 	}
 
 	//Set stopHeightEnabled to false so the next build does not z pause

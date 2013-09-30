@@ -71,10 +71,10 @@ MessageScreen * InterfaceBoard::GetMessageScreen(){
 }
 
 /// pop Error Message Screen
-void InterfaceBoard::DoneWithMessage(){
+void InterfaceBoard::DoneWithMessage(bool popMessage){
 
 		messageScreen.WaitForUser(false);
-		if(screenStack[screenIndex] == &messageScreen){
+		if((screenStack[screenIndex] == &messageScreen) && popMessage){
 			popScreen();
 		}
 }

@@ -163,7 +163,7 @@ public:
         void popToOnboardStart();
         
         /// pop Error Message Screen
-        void DoneWithMessage();
+        void DoneWithMessage(bool popMessage);
 
         /// flag to ignore wait on button mask;
         void setOverride(bool on);

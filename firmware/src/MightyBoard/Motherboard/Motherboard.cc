@@ -239,7 +239,7 @@ void Motherboard::reset(bool hard_reset) {
   
 
 
-	state_reset();
+	state_reset(hard_reset);
 
 
 	// pop the splash screen unless we are showing the welcome script
@@ -253,7 +253,7 @@ void Motherboard::reset(bool hard_reset) {
 
 
 /// State reset, used to reset variables needed for printing
-void Motherboard::state_reset() {
+void Motherboard::state_reset(bool hard_reset) {
 
 
 	board_status = STATUS_NONE;
@@ -272,10 +272,14 @@ void Motherboard::state_reset() {
 	// disable platform heater if no HBP
 	platform_heater.disable(!eeprom::hasHBP());
 
-	user_input_timeout.start(restart_timeout);
-	
+	resetUserInputTimeout();
+	//Don't start the heat hold timeout on a hard reset(power on)
+	if(!hard_reset){
+		resetHeatHoldTimeout();
+	}
 	RGB_LED::setDefaultColor(); 
-	buttonWait = false;	
+	buttonWait = false;
+	popScreen = true; //initalize popScreen as true
 	currentTemp = 0;
 	setTemp = 0; 
 	div_temp = 0;
@@ -372,7 +376,10 @@ void Motherboard::startButtonWait(){
 }
 
 // set an error message on the interface and wait for user button press
-void Motherboard::errorResponse(const unsigned char msg[], bool reset){
+// PopScreen is only set to false for ERROR_BOT_TYPE occurances, this is to work around
+// a screen stack issue
+void Motherboard::errorResponse(const unsigned char msg[], bool reset, bool PopScreen){
+	popScreen = PopScreen;
 	interfaceBoard.errorMessage(msg);
 	startButtonWait();
 	Piezo::playTune(TUNE_ERROR);
@@ -542,7 +549,8 @@ void Motherboard::runMotherboardSlice() {
 			RGB_LED::setDefaultColor();
 			//clear error messaging
 			buttonWait = false;
-			interfaceBoard.DoneWithMessage();
+			interfaceBoard.DoneWithMessage(popScreen);
+			popScreen = true; //true is popScreens initial state
 			if(reset_request)
 				host::stopBuild();
 			triggered = false;
@@ -550,9 +558,17 @@ void Motherboard::runMotherboardSlice() {
 		
 	}
 	
+	//If the heat_hold_timeout elapses while we are doing onboard processes
+	//(i.e. Load Filament) we should clear the heat_hold_timeout without shutting
+	//down the heaters
+	if(heat_hold_timeout.hasElapsed() && (motherboard.GetBoardStatus() & STATUS_ONBOARD_PROCESS))
+	{
+		abortHeatHoldTimeout();
+	}
+
 	// if no user input for USER_INPUT_TIMEOUT, shutdown heaters and warn user
 	// don't do this if a heat failure has occured ( in this case heaters are already shutdown and separate error messaging used)
-	if(user_input_timeout.hasElapsed() && !heatShutdown && (host::getHostState() != host::HOST_STATE_BUILDING_FROM_SD) && (host::getHostState() != host::HOST_STATE_BUILDING))
+	if((heat_hold_timeout.hasElapsed() || user_input_timeout.hasElapsed()) && !heatShutdown && (host::getHostState() != host::HOST_STATE_BUILDING_FROM_SD) && (host::getHostState() != host::HOST_STATE_BUILDING))
 	{
 		
 		board_status |= STATUS_HEAT_INACTIVE_SHUTDOWN;
@@ -574,8 +590,14 @@ void Motherboard::runMotherboardSlice() {
 		Extruder_Two.getExtruderHeater().set_target_temperature(0);
 		platform_heater.set_target_temperature(0);
 
-		// clear timeout
+		// clear timeouts
+		//clear this everytime a timeout elapses(heat_hold or user_input)
 		user_input_timeout.clear();
+
+		if(heat_hold_timeout.hasElapsed()){
+			//clear and abort so the heat doesn't hold till the next print
+			abortHeatHoldTimeout();
+		}
 	}
 
 	// respond to heatshutdown.  response only needs to be called once
@@ -668,6 +690,18 @@ void Motherboard::runMotherboardSlice() {
 // reset user timeout to start from zero
 void Motherboard::resetUserInputTimeout(){
 	user_input_timeout.start(USER_INPUT_TIMEOUT);
+}
+
+// reset heat hold timeout to start from zero
+void Motherboard::resetHeatHoldTimeout(){
+	heat_hold_timeout.start(restart_timeout);
+}
+
+// reset heat hold timeout to start from zero and abort it so it does not
+// timout until restarted (restarts after a print cancellation)
+void Motherboard::abortHeatHoldTimeout(){
+	heat_hold_timeout.clear();
+	heat_hold_timeout.abort();
 }
 
 //Frequency of Timer 2

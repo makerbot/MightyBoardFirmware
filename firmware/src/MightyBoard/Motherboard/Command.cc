@@ -811,11 +811,11 @@ void runCommandSlice() {
 					// extra bytes
 					#ifdef MODEL_REPLICATOR
 					if(bot_type != 0xD314){
-						Motherboard::getBoard().errorResponse(ERROR_BOT_TYPE_REP1);
+						Motherboard::getBoard().errorResponse(ERROR_BOT_TYPE, false, false);
 					} 
 					#elif MODEL_REPLICATOR2
 					if(bot_type != 0xB015){
-						Motherboard::getBoard().errorResponse(ERROR_BOT_TYPE_REP2);
+						Motherboard::getBoard().errorResponse(ERROR_BOT_TYPE, false, false);
 					} 
 					#endif
 					// eleven extra bytes
@@ -1080,6 +1080,8 @@ void runCommandSlice() {
 					line_number++;
 					host::handleBuildStartNotification(command_buffer);		
 					start_build_flag = true;
+					//Make sure heat hold is not on (for safety)
+					Motherboard::getBoard().abortHeatHoldTimeout();
 				}
 			} else if ( command == HOST_CMD_BUILD_END_NOTIFICATION) {
 				if (command_buffer.getLength() >= 2){

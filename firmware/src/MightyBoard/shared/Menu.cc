@@ -271,7 +271,12 @@ void HeaterPreheat::handleSelect(uint8_t index) {
                 Motherboard::getBoard().getPlatformHeater().set_target_temperature(0);
                 
                 Motherboard::getBoard().setBoardStatus(Motherboard::STATUS_PREHEATING, false);
+				//Clear the heat_hold since heat hold is seen as preheating
+				//and so if a user wishes to preheat his bot selecting "Cool"
+				//and then preheating will not end in a heat_hold_timeout
+				Motherboard::getBoard().abortHeatHoldTimeout();
             }
+			
             interface::popScreen();
             interface::queueScreen(InterfaceBoard::BUILD_SCREEN);
             //needsRedraw = true;
@@ -766,6 +771,8 @@ void FilamentScreen::update(LiquidCrystalSerial& lcd, bool forceRedraw) {
         
     Motherboard &board = Motherboard::getBoard();
     board.setBoardStatus(Motherboard::STATUS_ONBOARD_PROCESS, true);
+	//Abort the HeatHold as it will interfere with loading filament	
+	board.abortHeatHoldTimeout();
     lcd.setCursor(0,0);
     switch (filamentState){
       /// starting state - set hot temperature for desired tool and start heat up timer
@@ -777,13 +784,6 @@ void FilamentScreen::update(LiquidCrystalSerial& lcd, bool forceRedraw) {
         heat_temp = current_temp > filament_heat_temp[toolID] ? current_temp : filament_heat_temp[toolID];
         board.getExtruderBoard(toolID).getExtruderHeater().Pause(false);
         board.getExtruderBoard(toolID).getExtruderHeater().set_target_temperature(heat_temp);
-        if(dual){
-          current_temp = board.getExtruderBoard(1).getExtruderHeater().get_current_temperature();
-          /// don't cool the bot down if it is already hot
-          heat_temp = current_temp > filament_heat_temp[1] ? current_temp : filament_heat_temp[1];
-          board.getExtruderBoard(1).getExtruderHeater().Pause(false);
-          board.getExtruderBoard(1).getExtruderHeater().set_target_temperature(heat_temp);      
-        }
         /// if running the startup script, go through the explanatory text
         if(startup){
           if(dual)
@@ -845,10 +845,7 @@ void FilamentScreen::update(LiquidCrystalSerial& lcd, bool forceRedraw) {
       /// alert user that filament is ready to extrude
       case FILAMENT_START:
         if(dual){
-          if(axisID == 3)
             lcd.writeFromPgmspace(READY_RIGHT_MSG);
-          else
-            lcd.writeFromPgmspace(READY_LEFT_MSG);
         }
         else if (startup){
           lcd.writeFromPgmspace(READY_SS_MSG);
@@ -895,13 +892,6 @@ void FilamentScreen::update(LiquidCrystalSerial& lcd, bool forceRedraw) {
         stopMotor();
         if(startup){
           if(filamentSuccess == SUCCESS){
-            if(dual && (axisID ==3)){
-              axisID = 4;
-              filamentState = FILAMENT_START;
-              startMotor();
-              lcd.writeFromPgmspace(READY_LEFT_MSG);
-            }
-            else
               lcd.writeFromPgmspace(FINISH_MSG);
           } else{
             if(filamentSuccess == FAIL){
@@ -909,15 +899,7 @@ void FilamentScreen::update(LiquidCrystalSerial& lcd, bool forceRedraw) {
             startMotor();
             filamentState = FILAMENT_TUG;
             } else if(filamentSuccess == SECOND_FAIL){ 
-              if(dual && (axisID ==3)){
-               axisID = 4;
-               filamentState = FILAMENT_TUG;
-               startMotor();
-               lcd.writeFromPgmspace(GO_ON_LEFT_MSG);
-              }
-              else{
                 lcd.writeFromPgmspace(KEEP_GOING_MSG);
-              }
             }
           }
         }

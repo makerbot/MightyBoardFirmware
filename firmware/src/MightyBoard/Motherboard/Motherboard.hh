@@ -87,6 +87,7 @@ private:
   // TODO: Move this to an interface board slice.
 	Timeout interface_update_timeout;
 	Timeout user_input_timeout;
+	Timeout heat_hold_timeout;
 #ifdef MODEL_REPLICATOR2
 	Timeout therm_sensor_timeout;
 	ThermocoupleReader therm_sensor;
@@ -113,6 +114,8 @@ private:
 
 	bool heatShutdown;  // set if safety cutoff is triggered
 	bool buttonWait;
+	bool popScreen; //This is used in conjunction with buttonWait to handle
+	//one specific error message case involving the ERROR_BOT_TYPE
 	bool reset_request;
 	HeaterFailMode heatFailMode;
 	
@@ -141,7 +144,7 @@ public:
 	void reset(bool hard_reset);
 
 	/// State reset, used to reset variables needed for printing
-	void state_reset();
+	void state_reset(bool hard_reset);
 
 	/// initialize things that only need to be set up once, on boot
 	void init();
@@ -172,10 +175,14 @@ public:
 	void setExtra(bool on);
 	
 	void resetUserInputTimeout();
+	void resetHeatHoldTimeout();
+	void abortHeatHoldTimeout();
 	void startButtonWait();
 	void heaterFail(HeaterFailMode mode);
-	/// push an error screen, and wait until button 
-	void errorResponse(const unsigned char msg[], bool reset = false);
+	/// push an error screen, and wait until button
+	// PopScreen is only set to false for ERROR_BOT_TYPE occurances, this is to work around
+	// a screen stack issue
+	void errorResponse(const unsigned char msg[], bool reset=false, bool PopScreen=true);
 	
 		/// return board_status byte
 	uint8_t GetBoardStatus(){ return board_status;}
