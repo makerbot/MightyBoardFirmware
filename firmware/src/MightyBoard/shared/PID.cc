@@ -24,7 +24,7 @@
 
 #include "PID.hh"
 
-#define ERR_ACC_MAX 256
+#define ERR_ACC_MAX 1024 
 #define ERR_ACC_MIN -ERR_ACC_MAX
 
 // scale the output term to account for our fixed-point bounds
