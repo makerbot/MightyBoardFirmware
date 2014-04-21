@@ -34,9 +34,9 @@
 
 namespace eeprom {
 
-#define DEFAULT_P_VALUE  (7.0f)
-#define DEFAULT_I_VALUE  (0.750f)
-#define DEFAULT_D_VALUE  (36.0f)
+#define DEFAULT_P_VALUE  (8.0f)
+#define DEFAULT_I_VALUE  (0.250f)
+#define DEFAULT_D_VALUE  (12.0f)
 
 
 #define THERM_R0_DEFAULT_VALUE (100000)

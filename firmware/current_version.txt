@@ -1,3 +1,6 @@
+7.5.10.1.0
+ * Increased I constant to .750
+ * Accumulator max set to 1024 instead of 256
 7.5.5.1.0
  * Fix for change filament timeouts ending in non-resumable prints
 7.5.4.1.0

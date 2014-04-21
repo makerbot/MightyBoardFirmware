@@ -28,7 +28,7 @@
 
 /// PID bypass: If the set point is more than this many degrees over the
 ///             current temperature, bypass the PID loop altogether.
-#define PID_BYPASS_DELTA 15
+#define PID_BYPASS_DELTA 10
 
 /// Number of bad sensor readings we need to get in a row before shutting off the heater
 const uint8_t SENSOR_MAX_BAD_READINGS = 15;
@@ -358,7 +358,7 @@ void Heater::manage_temperature() {
 
 		pid.reset_state();
 	}
-	else if ( !bypassing_PID && (delta > PID_BYPASS_DELTA + 10) ) {
+	else if ( !bypassing_PID && (delta > PID_BYPASS_DELTA) ) {
 		bypassing_PID = true;
 	}
 
