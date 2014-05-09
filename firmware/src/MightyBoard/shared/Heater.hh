@@ -25,9 +25,9 @@
 #include "Types.hh"
 #include "Timeout.hh"
 
-#define DEFAULT_P 8.0
+#define DEFAULT_P 9.0
 #define DEFAULT_I 0.250
-#define DEFAULT_D 12.0
+#define DEFAULT_D 10.0
 
 enum HeaterFailMode{
 	HEATER_FAIL_NONE = 0,
