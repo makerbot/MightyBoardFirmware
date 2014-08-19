@@ -1,3 +1,8 @@
+7.6.0.1.0
+ * release, 7.6 final
+7.6.1.1.0
+ * PID loop values changed to handle Rep2X extruder heating issues
+ * (PID loop) ErrorAccumulator max set to 512 instead of 256
 7.5.0.1.0
  * release, 7.5 final
 7.5.5.1.0
