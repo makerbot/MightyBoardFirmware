@@ -25,9 +25,15 @@
 #include "Types.hh"
 #include "Timeout.hh"
 
-#define DEFAULT_P 9.0
-#define DEFAULT_I 0.250
-#define DEFAULT_D 10.0
+#ifdef MODEL_REPLICATOR2 //release 7.6 changed the PID loop for Rep2/X bots
+    #define DEFAULT_P 9.0
+    #define DEFAULT_I 0.250
+    #define DEFAULT_D 10.0
+#else
+    #define DEFAULT_P 7.0
+    #define DEFAULT_I 0.325
+    #define DEFAULT_D 36.0
+#endif
 
 enum HeaterFailMode{
 	HEATER_FAIL_NONE = 0,

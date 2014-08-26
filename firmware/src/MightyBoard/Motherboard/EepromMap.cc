@@ -34,10 +34,15 @@
 
 namespace eeprom {
 
-#define DEFAULT_P_VALUE  (9.0f)
-#define DEFAULT_I_VALUE  (0.250f)
-#define DEFAULT_D_VALUE  (10.0f)
-
+#ifdef MODEL_REPLICATOR2 //Firmware 7.6 changed PID loop for Rep2/X bots
+    #define DEFAULT_P_VALUE  (9.0f)
+    #define DEFAULT_I_VALUE  (0.250f)
+    #define DEFAULT_D_VALUE  (10.0f)
+#else
+    #define DEFAULT_P_VALUE  (7.0f)
+    #define DEFAULT_I_VALUE  (0.325f)
+    #define DEFAULT_D_VALUE  (36.0f)
+#endif
 
 #define THERM_R0_DEFAULT_VALUE (100000)
 #define THERM_T0_DEFAULT_VALUE (25)

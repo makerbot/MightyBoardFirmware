@@ -28,7 +28,11 @@
 
 /// PID bypass: If the set point is more than this many degrees over the
 ///             current temperature, bypass the PID loop altogether.
-#define PID_BYPASS_DELTA 10
+#ifdef MODEL_REPLICATOR2 //Rep2 based bots use a different PID loop
+    #define PID_BYPASS_DELTA 10
+#else
+    #define PID_BYPASS_DELTA 15
+#endif
 
 /// Number of bad sensor readings we need to get in a row before shutting off the heater
 const uint8_t SENSOR_MAX_BAD_READINGS = 15;

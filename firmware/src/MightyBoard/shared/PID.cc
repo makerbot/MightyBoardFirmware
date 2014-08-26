@@ -24,7 +24,12 @@
 
 #include "PID.hh"
 
-#define ERR_ACC_MAX 512 
+#ifdef MODEL_REPLICATOR2 //Error Accumulator changed in 7.6 for Rep2/X bots
+    #define ERR_ACC_MAX 512
+#else
+    #define ERR_ACC_MAX 256
+#endif
+
 #define ERR_ACC_MIN -ERR_ACC_MAX
 
 // scale the output term to account for our fixed-point bounds
