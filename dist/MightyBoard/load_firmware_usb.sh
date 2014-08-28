@@ -10,7 +10,7 @@
 
 if test -z "$1"
 then
-  FILENAME=mighty_two_v7.3.0.hex
+  FILENAME=mighty_two_v7.6.0.hex
 else
   FILENAME=$1
 fi
