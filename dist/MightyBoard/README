@@ -45,3 +45,16 @@ press enter when prompted to upload firmware.  keep in mind the following:
 
 
 if upload is successfull, press control-C to exit.  if desired, the script will run in a loop indefinitely.
+
+________________________________________________________________________________________________________________________
+
+When using the python file for the upload (rep2_2x_upload_fw.py):
+    1. Must be run as sudo
+    2. run with -p Rep2 or -p Rep2X to select product to use
+    3. ttyACM port is automatically pulled via ls /dev/ttyACM* and whatever is returned is used.
+        - untested if more than one port is present
+    4. BREAK_ON_FAIL flag
+        -> if False, will run each of the three steps regardless of result of previous step
+        -> if True, will break and restart program with error message if any step of the process fails
+    5. Designed for use with a Pi and a single enter key/button
+    6. Filenames/paths for each product are in top of python file
