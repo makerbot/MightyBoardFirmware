@@ -1,4 +1,4 @@
-Replicator MightyBoard Firmware
+MEGA MIGHTY Replicator MightyBoard Firmware
 ===============================
 
 This is the firmware repository for the Replicator, Replicator Dual, Replicator 2 & 2X desktop 3D-printing machines.
